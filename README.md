@@ -64,3 +64,44 @@ PrO-VAT.py requires the following inputs:
       - **NOTE:** The SA calculation assumes the Free_Volume_Voxels are "Uniform" not "Random" (see "Voxel_dist" in "congif.yaml")
    - Example.ovito: Ovito visualization state showing the above. I recommend installing Ovito(-basic) version 3.7.12, https://www.ovito.org/download_history/
      - In the top right, you can select the different xyz files (pipelines) and turn on and off the Particles (under "Visual elements")
+
+# Local Python Install using WSL (Windows Subsystem for Linux)
+
+## WSL
+
+### Install
+ - Open Windows PowerShell and run ```wsl --install ubuntu```
+ - Restart computer and start up wsl (may take some time)
+   - If wsl instantly closes upon opening it, run ```wsl --install ubuntu``` again
+
+### Using WSL
+ - WSL mounts a Linux subsystem in Windows
+ - If you open WSL, you will be in the '/home/{username}' directory
+   - Your windows files are located at '/mnt/c/Users/{username}'
+   - If you want to access Box, you need to mount is separately. Run ```sudo mkdir /mnt/box/``` once, then add the following to ~/.bashrc:
+     ```
+     if mount | grep /mnt/box > /dev/null; then
+       sudo mount -t drvfs 'C:\Users\{username}\Box\' /mnt/box/
+     ```
+    - This does require you to input your password the first time you start a wsl instance.
+    - You can also add a cd command, aliases, etc to ~/.bashrc to automate certain tasks every time a terminal is started.
+ - Recommended settings
+   - In the windows WSL terminal, open settings
+     - Interaction > Automatically copy selection to clipboard = On
+     - Defaults > Advanced > Bell notification style = None
+     - Ubuntu > Advanced > Bell notification style = None
+
+
+### Installing python
+ - open wsl
+```
+cd ~
+sudo apt update && sudo apt upgrade
+sudo apt install python3-full
+mkdir -p ~/.venvs
+python3 -m venv ~/.venvs/myPython
+source ~/.venvs/myPython/bin/activate
+python3 -m pip install PyYAML h5py MDAnalysis igraph scikit-image
+```
+ - Must ```source ~/.venvs/myPython/bin/activate``` to start python in virtual environment
+   - Add this command to ~/.bashrc if you want this to happen automatically when you open wsl
