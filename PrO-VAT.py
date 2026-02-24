@@ -48,12 +48,11 @@ import argparse
 # If memory is an issue, use np.float32 - may introduce some error due to lack of precision
 float_type = np.float64
 
-def iDist(frame):
-    # Sleep command to offset processes - no delay if N_threads = 1
-    time.sleep(np.random.randint(1,6)*(frame%args.N_threads))
+def volume_analysis(frame):
+# Perform volume analysis on current frame
 
-    #if frame%N_threads == 0:
-    print("Frame " + str(frame))
+    # Sleep command to offset processes (limit spikes in memory usage) - no delay if N_threads = 1
+    time.sleep(np.random.randint(1,6)*(frame%args.N_threads))
 
     with h5py.File('PrO-VAT.hdf5','r') as f:
         dset1 = f['system']; sys = dset1[frame]                                                                                                 # Position of all system atoms
@@ -67,19 +66,29 @@ def iDist(frame):
     avg_sys_density = N_sys / cell[0] / cell[1] / cell[2]
     vol_d_inc = (4/3) * np.pi * (args.d_inc**3)
 
+    # Track which frames are currently being processed
+    print(f"Frame {frame}/{len(frame_ids)}")
 
 
 
 
-    # This part of the calculation determines the maximum size of voxel-centered free volume spheres without overlapping system atoms, where the total volume of all spheres larger than probe_radius defines the probe-occupiable free volume of the system
+
+    # Free volum sphere analysis
+    # This part of the calculation determines the maximum size of voxel-centered free volume spheres without overlapping system atoms (van der Waals volume), where the total volume of all spheres larger than probe_radius defines the probe-occupiable free volume of the system
     # This code will generate points at the center of voxels with side length L_voxel and grow these points into free volume spheres
     # Changing L_voxel, N_write_sph, and d_inc can reduce run time and memory usage
-    vox_x = np.linspace(0, cell[0], num = np.ceil(cell[0]/args.L_voxel).astype(int), dtype=float_type); vox_x = (vox_x[:-1] + vox_x[1:])/2           # Voxel-centers in the x direction
-    vox_y = np.linspace(0, cell[1], num = np.ceil(cell[1]/args.L_voxel).astype(int), dtype=float_type); vox_y = (vox_y[:-1] + vox_y[1:])/2           # Voxel-centers in the y direction
-    vox_z = np.linspace(0, cell[2], num = np.ceil(cell[2]/args.L_voxel).astype(int), dtype=float_type); vox_z = (vox_z[:-1] + vox_z[1:])/2           # Voxel-centers in the z direction
+    vox_x = np.linspace(0, cell[0], num = np.ceil(cell[0]/args.L_voxel).astype(int), dtype=float_type); vox_x = (vox_x[:-1] + vox_x[1:])/2      # Voxel-centers in the x direction
+    vox_y = np.linspace(0, cell[1], num = np.ceil(cell[1]/args.L_voxel).astype(int), dtype=float_type); vox_y = (vox_y[:-1] + vox_y[1:])/2      # Voxel-centers in the y direction
+    vox_z = np.linspace(0, cell[2], num = np.ceil(cell[2]/args.L_voxel).astype(int), dtype=float_type); vox_z = (vox_z[:-1] + vox_z[1:])/2      # Voxel-centers in the z direction
 
-    L_voxel_x = vox_x[1] - vox_x[0]; L_voxel_y = vox_y[1] - vox_y[0]; L_voxel_z = vox_z[1] - vox_z[0]
-    l_x = len(vox_x); l_y = len(vox_y); l_z = len(vox_z)
+    # True L_voxel in x, y, and z
+    L_voxel_x = vox_x[1] - vox_x[0]
+    L_voxel_y = vox_y[1] - vox_y[0]
+    L_voxel_z = vox_z[1] - vox_z[0]
+    # Box lengths in units of number of voxels
+    l_x = len(vox_x)
+    l_y = len(vox_y)
+    l_z = len(vox_z)
 
     # Use smallest integer data types possible (without losing precision) to reduce memory usage
     indexed_type = np.min_scalar_type(np.max([l_x, l_y, l_z]) - 1)
@@ -94,8 +103,8 @@ def iDist(frame):
 
     radii_arr = np.zeros((l_x,l_y,l_z), dtype=float_type)                                                                                       # radii_arr tracks free volume sphere indices (position in array = position in voxelized system) and radius (value at that position), where we are interested in spheres of radius r >= probe_radius. All probes of r > 0 are saved for later use.
 
-    # Divide the voxelized system into cubes for efficient analysis
-    N_cube = np.min((args.N_calc_sph / N_sys, args.N_write_sph / (avg_sys_density * vol_d_inc))); L_cube = N_cube**(1/3)                                  # To improve efficiency, voxels are looped over in cubes of N_cube voxel-centers
+    # Divide the voxelized system into voxel cubes for efficient analysis
+    N_cube = np.min((args.N_calc_sph / N_sys, args.N_write_sph / (avg_sys_density * vol_d_inc))); L_cube = N_cube**(1/3)                        # To improve efficiency, voxels are looped over in cubes of N_cube voxel-centers
     vox_inc = np.ceil(                                                                                                                          # vox_inc = side length of voxel cube, such that each voxel cube is about the same size
                         np.min((l_x, l_y, l_z))
                       / np.ceil(
@@ -109,11 +118,11 @@ def iDist(frame):
 
     # Prints the number of voxels-per-cube and number of voxel cubes
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+        time_Spheres = time.perf_counter()
         print('##### Generating Free Volume Spheres #####')
         print("\nNumber of voxels-per-cube: ", N_cube)
         print("Number of voxel cubes: ", np.ceil(l_x/vox_inc).astype(int)*np.ceil(l_y/vox_inc).astype(int)*np.ceil(l_z/vox_inc).astype(int))
 
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_Spheres = time.perf_counter()
     for x_i in np.arange(vox_inc,l_x+vox_inc,vox_inc):
         vox_track[0] += vox_inc
         if x_i > l_x: x_i = l_x
@@ -129,10 +138,10 @@ def iDist(frame):
                 if z_i > l_z: z_i = l_z
 
                 sphere_temp = np.vstack(np.meshgrid(                                                                                            # sphere_temp contains the position of the voxel-centers within the cube of size N_cube
-                                                   vox_x[vox_track[0]:x_i],
-                                                   vox_y[vox_track[1]:y_i],
-                                                   vox_z[vox_track[2]:z_i]
-                                                                          ), dtype=float_type).reshape(3,-1).T
+                                                    vox_x[vox_track[0]:x_i],
+                                                    vox_y[vox_track[1]:y_i],
+                                                    vox_z[vox_track[2]:z_i]
+                                                                           ), dtype=float_type).reshape(3,-1).T
 
                 # Find the approximate center of the voxel cube to find the system atoms near the voxel cube (sys_mask), where system atoms define the van der Waals volume of the system. Reduces computational cost
                 center = np.array([
@@ -146,7 +155,7 @@ def iDist(frame):
                 while len(sphere_temp) > 0:
                     d += args.d_inc
 
-                    sys_mask = distances.capped_distance(center, sys, d + np.sqrt(3)*vox_inc*args.L_voxel/2 + 2*args.L_voxel, box=cell)[0][:,1]           # System atoms near the voxel cube
+                    sys_mask = distances.capped_distance(center, sys, d + np.sqrt(3)*vox_inc*args.L_voxel/2 + 2*args.L_voxel, box=cell)[0][:,1] # System atoms near the voxel cube
 
                     pair_arr, dist_arr = distances.capped_distance(sphere_temp, sys[sys_mask], d, box=cell)                                     # Distance between voxel-centers and system atoms
 
@@ -195,6 +204,7 @@ def iDist(frame):
 
 
 
+    # Clustering analysis
     # Only consider free volume spheres of radius r >= probe_radius that are within the desired domain.
     #   Free volume spheres outside of the desired domain are demoted from free volume spheres of radius r >= probe_radius to free volume voxels
     #       Free volume voxels are still considered in the FFV and PSD analysis.
@@ -203,12 +213,13 @@ def iDist(frame):
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
             time_Cluster = time.perf_counter()
             print('\n##### Performing Clustering Analysis - Percolated/Solvent-Domain #####')
+
         # Create an interconnected graph lattice of the voxelized system, where voxels are associated to each other through their 6 3x3x3 cube-face-center neighbors
         if args.clustering == 'Neumann':
             # Only calculate out half of the neighbors per voxel to prevent double-counting
             Neighborhood = np.array([[1, 0, 0],                                                                                                 #Neighborhood = np.array([[1, 0, 0], [-1, 0, 0],
-                                     [0, 1, 0],                                                                                                 #                         [0, 1, 0], [0, -1, 0],
-                                     [0, 0, 1]], dtype=linear_type)                                                                             #                         [0, 0, 1], [0, 0, -1]], dtype=linear_type)
+                                     [0, 1, 0],                                                                                                 #                         [0, 1, 0], [ 0,-1, 0],
+                                     [0, 0, 1]], dtype=linear_type)                                                                             #                         [0, 0, 1], [ 0, 0,-1]], dtype=linear_type)
         # Create an interconnected graph lattice of the voxelized system, where voxels are associated to each other through their 26 3x3x3 cube neighbors
         elif args.clustering == 'Moore':
             # Only calculate out half of the neighbors per voxel to prevent double-counting
@@ -229,7 +240,7 @@ def iDist(frame):
 
         # Retrieve index of all free volume spheres of radius r >= probe_radius and linearize their indices for use in the cluster graph analysis
         radii_arr = radii_arr.ravel()
-        Graph_radii = radii_arr >= args.probe_radius                                                                                                 # Linearized free volume sphere radii
+        Graph_radii = radii_arr >= args.probe_radius                                                                                            # Linearized free volume sphere radii
 
         # For efficiency, we limit the number of edges generated per loop
         count = 0
@@ -254,7 +265,7 @@ def iDist(frame):
                 G.add_edges(np.stack((
                                            Graph_idx[Graph_radii[edge_Graph_idx]],
                                       edge_Graph_idx[Graph_radii[edge_Graph_idx]]
-                                                                                              ), axis=1, dtype=linear_type))
+                                                                                 ), axis=1, dtype=linear_type))
 
         clusters = G.components()
         membership = np.array(clusters.membership, dtype=linear_type)
@@ -268,11 +279,11 @@ def iDist(frame):
             if args.solvent_name == 'percolated':
                 if i == 0:
                     # Remove all free volume voxels not within the largest cluster, i.e., id(i == 0)
-                    radii_arr[np.where(membership != id)[0]] = args.probe_radius/2                                                                 # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
+                    radii_arr[np.where(membership != id)[0]] = args.probe_radius/2                                                              # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
                     break
             # Only analyze free volume sphere (radius r >= probe_radius) clusters within the solvent domain
             else:
-                clust = np.where(membership == id)[0]                                                                                         # Linearized indices
+                clust = np.where(membership == id)[0]                                                                                           # Linearized indices
                 
                 # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_PSD_temp distance calculations
                 count = 0
@@ -312,7 +323,7 @@ def iDist(frame):
                     continue
         
                 # All other clusters are removed from the free volume sphere analysis.
-                radii_arr[clust] = args.probe_radius/2                                                                                               # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
+                radii_arr[clust] = args.probe_radius/2                                                                                          # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_Cluster = time.perf_counter() - time_Cluster
         radii_arr = radii_arr.reshape((l_x, l_y, l_z)); max_radius = np.max(radii_arr); max_diameter = 2*max_radius
         del sol; del membership; del cluster_ids
@@ -335,7 +346,7 @@ def iDist(frame):
             print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
             for i in range(len(idx_x)):
                 x = vox_x[idx_x[i]]; y = vox_y[idx_y[i]]; z = vox_z[idx_z[i]]; r = radii_arr[idx_x[i],idx_y[i],idx_z[i]]
-                if '.xyz' in args.trj_file:
+                if args.mode == 'xyz':
                     print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x, y, z, r), file=anaout)
                 else:
                     print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x - cell[0]/2, y - cell[1]/2, z - cell[2]/2, r), file=anaout)
@@ -346,6 +357,7 @@ def iDist(frame):
 
 
 
+    # PSD/FFV analysis
     # This part of the calculation determines the free volume fraction and cumulative probe-occupiable pore size distribution, where the distribution is defined as the probability that a random point (voxel) within the free volume resides within a free volume sphere of diameter d with minimum size probe_radius
     # This code will take each voxel not within the system volume (PSD_probes) and determine 1) if it lies within the free volume (FFV), and 2) the largest free volume sphere it lies within (PSD)
     # Changing L_voxel, target_writes_low, target_writes_low, and d_step can reduce run time and memory usage
@@ -364,6 +376,7 @@ def iDist(frame):
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
         time_PSD = time.perf_counter()
         print('\n##### Performing PSD/FFV Analysis #####\n')
+
     # Starting from the largest free volume spheres, find all free volume voxels within the desired free volume domain for FFV and PSD calulcations
     N_calc_PSD_temp = args.N_calc_PSD; cycle = 0; err = np.inf; N_rand = int(np.ceil((l_x * l_y * l_z) * args.rand_frac)); PSD_Old = np.zeros_like(PSD_arr)
     while err > args.tol and len(PSD_probes) != 0:
@@ -409,7 +422,7 @@ def iDist(frame):
 
                 sph_temp = sphere_temp[count_old:count]; rad_temp = radii_temp[count_old:count]
 
-                pair_arr, dist_arr = distances.capped_distance(sph_temp, np.stack((                                                                 # Distance between free volume spheres and voxel-centers
+                pair_arr, dist_arr = distances.capped_distance(sph_temp, np.stack((                                                             # Distance between free volume spheres and voxel-centers
                                                                                    vox_x[PSD_temp[:,0]],
                                                                                    vox_y[PSD_temp[:,1]], 
                                                                                    vox_z[PSD_temp[:,2]]
@@ -430,12 +443,12 @@ def iDist(frame):
                     N_calc_PSD_temp /= 2
 
                 if len(dist_arr) > 0:
-                    dist_arr -= rad_temp[pair_arr[:,0]]                                                                                             # Subtract radius of each free volume sphere from the distance to get the distance from the voxel-center to the surface of the free volume sphere
-                    pair_arr = np.unique(pair_arr[:,1][dist_arr < 0])                                                                               # Only consider voxel-centers that lie within the free volume sphere (adjusted distance < 0), and only count each occurence once (unique)
+                    dist_arr -= rad_temp[pair_arr[:,0]]                                                                                         # Subtract radius of each free volume sphere from the distance to get the distance from the voxel-center to the surface of the free volume sphere
+                    pair_arr = np.unique(pair_arr[:,1][dist_arr < 0])                                                                           # Only consider voxel-centers that lie within the free volume sphere (adjusted distance < 0), and only count each occurence once (unique)
 
-                    FFV_track += len(pair_arr); PSD_arr[np.where(d_arr < d)[0]] += len(pair_arr)                                                    # Voxel-centers w/n free volume sphere count towards the FFV and cumulatively towards the PSD
+                    FFV_track += len(pair_arr); PSD_arr[np.where(d_arr < d)[0]] += len(pair_arr)                                                # Voxel-centers w/n free volume sphere count towards the FFV and cumulatively towards the PSD
 
-                    FFV_save = np.append(FFV_save, PSD_temp[pair_arr], axis=0)                                                                    # Save free volume voxel-centers for printing
+                    FFV_save = np.append(FFV_save, PSD_temp[pair_arr], axis=0)                                                                  # Save free volume voxel-centers for printing
                     d_save = np.append(d_save, np.zeros((len(pair_arr)), dtype=int) + int(d/args.d_step))
 
                     PSD_temp = np.delete(PSD_temp, pair_arr, axis=0)                                                                            # No longer consider voxel-centers that are found within a free volume sphere in future loops (prevent double-counting)
@@ -473,7 +486,7 @@ def iDist(frame):
             print('Properties=species:S:1:pos:R:3:Radius:R:1:Alpha:R:1', file=anaout)
             for i, sph in enumerate(FFV_save):
                 x = vox_x[sph[0]]; y = vox_y[sph[1]]; z = vox_z[sph[2]]; r = args.L_voxel/2; a = d_arr[d_save[i]]
-                if '.xyz' in args.trj_file:
+                if args.mode == 'xyz':
                     print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x, y, z, r, a), file=anaout)
                 else:
                     print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x - cell[0]/2, y - cell[1]/2, z - cell[2]/2, r, a), file=anaout)
@@ -484,22 +497,24 @@ def iDist(frame):
 
 
 
+    # SA analysis
     if cycle == int(np.ceil(1/args.rand_frac)):
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
             time_SA = time.perf_counter()
             print('\n##### Performing SA Analysis #####\n')
-        # Create a simple voronoi surface around the free volume and calculate the surface area
-        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True; del FFV_save                    # Create voxel lattice where free volume voxel-centers = True
-        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                       # Add 1 layer of wrapped coordinates around the array to prevent counting of surface "caps" in surface area
-        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                       # Define voxel size to dimensionalize surface area calulcations
-        pad = np.append(0*spacing, (np.array(SA_arr.shape) - 1)*spacing)                                                                            # Information to remove the padding later
 
-        verts, faces, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                         # Marching cubes algorithm to create voronoi surface
-        padv = np.where(np.sum(np.isin(verts, pad), axis=1) > 0)[0]                                                                                 # Find padding vertices
-        padf = np.where(np.sum(np.isin(faces, padv), axis=1) == 0)[0]                                                                               # Remove padded faces
+        # Create a simple mesh surface around the free volume and calculate the surface area
+        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True; del FFV_save                # Create voxel lattice where free volume voxel-centers = True
+        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to prevent counting of surface "caps" in surface area
+        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
+        pad = np.append(0*spacing, (np.array(SA_arr.shape) - 1)*spacing)                                                                        # Information to remove the padding later
+
+        verts, faces, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                     # Marching cubes algorithm to create voronoi surface
+        padv = np.where(np.sum(np.isin(verts, pad), axis=1) > 0)[0]                                                                             # Find padding vertices
+        padf = np.where(np.sum(np.isin(faces, padv), axis=1) == 0)[0]                                                                           # Remove padded faces
         faces = faces[padf]
 
-        SA = measure.mesh_surface_area(verts, faces)                                                                                                # Calculate the surface area of the free volume
+        SA = measure.mesh_surface_area(verts, faces)                                                                                            # Calculate the surface area of the free volume
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_SA = time.perf_counter() - time_SA
 
         # Code to print the surface area for the last frame analyzed
@@ -515,7 +530,7 @@ def iDist(frame):
                 print(str(len(verts)), file=anaout)
                 print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
                 for i, sph in enumerate(verts):
-                    if '.xyz' in args.trj_file:
+                    if args.mode == 'xyz':
                         print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
                     else:
                         print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
@@ -528,7 +543,7 @@ def iDist(frame):
 
 
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-        print("##### Summary of Calculation Times#####")
+        print("##### Summary of Calculation Times #####")
         print(f"Time free volume spheres: {time_Spheres:.2f} s")
         if (args.solvent_name == 'percolated') or (N_sol > 0):
             print(f"Time cluster: {time_Cluster:.2f} s")
@@ -598,8 +613,7 @@ def load_trr():
     # Print out system atom information
     print("Element N-in-System")
     for i,j in enumerate(sys_count):
-        if j > 0:
-            print("{:>7s} {:11d}".format(Size_arr[i,0], j))
+        if j > 0: print("{:>7s} {:11d}".format(Size_arr[i,0], j))
     
     if len(solvent) > 0:
         print("\nSOLVENT ATOMS")
@@ -635,16 +649,15 @@ def load_trr():
 
     # Define the system times/frames to be calculated over
     print()
-    if '.gro' in args.trj_file or '.xyz' in args.trj_file:
+    if args.mode == 'xyz' or '.gro' in args.trj_file:
         frame_ids = np.array([0], dtype=int)
     else:
-        if args.t_min == -1:
-            args.t_min = uta.trajectory[0].time
-        if args.t_max == -1:
-            args.t_max = uta.trajectory[-1].time
-        if args.N_frames == -1:
-            args.N_frames = args.N_threads
+        if args.t_min == -1:    args.t_min    = uta.trajectory[0].time
+        if args.t_max == -1:    args.t_max    = uta.trajectory[-1].time
+        if args.N_frames == -1: args.N_frames = args.N_threads
+
         dt = np.round((uta.trajectory[1].time - uta.trajectory[0].time),3)
+
         if args.N_frames == 1:
             frame_ids = np.array([int((args.t_max - uta.trajectory[0].time)/dt)], dtype=int)
         else:
@@ -653,20 +666,22 @@ def load_trr():
     print("Number of frames: " + str(len(frame_ids)))
 
     # Load in the necessary data: "system" atom positions, "solvent" atom positions, cell dimensions
-    r_system = np.zeros((len(frame_ids), len(system), 3), dtype=float_type); r_solvent = np.zeros((len(frame_ids), len(solvent), 3), dtype=float_type); cells = np.zeros((len(frame_ids), 6))
+    r_system = np.zeros((len(frame_ids), len(system), 3), dtype=float_type)
+    r_solvent = np.zeros((len(frame_ids), len(solvent), 3), dtype=float_type)
+    cells = np.zeros((len(frame_ids), 6))
     for i, frame in enumerate(frame_ids):
         ts = uta.trajectory[frame]
 
         r_system[i] = system.positions
         r_solvent[i] = solvent.positions
 
-        if '.xyz' in args.trj_file:
+        if args.mode == 'xyz':
             cells[i] = cell
         else:
             cell = ts.dimensions
             cells[i] = cell
 
-    # Save necessary infomration to a temporary .hdf5 file for later use in the calculation
+    # Save necessary information to a temporary .hdf5 file for later use in the calculation
     with h5py.File('PrO-VAT.hdf5','w') as f:
         dset1 = f.create_dataset("system", data=r_system, dtype=float_type)
         dset2 = f.create_dataset("sys_radii", data = sys_radii, dtype=float_type)
@@ -695,7 +710,7 @@ def main():
     # Perform the analysis using multiprocessing
     try:
         pool = mp.Pool(processes=args.N_threads)
-        func = functools.partial(iDist)
+        func = functools.partial(volume_analysis)
         out_arr = pool.map(func, list(frame_ids))
         pool.close()
         pool.join()
@@ -745,7 +760,7 @@ def readable_file(path):
     """Check if a path exists and is a file."""
     if not os.path.isfile(path):
         raise argparse.ArgumentTypeError(f"The file '{path}' does not exist.")
-    if not os.access(path, os.R_OK):
+    elif not os.access(path, os.R_OK):
         raise argparse.ArgumentTypeError(f"The file '{path}' is not readable.")
     return path
 
@@ -756,6 +771,7 @@ def loadArgs():
     config_parser = argparse.ArgumentParser(add_help=False)
     config_parser.add_argument('yaml_file', type = readable_file)
 
+    # Add helpful error message if YAML file is not provided
     try:
         args, remaining_argv = config_parser.parse_known_args()
     except:
@@ -773,7 +789,7 @@ def loadArgs():
     subparsers = parser.add_subparsers(dest="mode", help = "Input file mode", required=True)
 
     ## SUBPARSER 1: For .xyz files
-    xyz_parser = subparsers.add_parser('xyz', help = "Process PoreBlazer-style xyz/dat file")
+    xyz_parser = subparsers.add_parser('xyz', help = "Process PoreBlazer-style xyz + dat trajectory files")
     ### GROUP 1: Required input files
     xyz_files = xyz_parser.add_argument_group('Required input files')
     xyz_files.add_argument('trj_file', type = readable_file,
@@ -882,10 +898,8 @@ def loadArgs():
     args = parser.parse_args(remaining_argv)
 
     if args.mode == 'gmx' and '.gro' in args.trj_file:
-        if args.N_threads != 1:
-            parser.error("gro file inputs require N_threads = 1")
-        if args.N_frames != 1 and args.N_frames != -1:
-            parser.error("gro file inputs require N_frames = 1")
+        if args.N_threads != 1:                        parser.error("gro file inputs require N_threads = 1")
+        if args.N_frames != 1 and args.N_frames != -1: parser.error("gro file inputs require N_frames = 1")
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)
@@ -901,23 +915,16 @@ if __name__ == "__main__":
     print('########### Input Parameters ###########')
     print('########################################\n')
     for key, value in vars(args).items():
-        if 'mode' in key:
-            print('    ############# Mode #############')
-        elif 'trj_file' in key:
-            print('\n    ### Files and Run Parameters ###')
-        elif 'system_name' in key:
-            print('\n    ######## System/Solvent ########')
-        elif 'L_voxel' in key:
-            print('\n    ########## Variables ###########')
-        elif 'clustering' in key:
-            print('\n    #### Efficiency Parameters #####')
+        if 'mode' in key:          print(  '    ############# Mode #############')
+        elif 'trj_file' in key:    print('\n    ### Files and Run Parameters ###')
+        elif 'system_name' in key: print('\n    ######## System/Solvent ########')
+        elif 'L_voxel' in key:     print('\n    ########## Variables ###########')
+        elif 'clustering' in key:  print('\n    #### Efficiency Parameters #####')
 
-        if '_calc' in key or '_write' in key or 'target_' in key or '_gen' in key:
-            print(f"    {key:18}: {value:.0e}")
-        else:
-            print(f"    {key:18}: {value}")
+        if '_calc' in key or '_write' in key or 'target_' in key or '_gen' in key: print(f"    {key:18}: {value:.0e}")
+        else:                                                                      print(f"    {key:18}: {value}")
     print('\n########################################')
-    print('########################################')
-    print('########################################\n')
+    print(  '########################################')
+    print(  '########################################\n')
 
     main()
