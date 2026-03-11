@@ -853,7 +853,7 @@ def loadArgs():
                              help = "Start time (ps) [default = YAML]")
     traj_frames.add_argument('-e', '--t_max', type = float, default = config['t_max'],
                              help = "End time (ps) [default = YAML]")
-    traj_frames.add_argument('-f', '--N_frames', type = int, default = config['N_frames'],
+    traj_frames.add_argument('-n', '--N_frames', type = int, default = config['N_frames'],
                              help = "Number of frames to analyze [default = YAML]")
     traj_frames.add_argument('-t', '--N_threads', type = int, default = config['N_threads'],
                              help = "Number of threads for parallelization [default = YAML]")
