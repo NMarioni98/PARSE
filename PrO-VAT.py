@@ -316,7 +316,6 @@ def volume_analysis(frame):
                     # If any solvent molecules are found within the free volume sphere cluster, analysis can end early
                     if len(dist_arr) != 0:
                         count = len(clust)
-                del pair_arr; del dist_arr; del idx_x; del idx_y; del idx_z
         
                 # If any solvent atoms are within probe_radius of a free volume sphere, then the entire cluster is considered a part of the solvent domain
                 if len(dist_arr) != 0:
@@ -326,7 +325,7 @@ def volume_analysis(frame):
                 radii_arr[clust] = args.probe_radius/2                                                                                          # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_Cluster = time.perf_counter() - time_Cluster
         radii_arr = radii_arr.reshape((l_x, l_y, l_z)); max_radius = np.max(radii_arr); max_diameter = 2*max_radius
-        del sol; del membership; del cluster_ids
+        del pair_arr; del dist_arr; del idx_x; del idx_y; del idx_z; del sol; del membership; del cluster_ids
 
         # Useful print command for troubleshooting problems
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
