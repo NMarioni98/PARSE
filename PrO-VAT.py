@@ -498,7 +498,7 @@ def volume_analysis(frame):
 
 
     # SA analysis
-    if cycle == int(np.ceil(1/args.rand_frac)):
+    if cycle == int(np.ceil(1/args.rand_frac)) and args.Voxel_dist == 'Uniform':
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
             time_SA = time.perf_counter()
             print('\n##### Performing SA Analysis #####\n')

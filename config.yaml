@@ -61,7 +61,7 @@ d_step: 0.25
 
 # Voxel distribution can be 'Uniform' (a set grid where all voxels are evenly spaced) or 'Random' (voxels are pseudo-randomly offset from their uniform center)
 #     'Random' should be used when analyzing multiple frames over a single trajectory, or if performing multiple analyses on the same frame
-#     NOTE: SA calculation treats voxels as Uniform
+#     NOTE: SA calculation requires a 'Uniform' distribution
 #     Can overwite when calling PrO-VAT.py using --Voxel_dist
 Voxel_dist: 'Random'
 
