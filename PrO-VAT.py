@@ -509,7 +509,7 @@ def volume_analysis(frame):
         spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
         pad = np.append(0*spacing, (np.array(SA_arr.shape) - 1)*spacing)                                                                        # Information to remove the padding later
 
-        verts, faces, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                     # Marching cubes algorithm to create voronoi surface
+        verts, faces, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                     # Marching cubes algorithm to create a surface mesh
         padv = np.where(np.sum(np.isin(verts, pad), axis=1) > 0)[0]                                                                             # Find padding vertices
         padf = np.where(np.sum(np.isin(faces, padv), axis=1) == 0)[0]                                                                           # Remove padded faces
         faces = faces[padf]
@@ -934,3 +934,4 @@ if __name__ == "__main__":
 
 
     main()
+
