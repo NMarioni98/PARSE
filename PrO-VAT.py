@@ -279,12 +279,18 @@ def volume_analysis(frame):
             if args.solvent_name == 'percolated':
                 if i == 0:
                     # Remove all free volume voxels not within the largest cluster, i.e., id(i == 0)
-                    radii_arr[np.where(membership != id)[0]] = args.probe_radius/2                                                              # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
+                    radii_arr[(membership != id) & (radii_arr >= args.probe_radius)] = args.probe_radius/2                                      # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
                     break
             # Only analyze free volume sphere (radius r >= probe_radius) clusters within the solvent domain
             else:
                 clust = np.where(membership == id)[0]                                                                                           # Linearized indices
-                
+
+                # Clusters containing 1 free volume sphere are assumed to NOT contain solvent
+                #  - Significantly reduces compute time
+                if len(clust) == 1:
+                    radii_arr[np.isin(membership, cluster_ids[i:]) & (radii_arr >= args.probe_radius)] = args.probe_radius/2                    # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
+                    break
+
                 # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_PSD_temp distance calculations
                 count = 0
                 while count < len(clust):
@@ -325,7 +331,7 @@ def volume_analysis(frame):
                 radii_arr[clust] = args.probe_radius/2                                                                                          # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_Cluster = time.perf_counter() - time_Cluster
         radii_arr = radii_arr.reshape((l_x, l_y, l_z)); max_radius = np.max(radii_arr); max_diameter = 2*max_radius
-        del pair_arr; del dist_arr; del idx_x; del idx_y; del idx_z; del sol; del membership; del cluster_ids
+        del sol; del membership; del cluster_ids
 
         # Useful print command for troubleshooting problems
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
@@ -536,11 +542,12 @@ def volume_analysis(frame):
             print('Free volume surface xyz file printed\n')
     else:
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-            print('Surface area calculation not performed.')
+            print('\nSurface area calculation not performed.')
             if args.Voxel_dist != 'Uniform':
                 print("    Set --Voxel_dist == 'Uniform'")
             if cycle != int(np.ceil(1/args.rand_frac)):
                 print("    Set --tol == -1")
+            print()
         SA = 0
     
 
