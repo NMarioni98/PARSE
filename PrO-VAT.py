@@ -554,7 +554,7 @@ def volume_analysis(frame):
         if (args.solvent_name == 'percolated') or (N_sol > 0):
             print(f"Time cluster: {time_Cluster:.2f} s")
         print(f"Time PSD/FFV: {time_PSD:.2f} s")
-        if cycle == int(np.ceil(1/args.rand_frac)):
+        if cycle == int(np.ceil(1/args.rand_frac)) and args.Voxel_dist == 'Uniform':
             print(f"Time SA: {time_SA:.2f} s")
     
 
