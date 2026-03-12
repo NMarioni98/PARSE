@@ -315,7 +315,7 @@ def volume_analysis(frame):
         
                     # If any solvent molecules are found within the free volume sphere cluster, analysis can end early
                     if len(dist_arr) != 0:
-                        count = len(clust)
+                        break
         
                 # If any solvent atoms are within probe_radius of a free volume sphere, then the entire cluster is considered a part of the solvent domain
                 if len(dist_arr) != 0:
