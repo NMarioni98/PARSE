@@ -536,11 +536,12 @@ def volume_analysis(frame):
                         print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
             print('Free volume surface xyz file printed\n')
     else:
-        print('Surface area calculation not performed.')
-        if args.Voxel_dist != 'Uniform':
-            print("    Set --Voxel_dist == 'Uniform'")
-        if cycle != int(np.ceil(1/args.rand_frac)):
-            print("    Set --tol == -1")
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            print('Surface area calculation not performed.')
+            if args.Voxel_dist != 'Uniform':
+                print("    Set --Voxel_dist == 'Uniform'")
+            if cycle != int(np.ceil(1/args.rand_frac)):
+                print("    Set --tol == -1")
         SA = 0
     
 
