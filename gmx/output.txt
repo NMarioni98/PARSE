@@ -111,7 +111,7 @@ Trajectory loaded, terminating process. Run again to perform analysis
 
 PSD Analysis
 
-Frame 0
+Frame 0/1
 ##### Generating Free Volume Spheres #####
 
 Number of voxels-per-cube:  85184
@@ -166,16 +166,16 @@ Distance, calculations, writes: 4.0 6.2e+08 1.6e+05
 Distance, calculations, writes: 6.0 1.0e+08 3.4e+04
 Distance, calculations, writes: 8.0 8.6e+06 3.0e+03
 
-Maximum pore diameter:  15.137333628568811
+Maximum pore diameter: 15.14
 Number of free volume spheres (r >= probe_radius):  80000
 Number of free volume voxels (r > 0):  370515
-Time free volume spheres: 4.36 s
+Time free volume spheres: 4.72 s
 
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
 
-Maximum pore diameter:  15.137333628568811
+Maximum pore diameter: 15.14
 Number of free volume spheres (r >= probe_radius) within the percolated domain:  78323
-Time cluster: 0.15 s
+Time cluster: 0.18 s
 
 Free volume sphere xyz file printed
 
@@ -187,277 +187,277 @@ PSD Cycle:     2/100
 Maximum Error: 1.0e+00
 
 PSD Cycle:     3/100
-Maximum Error: 5.0e-01
+Maximum Error: 7.5e-01
 
 PSD Cycle:     4/100
-Maximum Error: 3.5e-01
+Maximum Error: 3.4e-01
 
 PSD Cycle:     5/100
-Maximum Error: 3.8e-01
+Maximum Error: 2.5e-01
 
 PSD Cycle:     6/100
-Maximum Error: 2.1e-01
+Maximum Error: 2.0e-01
 
 PSD Cycle:     7/100
-Maximum Error: 1.7e-01
+Maximum Error: 2.2e-01
 
 PSD Cycle:     8/100
-Maximum Error: 1.5e-01
+Maximum Error: 2.4e-01
 
 PSD Cycle:     9/100
-Maximum Error: 1.2e-01
+Maximum Error: 1.8e-01
 
 PSD Cycle:    10/100
-Maximum Error: 1.1e-01
+Maximum Error: 1.7e-01
 
 PSD Cycle:    11/100
-Maximum Error: 1.3e-01
+Maximum Error: 3.0e-01
 
 PSD Cycle:    12/100
-Maximum Error: 9.1e-02
+Maximum Error: 2.0e-01
 
 PSD Cycle:    13/100
-Maximum Error: 1.0e-01
+Maximum Error: 8.6e-02
 
 PSD Cycle:    14/100
 Maximum Error: 1.4e-01
 
 PSD Cycle:    15/100
-Maximum Error: 1.6e-01
+Maximum Error: 8.7e-02
 
 PSD Cycle:    16/100
-Maximum Error: 6.8e-02
-
-PSD Cycle:    17/100
-Maximum Error: 6.2e-02
-
-PSD Cycle:    18/100
-Maximum Error: 1.5e-01
-
-PSD Cycle:    19/100
-Maximum Error: 2.0e-01
-
-PSD Cycle:    20/100
-Maximum Error: 7.8e-02
-
-PSD Cycle:    21/100
 Maximum Error: 1.1e-01
 
-PSD Cycle:    22/100
-Maximum Error: 5.1e-02
+PSD Cycle:    17/100
+Maximum Error: 6.3e-02
 
-PSD Cycle:    23/100
-Maximum Error: 4.4e-02
+PSD Cycle:    18/100
+Maximum Error: 8.5e-02
 
-PSD Cycle:    24/100
-Maximum Error: 6.6e-02
+PSD Cycle:    19/100
+Maximum Error: 7.4e-02
 
-PSD Cycle:    25/100
-Maximum Error: 5.3e-02
+PSD Cycle:    20/100
+Maximum Error: 9.8e-02
 
-PSD Cycle:    26/100
-Maximum Error: 3.9e-02
-
-PSD Cycle:    27/100
-Maximum Error: 5.3e-02
-
-PSD Cycle:    28/100
-Maximum Error: 7.5e-02
-
-PSD Cycle:    29/100
-Maximum Error: 6.5e-02
-
-PSD Cycle:    30/100
-Maximum Error: 4.4e-02
-
-PSD Cycle:    31/100
-Maximum Error: 3.4e-02
-
-PSD Cycle:    32/100
+PSD Cycle:    21/100
 Maximum Error: 5.0e-02
 
-PSD Cycle:    33/100
-Maximum Error: 5.9e-02
-
-PSD Cycle:    34/100
-Maximum Error: 5.1e-02
-
-PSD Cycle:    35/100
-Maximum Error: 5.5e-02
-
-PSD Cycle:    36/100
+PSD Cycle:    22/100
 Maximum Error: 4.6e-02
 
-PSD Cycle:    37/100
-Maximum Error: 6.9e-02
-
-PSD Cycle:    38/100
-Maximum Error: 9.4e-02
-
-PSD Cycle:    39/100
-Maximum Error: 4.0e-02
-
-PSD Cycle:    40/100
-Maximum Error: 1.3e-01
-
-PSD Cycle:    41/100
-Maximum Error: 3.5e-02
-
-PSD Cycle:    42/100
-Maximum Error: 5.2e-02
-
-PSD Cycle:    43/100
-Maximum Error: 3.6e-02
-
-PSD Cycle:    44/100
-Maximum Error: 2.3e-02
-
-PSD Cycle:    45/100
-Maximum Error: 3.1e-02
-
-PSD Cycle:    46/100
-Maximum Error: 2.3e-02
-
-PSD Cycle:    47/100
-Maximum Error: 2.1e-02
-
-PSD Cycle:    48/100
-Maximum Error: 2.1e-02
-
-PSD Cycle:    49/100
-Maximum Error: 2.9e-02
-
-PSD Cycle:    50/100
-Maximum Error: 2.0e-02
-
-PSD Cycle:    51/100
-Maximum Error: 2.1e-02
-
-PSD Cycle:    52/100
-Maximum Error: 2.5e-02
-
-PSD Cycle:    53/100
+PSD Cycle:    23/100
 Maximum Error: 4.8e-02
 
-PSD Cycle:    54/100
+PSD Cycle:    24/100
+Maximum Error: 6.3e-02
+
+PSD Cycle:    25/100
+Maximum Error: 5.6e-02
+
+PSD Cycle:    26/100
+Maximum Error: 1.3e-01
+
+PSD Cycle:    27/100
+Maximum Error: 4.0e-02
+
+PSD Cycle:    28/100
+Maximum Error: 7.8e-02
+
+PSD Cycle:    29/100
+Maximum Error: 3.5e-02
+
+PSD Cycle:    30/100
+Maximum Error: 6.9e-02
+
+PSD Cycle:    31/100
+Maximum Error: 3.6e-02
+
+PSD Cycle:    32/100
+Maximum Error: 6.1e-02
+
+PSD Cycle:    33/100
+Maximum Error: 9.1e-02
+
+PSD Cycle:    34/100
+Maximum Error: 7.7e-02
+
+PSD Cycle:    35/100
+Maximum Error: 2.9e-02
+
+PSD Cycle:    36/100
+Maximum Error: 2.9e-02
+
+PSD Cycle:    37/100
+Maximum Error: 2.8e-02
+
+PSD Cycle:    38/100
+Maximum Error: 2.8e-02
+
+PSD Cycle:    39/100
+Maximum Error: 4.5e-02
+
+PSD Cycle:    40/100
+Maximum Error: 2.5e-02
+
+PSD Cycle:    41/100
+Maximum Error: 4.8e-02
+
+PSD Cycle:    42/100
+Maximum Error: 2.5e-02
+
+PSD Cycle:    43/100
+Maximum Error: 2.3e-02
+
+PSD Cycle:    44/100
+Maximum Error: 6.6e-02
+
+PSD Cycle:    45/100
+Maximum Error: 2.3e-02
+
+PSD Cycle:    46/100
 Maximum Error: 2.1e-02
 
-PSD Cycle:    55/100
+PSD Cycle:    47/100
+Maximum Error: 2.3e-02
+
+PSD Cycle:    48/100
+Maximum Error: 3.4e-02
+
+PSD Cycle:    49/100
+Maximum Error: 5.6e-02
+
+PSD Cycle:    50/100
+Maximum Error: 5.1e-02
+
+PSD Cycle:    51/100
+Maximum Error: 1.9e-02
+
+PSD Cycle:    52/100
+Maximum Error: 1.9e-02
+
+PSD Cycle:    53/100
+Maximum Error: 1.9e-02
+
+PSD Cycle:    54/100
 Maximum Error: 3.1e-02
 
+PSD Cycle:    55/100
+Maximum Error: 2.0e-02
+
 PSD Cycle:    56/100
-Maximum Error: 5.5e-02
+Maximum Error: 2.4e-02
 
 PSD Cycle:    57/100
-Maximum Error: 1.7e-02
+Maximum Error: 3.0e-02
 
 PSD Cycle:    58/100
-Maximum Error: 1.8e-02
+Maximum Error: 5.0e-02
 
 PSD Cycle:    59/100
-Maximum Error: 1.7e-02
+Maximum Error: 2.7e-02
 
 PSD Cycle:    60/100
-Maximum Error: 1.7e-02
+Maximum Error: 2.2e-02
 
 PSD Cycle:    61/100
-Maximum Error: 1.7e-02
+Maximum Error: 1.6e-02
 
 PSD Cycle:    62/100
-Maximum Error: 4.7e-02
+Maximum Error: 1.7e-02
 
 PSD Cycle:    63/100
-Maximum Error: 1.5e-02
+Maximum Error: 2.5e-02
 
 PSD Cycle:    64/100
 Maximum Error: 1.6e-02
 
 PSD Cycle:    65/100
-Maximum Error: 1.5e-02
+Maximum Error: 1.6e-02
 
 PSD Cycle:    66/100
-Maximum Error: 4.1e-02
+Maximum Error: 1.5e-02
 
 PSD Cycle:    67/100
 Maximum Error: 1.5e-02
 
 PSD Cycle:    68/100
-Maximum Error: 3.6e-02
+Maximum Error: 1.5e-02
 
 PSD Cycle:    69/100
-Maximum Error: 1.4e-02
+Maximum Error: 4.5e-02
 
 PSD Cycle:    70/100
-Maximum Error: 3.6e-02
+Maximum Error: 1.4e-02
 
 PSD Cycle:    71/100
-Maximum Error: 2.3e-02
+Maximum Error: 1.4e-02
 
 PSD Cycle:    72/100
-Maximum Error: 1.7e-02
+Maximum Error: 1.9e-02
 
 PSD Cycle:    73/100
-Maximum Error: 1.1e-02
+Maximum Error: 2.0e-02
 
 PSD Cycle:    74/100
-Maximum Error: 1.1e-02
+Maximum Error: 1.4e-02
 
 PSD Cycle:    75/100
-Maximum Error: 1.3e-02
+Maximum Error: 3.4e-02
 
 PSD Cycle:    76/100
-Maximum Error: 1.3e-02
+Maximum Error: 2.0e-02
 
 PSD Cycle:    77/100
-Maximum Error: 1.3e-02
+Maximum Error: 3.7e-02
 
 PSD Cycle:    78/100
-Maximum Error: 2.1e-02
+Maximum Error: 1.3e-02
 
 PSD Cycle:    79/100
-Maximum Error: 1.3e-02
+Maximum Error: 1.6e-02
 
 PSD Cycle:    80/100
-Maximum Error: 1.3e-02
+Maximum Error: 3.0e-02
 
 PSD Cycle:    81/100
 Maximum Error: 1.2e-02
 
 PSD Cycle:    82/100
-Maximum Error: 1.2e-02
-
-PSD Cycle:    83/100
-Maximum Error: 2.0e-02
-
-PSD Cycle:    84/100
-Maximum Error: 1.2e-02
-
-PSD Cycle:    85/100
-Maximum Error: 1.2e-02
-
-PSD Cycle:    86/100
 Maximum Error: 2.8e-02
 
-PSD Cycle:    87/100
+PSD Cycle:    83/100
+Maximum Error: 5.1e-02
+
+PSD Cycle:    84/100
+Maximum Error: 1.5e-02
+
+PSD Cycle:    85/100
+Maximum Error: 5.7e-02
+
+PSD Cycle:    86/100
 Maximum Error: 1.2e-02
 
-PSD Cycle:    88/100
-Maximum Error: 2.0e-02
-
-PSD Cycle:    89/100
-Maximum Error: 1.4e-02
-
-PSD Cycle:    90/100
+PSD Cycle:    87/100
 Maximum Error: 1.1e-02
 
+PSD Cycle:    88/100
+Maximum Error: 1.1e-02
+
+PSD Cycle:    89/100
+Maximum Error: 1.2e-02
+
+PSD Cycle:    90/100
+Maximum Error: 2.2e-02
+
 PSD Cycle:    91/100
-Maximum Error: 9.8e-03
+Maximum Error: 1.1e-02
 
 PSD Cycle:    92/100
 Maximum Error: 1.1e-02
 
 PSD Cycle:    93/100
-Maximum Error: 1.5e-02
+Maximum Error: 1.0e-02
 
 PSD Cycle:    94/100
 Maximum Error: 1.1e-02
@@ -466,36 +466,37 @@ PSD Cycle:    95/100
 Maximum Error: 1.1e-02
 
 PSD Cycle:    96/100
-Maximum Error: 1.1e-02
+Maximum Error: 1.5e-02
 
 PSD Cycle:    97/100
-Maximum Error: 1.1e-02
-
-PSD Cycle:    98/100
-Maximum Error: 1.0e-02
-
-PSD Cycle:    99/100
 Maximum Error: 1.6e-02
 
-PSD Cycle:   100/100
+PSD Cycle:    98/100
+Maximum Error: 1.9e-02
+
+PSD Cycle:    99/100
 Maximum Error: 1.0e-02
 
-FFV:  0.2575542355371901 175516 681472
+PSD Cycle:   100/100
+Maximum Error: 9.9e-03
 
-PSD Final:  175516
-1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.98839 0.96677 0.92741 0.90051 0.87266 0.85597 0.8105 0.77404 0.73027 0.68568 0.64542 0.61692 0.58025 0.54706 0.51037 0.47212 0.43725 0.4026 0.36433 0.33102 0.302 0.27289 0.24323 0.22108 0.20294 0.16878 0.15556 0.13987 0.12717 0.11222 0.10421 0.09084 0.07542 0.05619 0.04796 0.04453 0.03597 0.03144 0.02492 0.01768 0.01671 0.016 0.01315 0.01248 0.01109 0.0108 0.0102 0.0102 
-Time PSD/FFV: 18.13 s
+FFV:  0.25751021318557477 175486 681472
+
+PSD Final:  175486
+1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.98839 0.96676 0.9274 0.90049 0.87264 0.85595 0.81046 0.77404 0.73034 0.68576 0.64552 0.61701 0.58034 0.54713 0.51044 0.47218 0.43731 0.40265 0.36437 0.33106 0.30204 0.27292 0.24326 0.2211 0.20296 0.16881 0.15559 0.1399 0.1272 0.11224 0.10422 0.09086 0.07543 0.0562 0.04796 0.04453 0.03597 0.03145 0.02493 0.01769 0.01671 0.01601 0.01315 0.01249 0.01109 0.0108 0.01021 0.01021 
+Time PSD/FFV: 20.48 s
 Free volume voxel xyz file printed
 
 
 ##### Performing SA Analysis #####
 
-SA (A^2):  80823.25959783979
-Time SA: 0.05 s
+Connolly SA (A^2):  80832.30
+Lee-Richards SA (A^2):  65666.18
+Time SA: 0.11 s
 Free volume surface xyz file printed
 
-##### Summary of Calculation Times#####
-Time free volume spheres: 4.36 s
-Time cluster: 0.15 s
-Time PSD/FFV: 18.13 s
-Time SA: 0.05 s
+##### Summary of Calculation Times #####
+Time free volume spheres: 4.72 s
+Time cluster: 0.18 s
+Time PSD/FFV: 20.48 s
+Time SA: 0.11 s

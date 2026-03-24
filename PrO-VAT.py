@@ -195,7 +195,7 @@ def volume_analysis(frame):
     # Useful print command for troubleshooting problems: prints the number of voxel-centers within the free volume and the diameter of the largest sphere (pore)
     # Also prints the number of voxels within the system van der Waals free volume, voxels containing free volume spheres of radius r >= probe_radius, and voxels that need to be assessed whether they are in the free volume or not
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-        print("\nMaximum pore diameter: ", max_diameter)
+        print(f"\nMaximum pore diameter: {max_diameter:.2f}")
         print("Number of free volume spheres (r >= probe_radius): ", len(radii_arr[radii_arr >= args.probe_radius]))
         print("Number of free volume voxels (r > 0): ", len(radii_arr[radii_arr != 0]))
         print(f"Time free volume spheres: {time_Spheres:.2f} s")
@@ -335,7 +335,7 @@ def volume_analysis(frame):
 
         # Useful print command for troubleshooting problems
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-            print("\nMaximum pore diameter: ", max_diameter)
+            print(f"\nMaximum pore diameter: {max_diameter:.2f}")
             if args.solvent_name == 'percolated':
                 print("Number of free volume spheres (r >= probe_radius) within the percolated domain: ", len(radii_arr[radii_arr >= args.probe_radius]))
             else:
@@ -470,7 +470,7 @@ def volume_analysis(frame):
             else:
                 print(f"Maximum Error: {err:.1e}\n")
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_PSD = time.perf_counter() - time_PSD
-    del radii_arr; del PSD_probes; del sphere_temp; del pair_arr; del dist_arr; del idx_x; del idx_y; del idx_z
+    del PSD_probes; del sphere_temp; del pair_arr; del dist_arr; del idx_x; del idx_y; del idx_z
 
     # Code to print the final FFV and PSD for the last frame analyzed
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
@@ -508,37 +508,71 @@ def volume_analysis(frame):
             time_SA = time.perf_counter()
             print('\n##### Performing SA Analysis #####\n')
 
-        # Create a simple mesh surface around the free volume and calculate the surface area
+        ######################################################
+        ############### Connolly Surface Area ################
+        ######################################################
+
+        # Surface is defined by the free volume voxels
         SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True; del FFV_save                # Create voxel lattice where free volume voxel-centers = True
+
+        # Create a simple mesh surface around the free volume and calculate the surface area
         SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to prevent counting of surface "caps" in surface area
         spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
         pad = np.append(0*spacing, (np.array(SA_arr.shape) - 1)*spacing)                                                                        # Information to remove the padding later
 
-        verts, faces, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                     # Marching cubes algorithm to create a surface mesh
-        padv = np.where(np.sum(np.isin(verts, pad), axis=1) > 0)[0]                                                                             # Find padding vertices
-        padf = np.where(np.sum(np.isin(faces, padv), axis=1) == 0)[0]                                                                           # Remove padded faces
-        faces = faces[padf]
+        verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
+        padv = np.where(np.sum(np.isin(verts_c, pad), axis=1) > 0)[0]                                                                           # Find padding vertices
+        padf = np.where(np.sum(np.isin(faces_c, padv), axis=1) == 0)[0]                                                                         # Remove padded faces
+        faces_c = faces_c[padf]
 
-        SA = measure.mesh_surface_area(verts, faces)                                                                                            # Calculate the surface area of the free volume
+        SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
+
+        ######################################################
+        ### Lee-Richards "Surface Accessible" Surface Area ###
+        ######################################################
+
+        # Surface defined by the center of the free volume spheres
+        idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius); del radii_arr
+        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                      # Create voxel lattice where free volume voxel-centers = True
+
+        # Create a simple mesh surface around the free volume and calculate the surface area
+        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to prevent counting of surface "caps" in surface area
+        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
+        pad = np.append(0*spacing, (np.array(SA_arr.shape) - 1)*spacing)                                                                        # Information to remove the padding later
+
+        verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                               # Marching cubes algorithm to create a surface mesh
+        padv = np.where(np.sum(np.isin(verts_lr, pad), axis=1) > 0)[0]                                                                          # Find padding vertices
+        padf = np.where(np.sum(np.isin(faces_lr, padv), axis=1) == 0)[0]                                                                        # Remove padded faces
+        faces_lr = faces_lr[padf]
+
+        SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                   # Calculate the surface area of the free volume
+
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_SA = time.perf_counter() - time_SA
 
         # Code to print the surface area for the last frame analyzed
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-            print("SA (A^2): ", SA)
+            print(f"Connolly SA (A^2):  {SA_c:.2f}")
+            print(f"Lee-Richards SA (A^2):  {SA_lr:.2f}")
             print(f"Time SA: {time_SA:.2f} s")
 
         # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in Ovito
         #     Radius = L_voxel/2
         if (args.print_xyz) and (frame == frame_ids[-1]):
-            verts = verts[np.where(np.sum(np.isin(verts, pad), axis=1) == 0)[0]]; verts -= spacing/2
+            verts_c = verts_c[np.where(np.sum(np.isin(verts_c, pad), axis=1) == 0)[0]]; verts_c -= spacing/2
+            verts_lr = verts_lr[np.where(np.sum(np.isin(verts_lr, pad), axis=1) == 0)[0]]; verts_lr -= spacing/2
             with open('Free_Volume_Surface.xyz', 'w') as anaout:
-                print(str(len(verts)), file=anaout)
+                print(str(len(verts_c) + len(verts_lr)), file=anaout)
                 print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
-                for i, sph in enumerate(verts):
+                for i, sph in enumerate(verts_c):
                     if args.mode == 'xyz':
                         print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
                     else:
                         print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
+                for i, sph in enumerate(verts_lr):
+                    if args.mode == 'xyz':
+                        print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
+                    else:
+                        print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
             print('Free volume surface xyz file printed\n')
     else:
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
@@ -548,7 +582,7 @@ def volume_analysis(frame):
             if cycle != int(np.ceil(1/args.rand_frac)):
                 print("    Set --tol == -1")
             print()
-        SA = 0
+        SA_c = 0; SA_lr = 0
     
 
 
@@ -568,7 +602,7 @@ def volume_analysis(frame):
 
 
     # Return the necessary information to complete the calculations: SA/100 gives the surface area, FFV_track / FFV_total gives the probe-occupiable free volume, PSD_arr / PSD_arr[0] gives the probe-occupiable PSD
-    PSD_arr = np.insert(PSD_arr, 0, FFV_total); PSD_arr = np.insert(PSD_arr, 0, FFV_track); PSD_arr = np.insert(PSD_arr, 0, int(SA*100))
+    PSD_arr = np.insert(PSD_arr, 0, FFV_total); PSD_arr = np.insert(PSD_arr, 0, FFV_track); PSD_arr = np.insert(PSD_arr, 0, int(SA_lr*100)); PSD_arr = np.insert(PSD_arr, 0, int(SA_c*100))
     return PSD_arr
     
 
@@ -731,21 +765,22 @@ def main():
         print(f"ERROR - {e}")
 
     # Return the average and standard deviation (over the frames processed) of the surface area
-    SA = out_arr[:,0]/100; SA = np.array([np.mean(SA), np.std(SA)])
+    SA_c = out_arr[:,0]/100; SA_lr = out_arr[:,1]/100; SA = np.array([np.mean(SA_c), np.std(SA_c), np.mean(SA_lr), np.std(SA_lr)])
     if SA[0] != 0:
         with open('SA.dat', 'w') as anaout:
-            print("# SA (A^2) Std", file=anaout)
+            print("# SA (A^2) Std - 0.0 = Connolly, 1.0 = Lee-Richards", file=anaout)
             print('0.0 {:10.5f} {:10.5f}'.format(SA[0], SA[1]), file=anaout)
+            print('1.0 {:10.5f} {:10.5f}'.format(SA[2], SA[3]), file=anaout)
 
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
-    FFV = out_arr[:,1:3]; FFV = FFV[:,0] / FFV[:,1]; FFV = np.array([np.mean(FFV), np.std(FFV)])
+    FFV = out_arr[:,2:4]; FFV = FFV[:,0] / FFV[:,1]; FFV = np.array([np.mean(FFV), np.std(FFV)])
     with open('FFV.dat', 'w') as anaout:
         print("# FFV Std", file=anaout)
         print('0.0 {:10.5f} {:10.5f}'.format(FFV[0], FFV[1]), file=anaout)
 
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable pore size ditribution
     d_arr = np.arange(0, args.d_max + args.d_step, args.d_step)
-    PSD_all = out_arr[:,3:]; PSD_all = np.divide(PSD_all.T, PSD_all[:,0], dtype=float).T
+    PSD_all = out_arr[:,4:]; PSD_all = np.divide(PSD_all.T, PSD_all[:,0], dtype=float).T
     PSD_Cumulative = np.array([np.mean(PSD_all, axis=0), np.std(PSD_all, axis = 0)])
     # PSD is the negative derivative of the cumulative sum
     PSD = np.array([np.mean(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0), np.std(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0)])
