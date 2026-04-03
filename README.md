@@ -55,7 +55,7 @@ PrO-VAT.py requires the following inputs:
    - PSD.dat: pore size distribution (PSD, or free volume distribution, channel width distribution, etc)
    - Cumulative_PSD.dat: cumulative PSD, where the PSD is the derivative of this profile
    - FFV.dat: fractional free volume
-   - SA.dat: a simple marching-cubes mesh surface area calculation of the Connolly or Lee-Richards pore surface
+   - SA.dat: a simple marching-cubes mesh surface area calculation of the Connolly and Lee-Richards pore surface
    - {}.xyz: xyz files to visualize the free volume probed by PrO-VAT using OVITO
      - Free_Volume_Spheres visualizes the free volume *spheres* of maximum radius R which make up the probed free volume
      - Free_Volume_Voxels visualizes the free volume *voxels* of side length L_voxel (defined in "config.yaml") which make up the probed free volume
