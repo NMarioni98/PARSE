@@ -74,7 +74,8 @@ Voxel_dist: 'Random'
 #     Can overwrite when calling PrO-VAT.py using --Surface_area
 Surface_area: False
 
-# Set --Tortuosity True to calculate the diffusional tortuosity of the solvent matrix using a simple Fickian diffusion algorithm
+# Set --Tortuosity True to calculate the 1D diffusional tortuosity of the solvent matrix using a simple Fickian diffusion algorithm
+#     Tortuosity does not account for PBCs
 #     NOTE: Tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1
 #     Can overwrite when calling PrO-VAT.py using --Tortuosity
 Tortuosity: False
