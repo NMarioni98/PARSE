@@ -16,9 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 """ 
 
 # PrO-VAT: Probe-Occupiable Volume Analysis Tools
-# PrO-VAT.py calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals volume of the defined system matrix from a GROMACS (gro/xtc/trr + tpr) or PoreBlazer-style (xyz + dat) trajectory
+# PrO-VAT.py calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals volume of the defined system matrix from a GROMACS (xtc/trr/gro + tpr/gro) or PoreBlazer-style (xyz + dat) trajectory
 # This script was specifically desgined to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system
-# The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), Free Volume Fraction (Fractional Free Volume, FFV), and Surface Area (SA) with optional xyz visualizations
+# The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortusoity (Tau), and xyz visualizations
 # Given the system matrix (e.g., polymer matrix, non-polar domain, polar domain, etc), this code can analyze the total free volumne, free volume of the largest cluster (assumed percolated), or the free volume of clusters containing (defined) solvent atoms
 # This script was written based on the methods used for PoreBlazer (https://github.com/SarkisovGitHub/PoreBlazer) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems
 #
@@ -35,6 +35,7 @@ import MDAnalysis as mda
 import MDAnalysis.lib.distances as distances
 from igraph import Graph
 from skimage import measure
+import porespy as ps
 
 import multiprocessing as mp
 import functools
@@ -42,6 +43,9 @@ import os
 import time
 import yaml
 import argparse
+
+# suppresses warning in tortuosity analysis
+ps.settings.loglevel = 'ERROR'
 
 # Set the float data type used for atom coordinates and free volume sphere radii
 # Always try np.float64 first
@@ -370,7 +374,7 @@ def volume_analysis(frame):
     PSD_probes = np.indices((l_x, l_y, l_z), dtype=indexed_type).reshape(3, -1).T                                                               # Indices of all
 
     FFV_track = 0; FFV_total = 0                                                                                                                # Track number of voxels within the free volume against the total number to get FFV
-    d_arr = np.arange(0, args.d_max + args.d_step, args.d_step); PSD_arr = np.zeros_like(d_arr, dtype=int)                                                     # d_arr is the histogram of free volume sphere sizes; PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
+    d_arr = np.arange(0, args.d_max + args.d_step, args.d_step); PSD_arr = np.zeros_like(d_arr, dtype=int)                                      # d_arr is the histogram of free volume sphere sizes; PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
 
     FFV_save = np.array([[],[],[]], dtype=indexed_type).T; d_save = np.array([], dtype=indexed_type)                                            # Save voxel-centers within the free volume for surface area calculations, and the size of the largest free volume sphere containing each voxel-center for printing in Free_Volume_Voxels.xyz
 
@@ -503,7 +507,7 @@ def volume_analysis(frame):
 
 
     # SA analysis
-    if cycle == int(np.ceil(1/args.rand_frac)) and args.Voxel_dist == 'Uniform':
+    if args.Surface_area == True:
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
             time_SA = time.perf_counter()
             print('\n##### Performing SA Analysis #####\n')
@@ -513,18 +517,13 @@ def volume_analysis(frame):
         ######################################################
 
         # Surface is defined by the free volume voxels
-        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True; del FFV_save                # Create voxel lattice where free volume voxel-centers = True
+        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                              # Create voxel lattice where free volume voxel-centers = True
 
         # Create a simple mesh surface around the free volume and calculate the surface area
-        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to prevent counting of surface "caps" in surface area
+        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
         spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
-        pad = np.append(0*spacing, (np.array(SA_arr.shape) - 1)*spacing)                                                                        # Information to remove the padding later
 
         verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
-        padv = np.where(np.sum(np.isin(verts_c, pad), axis=1) > 0)[0]                                                                           # Find padding vertices
-        padf = np.where(np.sum(np.isin(faces_c, padv), axis=1) == 0)[0]                                                                         # Remove padded faces
-        faces_c = faces_c[padf]
-
         SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
 
         ######################################################
@@ -532,20 +531,19 @@ def volume_analysis(frame):
         ######################################################
 
         # Surface defined by the center of the free volume spheres
-        idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius); del radii_arr
-        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                      # Create voxel lattice where free volume voxel-centers = True
+        idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
+        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                      # Create voxel lattice where free volume sphere-centers = True
 
         # Create a simple mesh surface around the free volume and calculate the surface area
-        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to prevent counting of surface "caps" in surface area
+        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
         spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
-        pad = np.append(0*spacing, (np.array(SA_arr.shape) - 1)*spacing)                                                                        # Information to remove the padding later
 
         verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                               # Marching cubes algorithm to create a surface mesh
-        padv = np.where(np.sum(np.isin(verts_lr, pad), axis=1) > 0)[0]                                                                          # Find padding vertices
-        padf = np.where(np.sum(np.isin(faces_lr, padv), axis=1) == 0)[0]                                                                        # Remove padded faces
-        faces_lr = faces_lr[padf]
-
         SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                   # Calculate the surface area of the free volume
+
+        volume = (l_x * L_voxel_x) * (l_y * L_voxel_y) * (l_z * L_voxel_z)
+        padded_volume = ((l_x + 2) * L_voxel_x) * ((l_y + 2) * L_voxel_y) * ((l_z + 2) * L_voxel_z)
+        SA_c *= (volume / padded_volume); SA_lr *= (volume / padded_volume)                                                                     # Normalize surface area to the true volume
 
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_SA = time.perf_counter() - time_SA
 
@@ -558,51 +556,96 @@ def volume_analysis(frame):
         # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in Ovito
         #     Radius = L_voxel/2
         if (args.print_xyz) and (frame == frame_ids[-1]):
-            verts_c = verts_c[np.where(np.sum(np.isin(verts_c, pad), axis=1) == 0)[0]]; verts_c -= spacing/2
-            verts_lr = verts_lr[np.where(np.sum(np.isin(verts_lr, pad), axis=1) == 0)[0]]; verts_lr -= spacing/2
+            verts_c_save = []
+            for i, sph in enumerate(verts_c):
+                if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2):
+                    continue
+                verts_c_save.append(sph)
+            
+            verts_lr_save = []
+            for i, sph in enumerate(verts_lr):
+                if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2):
+                    continue
+                verts_lr_save.append(sph)
+
             with open('Free_Volume_Surface.xyz', 'w') as anaout:
-                print(str(len(verts_c) + len(verts_lr)), file=anaout)
+                print(str(len(verts_c_save) + len(verts_lr_save)), file=anaout)
                 print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
-                for i, sph in enumerate(verts_c):
+                for i, sph in enumerate(verts_c_save):
                     if args.mode == 'xyz':
                         print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
                     else:
                         print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
-                for i, sph in enumerate(verts_lr):
+                for i, sph in enumerate(verts_lr_save):
                     if args.mode == 'xyz':
                         print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
                     else:
                         print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
             print('Free volume surface xyz file printed\n')
     else:
-        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-            print('\nSurface area calculation not performed.')
-            if args.Voxel_dist != 'Uniform':
-                print("    Set --Voxel_dist == 'Uniform'")
-            if cycle != int(np.ceil(1/args.rand_frac)):
-                print("    Set --tol == -1")
-            print()
         SA_c = 0; SA_lr = 0
     
 
 
 
 
+    # Tortuosity analysis
+    if args.Tortuosity == True:
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            time_tau = time.perf_counter()
+            print('\n##### Performing Tortuosity Analysis #####\n')
+
+        idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
+        tortuosity_arr = np.zeros((l_x, l_y, l_z), dtype=bool); tortuosity_arr[idx_x, idx_y, idx_z] = True                                      # Create voxel lattice where free volume sphere-centers = True - probes can only diffuse through voxel-spheres with minimum radius probe_radius
+
+        try:                                                                                                                                    # Attempt tortuosity analysis across x, y, and z directions
+            sim_x = ps.simulations.tortuosity_fd(tortuosity_arr, axis=0); tortuosity_x = sim_x.tortuosity                                       # Analysis fails if no percolating clusters found across that axis
+            sim_y = ps.simulations.tortuosity_fd(tortuosity_arr, axis=1); tortuosity_y = sim_y.tortuosity
+            sim_z = ps.simulations.tortuosity_fd(tortuosity_arr, axis=2); tortuosity_z = sim_z.tortuosity
+        except Exception as e:
+            if "No pores remain" in str(e):                                                                                                     # If no percolating cluster found across any axis, return -1 for failed analysis
+                if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+                    print("Warning: Void space does not percolate along at least one axis. Setting tortuosity to -1.")
+                tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
+            else:
+                raise e
+    
+        tortuosity = np.mean([tortuosity_x, tortuosity_y, tortuosity_z])                                                                        # Average tortuosity across all 3 dimensions
+
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_tau = time.perf_counter() - time_tau
+
+        # Code to print the surface area for the last frame analyzed
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            if tortuosity == -1:
+                print(f"No 1D percolated clusters found, tortuosity not measured.")
+            else:
+                print(f"Directional Tortuosity:  X-{tortuosity_x:.2f} Y-{tortuosity_y:.2f} Z-{tortuosity_z:.2f}")
+                print(f"Average Tortuosity:  {tortuosity:.2f}")
+            print(f"Time Toruosity: {time_tau:.2f} s")
+    else:
+        tortuosity_x = 0; tortuosity_y = 0; tortuosity_z = 0
+    
+
+
+
+
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-        print("##### Summary of Calculation Times #####")
+        print("\n##### Summary of Calculation Times #####\n")
         print(f"Time free volume spheres: {time_Spheres:.2f} s")
         if (args.solvent_name == 'percolated') or (N_sol > 0):
             print(f"Time cluster: {time_Cluster:.2f} s")
         print(f"Time PSD/FFV: {time_PSD:.2f} s")
-        if cycle == int(np.ceil(1/args.rand_frac)) and args.Voxel_dist == 'Uniform':
+        if args.Surface_area == True:
             print(f"Time SA: {time_SA:.2f} s")
+        if args.Tortuosity == True:
+            print(f"Time Toruosity: {time_tau:.2f} s")
     
 
 
 
 
     # Return the necessary information to complete the calculations: SA/100 gives the surface area, FFV_track / FFV_total gives the probe-occupiable free volume, PSD_arr / PSD_arr[0] gives the probe-occupiable PSD
-    PSD_arr = np.insert(PSD_arr, 0, FFV_total); PSD_arr = np.insert(PSD_arr, 0, FFV_track); PSD_arr = np.insert(PSD_arr, 0, int(SA_lr*100)); PSD_arr = np.insert(PSD_arr, 0, int(SA_c*100))
+    PSD_arr = np.insert(PSD_arr, 0, FFV_total); PSD_arr = np.insert(PSD_arr, 0, FFV_track); PSD_arr = np.insert(PSD_arr, 0, int(SA_lr*100)); PSD_arr = np.insert(PSD_arr, 0, int(SA_c*100)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_z*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_y*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_x*1000))
     return PSD_arr
     
 
@@ -763,9 +806,23 @@ def main():
         out_arr = np.array(out_arr)
     except ValueError as e:
         print(f"ERROR - {e}")
+    
+    # Return the average and standard deviation (over the frames processed) of the tortuosity
+    tortuosity_x = out_arr[:,0]/1000; tortuosity_y = out_arr[:,1]/1000; tortuosity_z = out_arr[:,2]/1000
+    if not np.all(tortuosity_x == 0):
+        if np.any(tortuosity_x == -1):
+            tortuosity = np.array([-1, -1, -1, -1, -1, -1])
+        else:
+            tortuosity = np.array([np.mean(tortuosity_x), np.std(tortuosity_x), np.mean(tortuosity_y), np.std(tortuosity_y), np.mean(tortuosity_z), np.std(tortuosity_z)])
+
+        with open('Tau.dat', 'w') as anaout:
+            print("# Tortuosity Std - 0.0, 1.0, 2.0 = X, Y, and Z direction - value of -1 denotes a failed tortuosity analysis on at least 1 frame", file=anaout)
+            print('0.0 {:10.5f} {:10.5f}'.format(tortuosity[0], tortuosity[1]), file=anaout)
+            print('1.0 {:10.5f} {:10.5f}'.format(tortuosity[2], tortuosity[3]), file=anaout)
+            print('2.0 {:10.5f} {:10.5f}'.format(tortuosity[4], tortuosity[5]), file=anaout)
 
     # Return the average and standard deviation (over the frames processed) of the surface area
-    SA_c = out_arr[:,0]/100; SA_lr = out_arr[:,1]/100; SA = np.array([np.mean(SA_c), np.std(SA_c), np.mean(SA_lr), np.std(SA_lr)])
+    SA_c = out_arr[:,3]/100; SA_lr = out_arr[:,4]/100; SA = np.array([np.mean(SA_c), np.std(SA_c), np.mean(SA_lr), np.std(SA_lr)])
     if SA[0] != 0:
         with open('SA.dat', 'w') as anaout:
             print("# SA (A^2) Std - 0.0 = Connolly, 1.0 = Lee-Richards", file=anaout)
@@ -773,14 +830,14 @@ def main():
             print('1.0 {:10.5f} {:10.5f}'.format(SA[2], SA[3]), file=anaout)
 
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
-    FFV = out_arr[:,2:4]; FFV = FFV[:,0] / FFV[:,1]; FFV = np.array([np.mean(FFV), np.std(FFV)])
+    FFV = out_arr[:,5:7]; FFV = FFV[:,0] / FFV[:,1]; FFV = np.array([np.mean(FFV), np.std(FFV)])
     with open('FFV.dat', 'w') as anaout:
         print("# FFV Std", file=anaout)
         print('0.0 {:10.5f} {:10.5f}'.format(FFV[0], FFV[1]), file=anaout)
 
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable pore size ditribution
     d_arr = np.arange(0, args.d_max + args.d_step, args.d_step)
-    PSD_all = out_arr[:,4:]; PSD_all = np.divide(PSD_all.T, PSD_all[:,0], dtype=float).T
+    PSD_all = out_arr[:,7:]; PSD_all = np.divide(PSD_all.T, PSD_all[:,0], dtype=float).T
     PSD_Cumulative = np.array([np.mean(PSD_all, axis=0), np.std(PSD_all, axis = 0)])
     # PSD is the negative derivative of the cumulative sum
     PSD = np.array([np.mean(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0), np.std(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0)])
@@ -867,6 +924,10 @@ def loadArgs():
                       help = "PSD bin size (A) [default = YAML]")
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
+    vars.add_argument('--Surface_area', type = bool, choices = [True, False], default = config['Surface_area'],
+                      help = "Surface area calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
+    vars.add_argument('--Tortuosity', type = bool, choices = [True, False], default = config['Tortuosity'],
+                      help = "Tortuosity calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
     ### GROUP 5: Terminal printing and xyz generation
     printing = xyz_parser.add_argument_group('Terminal printing and xyz generation')
     printing.add_argument('--print_eff', type = int, choices = [0, 1, 2], default = config['print_eff'],
@@ -922,6 +983,10 @@ def loadArgs():
                       help = "PSD bin size (A) [default = YAML]")
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
+    vars.add_argument('--Surface_area', type = bool, choices = [True, False], default = config['Surface_area'],
+                      help = "Surface area calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
+    vars.add_argument('--Tortuosity', type = bool, choices = [True, False], default = config['Tortuosity'],
+                      help = "Tortuosity calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
     ### GROUP 5: Terminal printing and xyz generation
     printing = traj_parser.add_argument_group('Terminal printing and xyz generation')
     printing.add_argument('--print_eff', type = int, choices = [0, 1, 2], default = config['print_eff'],
@@ -947,6 +1012,14 @@ def loadArgs():
     if args.mode == 'gmx' and '.gro' in args.trj_file:
         if args.N_threads != 1:                        parser.error("gro file inputs require N_threads = 1")
         if args.N_frames != 1 and args.N_frames != -1: parser.error("gro file inputs require N_frames = 1")
+    
+    if args.Surface_area == True:
+        if args.Voxel_dist != 'Uniform':               parser.error("SA calculation requires Voxel_dist = 'Uniform'")
+        if args.tol != -1:                             parser.error("SA calculation requires tol = -1")
+    
+    if args.Tortuosity == True:
+        if args.Voxel_dist != 'Uniform':               parser.error("Tortuosity calculation requires Voxel_dist = 'Uniform'")
+        if args.tol != -1:                             parser.error("Tortuosity calculation requires tol = -1")
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)

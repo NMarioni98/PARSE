@@ -1,0 +1,60 @@
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : gmx
+
+    ### Files and Run Parameters ###
+    trj_file          : ../md.gro
+    top_file          : ../md.gro
+    t_min             : -1
+    t_max             : -1
+    N_frames          : -1
+    N_threads         : 1
+
+    ######## System/Solvent ########
+    system_name       : not resname SOL H3O
+    solvent_name      : percolated
+
+    ########## Variables ###########
+    L_voxel           : 1.0
+    probe_radius      : 1.575
+    d_max             : 50
+    d_step            : 0.25
+    Voxel_dist        : Uniform
+    Surface_area      : True
+    Tortuosity        : True
+    print_eff         : 2
+    print_xyz         : True
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_sph        : 5e+11
+    N_write_sph       : 1e+08
+    d_inc             : 2
+    N_calc_PSD        : 1e+10
+    target_writes_low : 1e+06
+    target_writes_high: 5e+06
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 0.01
+
+########################################
+########################################
+########################################
+
+Loading trajectory data
+
+If the following is incorrect, there may be inconsistencies between your atom ID name and the Element name in this script
+
+SYSTEM ATOMS
+Element N-in-System
+      C       19008
+      O        3630
+      H       23414
+      S        1210
+
+Number of frames: 1
+
+Trajectory loaded, terminating process. Run again to perform analysis

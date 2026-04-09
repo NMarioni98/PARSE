@@ -61,9 +61,20 @@ d_step: 0.25
 
 # Voxel distribution can be 'Uniform' (a set grid where all voxels are evenly spaced) or 'Random' (voxels are pseudo-randomly offset from their uniform center)
 #     'Random' should be used when analyzing multiple frames over a single trajectory, or if performing multiple analyses on the same frame
-#     NOTE: SA calculation requires a 'Uniform' distribution
+#     NOTE: Surface area and tortuosity calculations require a 'Uniform' distribution
 #     Can overwite when calling PrO-VAT.py using --Voxel_dist
 Voxel_dist: 'Random'
+
+# Set Surface_area = True to calculate the Connolly and Lee-Richards surface area of the system matrix
+#     Measures the Connolly and Lee-Richards SA
+#     NOTE: SA calculation requires Voxel_dist = 'Uniform' and tol = -1
+#     Can overwite when calling PrO-VAT.py using --Surface_area
+Surface_area: False
+
+# Set Tortuosity = True to calculat the diffusional tortuosity of the solvent matrix using a simple Fickian diffusion algorithm
+#     NOTE: Tortuosity calculation requires Voxel_dist = 'Uniform' and tol = -1
+#     Can overwite when calling PrO-VAT.py using --Tortuosity
+Tortuosity: False
 
 # Define the print state of the analysis
 #     print_eff = 0 to suppress all printing
@@ -140,6 +151,6 @@ N_edge_gen: 1e8         # Maximum number of voxel-voxel pairs (edges) to generat
 tol: -1                 # tol = -1 to calculate PSD and FFV using ALL voxels.
                         # tol > 0 to calculate PSD and FFV using random subset of voxels until the max error in the PSD err = |PSD(i) - PSD(i-1)|  / PSD(i) < tol
                         # NOTE: tol = -1 and tol > 0 converge to the same answer as tol -> 0, i.e., smaller values of tol (where tol > 0) increases the number of cycles performed, where tol = -1 performs 1/rand_frac cycles
-                        # NOTE: SA is only measured if ALL voxels are analyzed
+                        # NOTE: Surface area and tortuosity calculations require tol = -1
 rand_frac: 0.01         # Fraction of voxels to analyze each cycle during PSD and FFV calculation.
                         # If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., rand_frac = 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed
