@@ -952,9 +952,9 @@ def loadArgs():
     ### GROUP 1: Required input files
     trj_files = traj_parser.add_argument_group('Required input files')
     trj_files.add_argument('trj_file', type = readable_file,
-                            help = "Path to xtc/trr/GRO file")
+                            help = "Path to xtc/trr/gro file")
     trj_files.add_argument('top_file', type = readable_file,
-                            help = "Path to TPR file")
+                            help = "Path to tpr/gro file")
     ### GROUP 2: Frame selection and threads
     traj_frames = traj_parser.add_argument_group('Frame selection and threads')
     traj_frames.add_argument('-b', '--t_min', type = float, default = config['t_min'],
