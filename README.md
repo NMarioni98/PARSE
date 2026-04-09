@@ -1,4 +1,4 @@
-# PrO-VAT (Probe-Occupiable Volume Analysis Tools)
+# Probe-Occupiable Volume Analysis Tools (PrO-VAT)
 
 Written by: Nico Marioni, nmarioni@seas.upenn.edu
  - Developed using Python 3.12.X
@@ -8,6 +8,11 @@ PrO-VAT calculates the pore size distribution (free volume distribution, channel
 
 ## Getting started
 
+Installation
+ - Install Python 3.12.X
+   - PrO-VAT may work with other python versions
+ - python3 -m pip install PyYAML numpy h5py MDAnalysis igraph scikit-image porespy openpnm
+
 PrO-VAT requires the following inputs:
  - ```python3 PrO-VAT.py {YAML} {Mode} {Trajectory} {Topology} {Optional arguments}```
    - **YAML:** "config.yaml", configuration file containing default PrO-VAT inputs
@@ -16,6 +21,7 @@ PrO-VAT requires the following inputs:
      - ```python3 PrO-VAT.py {YAML} -h``` for more information
    - **Trajectory:** xyz or xtc/trr/gro file input for "xyz" or "gmx" mode, respectively
    - **Topology:** dat or tpr/gro file input for "xyz" or "gmx" mode, respectively. Note, gro files contain less topology information than tpr files
+     - **NOTE:** PrO-VAT reads in data using [MDAnalysis](https://userguide.mdanalysis.org/stable/formats/index.html), and therefore can be adapted to other trajectory and topology formats, e.g., LAMMPS
    - **Optional arguments:** additional (optional) arguments can be added to overwrite the default settings defined in {**YAML**}
      - e.g., "-r 1.4" or "--probe_radius 1.4"
      - ```python3 PrO-VAT.py {YAML} {Mode} -h``` for more information
@@ -35,13 +41,14 @@ PrO-VAT requires the following inputs:
  - **/xyz/:** example analysis on a PoreBlazer-style xyz/dat trajectory input for PrO-VAT
    - Example system contains an anion exchange membrane from: https://doi.org/10.1021/acs.macromol.5c01789
      - *p*5CNMe3 - *λ* = 10
- - **/gmx/:** example analysis on a GROMACS gro (similarly gro/tpr, xtc/tpr, trr/tpr) input for PrO-VAT
+ - **/gmx/:** example analysis on a GROMACS gro/gro (similarly gro/tpr, xtc/tpr, trr/tpr) input for PrO-VAT
    - Example system contains a cation exchange membrane from: https://doi.org/10.1021/jacsau.5c00218
      - *p*5PhSH - *Y* = 70, *λ* = 9
+ - **NOTE:** It is recommended to average results over many different frames and several indpendent repeats for the best results. This just serves as a simple, fast to analyze example of using PrO-VAT.
 
 ### Example files and folders
  - xyz input files:
-   - **/xyz/polymer_matrix.xyz:** XYZ file that defines the atoms making up the polymer matrix, i.e., the domain of interest has been deleted
+   - **/xyz/polymer_matrix.xyz:** XYZ file that defines the atoms making up the polymer matrix, i.e., the solvent domain has been deleted to probe the solvent-phase PSD, etc
    - **/xyz/input.dat:** input file that defines the box size for PrO-VAT
      - See the file for more details on creating and formatting the file
  - gmx input files:
@@ -51,18 +58,19 @@ PrO-VAT requires the following inputs:
  - **/{xyz/gmx}/Example_output_files/:** contains example files generated when PrO-VAT is run as shown in run.sh
    - PSD.dat: pore size distribution (PSD, or free volume distribution, channel width distribution, etc)
    - Cumulative_PSD.dat: cumulative PSD, where the PSD is the derivative of this profile
-   - FFV.dat: fractional free volume
+   - PSD_Plot.xlsx: excel plot of the cumulative PSD and PSD
+   - FFV.dat: volume fraction (FFV, free volume fraction, water volume fraction, porosity, etc)
    - SA.dat: a simple marching-cubes mesh surface area calculation of the Connolly and Lee-Richards pore surface
-     - **NOTE:** The SA calculation requires --Voxel_dist = "Uniform" and --tol = -1 (see "Surface_area" in "config.yaml")
+     - **NOTE:** The SA calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Surface_area" in "config.yaml")
    - Tau.dat: diffusional tortuosity of the percolated domain in the X, Y, and Z direction using simple Fickian diffusion algorithm
-     - **NOTE:** The tortuosity calculation requires --Voxel_dist = "Uniform" and --tol = -1 (see "Tortuosity" in "config.yaml")
+     - **NOTE:** The tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Tortuosity" in "config.yaml")
    - {}.xyz: xyz files to visualize the free volume probed by PrO-VAT using OVITO
-     - Free_Volume_Spheres visualizes the free volume *spheres* of maximum radius R which make up the probed free volume
-     - Free_Volume_Voxels visualizes the free volume *voxels* of side length L_voxel (defined in "config.yaml") which make up the probed free volume
-     - Free_Volume_Surface visualizes the free volume *voxels* of side length L_voxel (defined in "config.yaml") which defines the surface of the probed free volume
-       - "X" particles define the Connolly surface while "Y" particles define the Lee-Richards surface
+     - Free_Volume_Spheres visualizes the free volume *spheres* of maximum radius *probe_radius* (defined in "config.yaml") which make up the probe-occupiable free volume
+     - Free_Volume_Voxels visualizes the free volume *voxels* of side length *L_voxel* (defined in "config.yaml") which make up the probe-occupiable free volume
+     - Free_Volume_Surface visualizes the free volume *voxels* of side length *L_voxel* (defined in "config.yaml") which defines the surface of the probe-occupiable free volume
+       - "X" particles define the Connolly surface while "Y" particles define the Lee-Richards "Surface-accessible surface
        - **NOTE:** voxels are are centered on the voxel face at the surface
-   - Example.ovito: Ovito visualization state showing the above. Created using [Ovito(-basic) version 3.7.12](https://www.ovito.org/download_history/)
+   - Example.ovito: OVITO visualization state showing the above. Created using [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/)
      - In the top right, you can select the different xyz files (pipelines) and turn on and off the Particles (under "Visual elements")
 
 ## Acknowledgements

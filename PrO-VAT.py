@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # When implementing this code, it is recommended to test different values of L_voxel to ensure convergence of the FFV as L_voxel decreases. Note, computation time and memory usage will grow significantly as L_voxel decreases.
 # If you run into memory or extreme run times, there are debugging lines throughout the code, and several values you can change to increase or decrease memory usage.
-# There are three instances where xyz files can be created to visualize 1) probe-occupiable spheres of maximum radius without overlapping the van der Waals volume of the systems, 2) voxel-centers that lie within the probe-occupiable volume, and 3) voxel-center surfaces that define the surface of the free volume
+# There are three instances where xyz files can be created to visualize 1) probe-occupiable spheres of maximum radius without overlapping the van der Waals volume of the system, 2) voxel-centers that lie within the probe-occupiable volume, and 3) voxel-center surfaces that define the Connolly or Lee-Richards surface of the probe-occupiable volume
 
 import numpy as np
 import h5py
@@ -44,7 +44,7 @@ import time
 import yaml
 import argparse
 
-# suppresses warning in tortuosity analysis
+# suppresses expected warning in tortuosity analysis
 ps.settings.loglevel = 'ERROR'
 
 # Set the float data type used for atom coordinates and free volume sphere radii
@@ -60,7 +60,7 @@ def volume_analysis(frame):
 
     with h5py.File('PrO-VAT.hdf5','r') as f:
         dset1 = f['system']; sys = dset1[frame]                                                                                                 # Position of all system atoms
-        dset2 = f['sys_radii']; sys_radii = dset2[:]                                                                                            # Radius of all system atoms, where distance between sphere (see below) and polymer atom minus the radius is the distance to the van der waals surface of the atom
+        dset2 = f['sys_radii']; sys_radii = dset2[:]                                                                                            # van der Waals radii of all system atoms
         dset3 = f['solvent']; sol = dset3[frame]                                                                                                # Position of all solvent atoms
         dset3 = f['cells']; cell = dset3[frame]                                                                                                 # Size of the cell
         dset4 = f['frames']; frame_ids = dset4[:]; frame_ids = np.arange(0,len(frame_ids),1)
@@ -77,8 +77,8 @@ def volume_analysis(frame):
 
 
 
-    # Free volum sphere analysis
-    # This part of the calculation determines the maximum size of voxel-centered free volume spheres without overlapping system atoms (van der Waals volume), where the total volume of all spheres larger than probe_radius defines the probe-occupiable free volume of the system
+    # Free volume sphere analysis
+    # This part of the calculation determines the maximum size of voxel-centered free volume spheres without overlapping system atoms (the van der Waals volume), where the total volume of all spheres larger than probe_radius defines the probe-occupiable free volume of the system
     # This code will generate points at the center of voxels with side length L_voxel and grow these points into free volume spheres
     # Changing L_voxel, N_write_sph, and d_inc can reduce run time and memory usage
     vox_x = np.linspace(0, cell[0], num = np.ceil(cell[0]/args.L_voxel).astype(int), dtype=float_type); vox_x = (vox_x[:-1] + vox_x[1:])/2      # Voxel-centers in the x direction
@@ -210,7 +210,7 @@ def volume_analysis(frame):
 
     # Clustering analysis
     # Only consider free volume spheres of radius r >= probe_radius that are within the desired domain.
-    #   Free volume spheres outside of the desired domain are demoted from free volume spheres of radius r >= probe_radius to free volume voxels
+    #   Free volume spheres outside of the desired domain are demoted from free volume spheres of radius r >= probe_radius to free volume voxels (0 < r < probe_radius)
     #       Free volume voxels are still considered in the FFV and PSD analysis.
     # NOTE: This section is the most sensitive to memory errors. Consider setting solvent_name = "" if consistently running out of memory (OOM).
     if (args.solvent_name == 'percolated') or (N_sol > 0):
@@ -346,7 +346,7 @@ def volume_analysis(frame):
                 print("Number of free volume spheres (r >= probe_radius) within the solvent domain: ", len(radii_arr[radii_arr >= args.probe_radius]))
             print(f"Time cluster: {time_Cluster:.2f} s\n")
 
-    # Code to write coordinates and radius of each free volume sphere to a .xyz file, which can be visualized in Ovito, etc
+    # Code to write coordinates and radius of each free volume sphere to a .xyz file, which can be visualized in OVITO, etc
     #     Radius = radius of the largest free volume sphere centered on the voxel-center
     if (args.print_xyz) and (frame == frame_ids[-1]):
         idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
@@ -488,7 +488,7 @@ def volume_analysis(frame):
         print(print_string)
         print(f"Time PSD/FFV: {time_PSD:.2f} s")
 
-    # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in Ovito
+    # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in OVITO
     if (args.print_xyz) and (frame == frame_ids[-1]):
         with open('Free_Volume_Voxels.xyz', 'w') as anaout:
             print(str(len(FFV_save)), file=anaout)
@@ -530,7 +530,7 @@ def volume_analysis(frame):
         ### Lee-Richards "Surface Accessible" Surface Area ###
         ######################################################
 
-        # Surface defined by the center of the free volume spheres
+        # Surface defined by the *center* of the free volume *spheres* - i.e., surface-accessible free volume
         idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
         SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                      # Create voxel lattice where free volume sphere-centers = True
 
@@ -553,9 +553,10 @@ def volume_analysis(frame):
             print(f"Lee-Richards SA (A^2):  {SA_lr:.2f}")
             print(f"Time SA: {time_SA:.2f} s")
 
-        # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in Ovito
+        # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in OVITO
         #     Radius = L_voxel/2
         if (args.print_xyz) and (frame == frame_ids[-1]):
+            # Remove excess voxels due to padding
             verts_c_save = []
             for i, sph in enumerate(verts_c):
                 if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2):
@@ -595,8 +596,9 @@ def volume_analysis(frame):
             time_tau = time.perf_counter()
             print('\n##### Performing Tortuosity Analysis #####\n')
 
+        # Diffusive volume is defined by *probe-center* occupiable volume, i.e., the Lee-Richards volume
         idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
-        tortuosity_arr = np.zeros((l_x, l_y, l_z), dtype=bool); tortuosity_arr[idx_x, idx_y, idx_z] = True                                      # Create voxel lattice where free volume sphere-centers = True - probes can only diffuse through voxel-spheres with minimum radius probe_radius
+        tortuosity_arr = np.zeros((l_x, l_y, l_z), dtype=bool); tortuosity_arr[idx_x, idx_y, idx_z] = True                                      # Create voxel lattice where free volume sphere-centers = True
 
         try:                                                                                                                                    # Attempt tortuosity analysis across x, y, and z directions
             sim_x = ps.simulations.tortuosity_fd(tortuosity_arr, axis=0); tortuosity_x = sim_x.tortuosity                                       # Analysis fails if no percolating clusters found across that axis
@@ -644,14 +646,14 @@ def volume_analysis(frame):
 
 
 
-    # Return the necessary information to complete the calculations: SA/100 gives the surface area, FFV_track / FFV_total gives the probe-occupiable free volume, PSD_arr / PSD_arr[0] gives the probe-occupiable PSD
+    # Return the necessary information to complete the calculations: tortuosity_i/1000 gives the tortuosity in the ith direction, SA/100 gives the surface area, FFV_track / FFV_total gives the probe-occupiable free volume, PSD_arr / PSD_arr[0] gives the probe-occupiable PSD
     PSD_arr = np.insert(PSD_arr, 0, FFV_total); PSD_arr = np.insert(PSD_arr, 0, FFV_track); PSD_arr = np.insert(PSD_arr, 0, int(SA_lr*100)); PSD_arr = np.insert(PSD_arr, 0, int(SA_c*100)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_z*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_y*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_x*1000))
     return PSD_arr
     
 
 
-def load_trr():
-# loads in the trajectory and saves the necessary data to a temporary h5py file
+def load_trajectory():
+# loads in the trajectory and saves the necessary data to a temporary h5py .hdf5 I/O file
 
     if args.mode == 'xyz':
         uta = mda.Universe(args.trj_file)                        # Load in the xyz trajectory
@@ -668,11 +670,11 @@ def load_trr():
 
     system = uta.select_atoms(args.system_name)                  # Define the system atoms
     if args.solvent_name == 'percolated' or args.solvent_name == '':
-        solvent = uta.select_atoms('not all')                    # Define the solvent atoms
+        solvent = uta.select_atoms('not all')                    # Solvent selection is empty
     else:
         solvent = uta.select_atoms(args.solvent_name)            # Define the solvent atoms
 
-    print("If the following is incorrect, there may be inconsistencies between your atom ID name and the Element name in this script")
+    print("If the following is incorrect, there may be inconsistencies between your atom ID name in the topology and the Element name in the YAML file (see 'Size_arr' and 'Dummy_atoms' for more details)")
     print("\nSYSTEM ATOMS")
 
     # If no system atoms are detected, return error
@@ -739,7 +741,7 @@ def load_trr():
     # Define the system times/frames to be calculated over
     print()
     if args.mode == 'xyz' or '.gro' in args.trj_file:
-        frame_ids = np.array([0], dtype=int)
+        frame_ids = np.array([0], dtype=int)                     # .xyz and .gro trajectories are assumed to contained only a single frame
     else:
         if args.t_min == -1:    args.t_min    = uta.trajectory[0].time
         if args.t_max == -1:    args.t_max    = uta.trajectory[-1].time
@@ -747,7 +749,7 @@ def load_trr():
 
         dt = np.round((uta.trajectory[1].time - uta.trajectory[0].time),3)
 
-        if args.N_frames == 1:
+        if args.N_frames == 1:                                   # If only analyzing one frame, analyze the final frame
             frame_ids = np.array([int((args.t_max - uta.trajectory[0].time)/dt)], dtype=int)
         else:
             frame_ids = np.linspace(int((args.t_min - uta.trajectory[0].time)/dt), int((args.t_max - uta.trajectory[0].time)/dt), args.N_frames, dtype=int)
@@ -785,7 +787,7 @@ def main():
     if not os.path.exists('PrO-VAT.hdf5'):
         print('Loading trajectory data\n')
         try:
-            load_trr()
+            load_trajectory()
         except ValueError as e:
             print(f"ERROR - {e}")
         print('\nTrajectory loaded, terminating process. Run again to perform analysis')
@@ -892,27 +894,39 @@ def loadArgs():
     # Define subparsers
     subparsers = parser.add_subparsers(dest="mode", help = "Input file mode", required=True)
 
-    ## SUBPARSER 1: For .xyz files
+    #################################
+    #################################
+    ## SUBPARSER 1: For .xyz files ##
+    #################################
+    #################################
     xyz_parser = subparsers.add_parser('xyz', help = "Process PoreBlazer-style xyz + dat trajectory files")
-    ### GROUP 1: Required input files
+       ###################################
+       ## GROUP 1: Required input files ##
+       ###################################
     xyz_files = xyz_parser.add_argument_group('Required input files')
     xyz_files.add_argument('trj_file', type = readable_file,
                            help = "Path to xyz file")
     xyz_files.add_argument('top_file', type = readable_file,
                            help = "Path to dat file")
-    ### GROUP 2: Frame selection and threads
+       ##########################################
+       ## GROUP 2: Frame selection and threads ##
+       ##########################################
     xyz_frames = xyz_parser.add_argument_group('Frame selection and threads')
     xyz_frames.add_argument('-n', '--N_frames', type = int, default = 1, choices = [1],
                             help = "Number of frames to analyze [Locked to 1 frame for xyz analysis]")
     xyz_frames.add_argument('-t', '--N_threads', type = int, default = 1, choices = [1],
                             help = "Number of threads for parallelization [Locked to 1 thread for xyz analysis]")
-    ### GROUP 3: MDAnalysis selection strings
+       ###########################################
+       ## GROUP 3: MDAnalysis selection strings ##
+       ###########################################
     xyz_selection = xyz_parser.add_argument_group('MDAnalysis selection strings')
     xyz_selection.add_argument('-m', '--system_name', type = str, default = 'all', choices = ['all'],
                                help = "MDAnalysis selection string defining the system matrix [Locked to 'all' for xyz input]")
     xyz_selection.add_argument('-s', '--solvent_name', type = str, default = config['solvent_name'], choices = ['', 'percolated'],
                                help = "MDAnalysis selection string defining the solvent matrix [default = YAML; Locked to '' or 'percolated' for xyz input]")
-    ### GROUP 4: Important variables
+       ##################################
+       ## GROUP 4: Important variables ##
+       ##################################
     vars = xyz_parser.add_argument_group('Important variables')
     vars.add_argument('-L', '--L_voxel', type = float, default = config['L_voxel'],
                       help = "Voxel side length (A) [default = YAML]")
@@ -925,16 +939,20 @@ def loadArgs():
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
     vars.add_argument('--Surface_area', type = bool, choices = [True, False], default = config['Surface_area'],
-                      help = "Surface area calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
+                      help = "Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
     vars.add_argument('--Tortuosity', type = bool, choices = [True, False], default = config['Tortuosity'],
-                      help = "Tortuosity calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
-    ### GROUP 5: Terminal printing and xyz generation
+                      help = "Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
+       ###################################################
+       ## GROUP 5: Terminal printing and xyz generation ##
+       ###################################################
     printing = xyz_parser.add_argument_group('Terminal printing and xyz generation')
     printing.add_argument('--print_eff', type = int, choices = [0, 1, 2], default = config['print_eff'],
                           help = "Level of printing [default = YAML; Locked to 0, 1, or 2]")
     printing.add_argument('--print_xyz', type = bool, choices = [True, False], default = config['print_xyz'],
                           help = "xyz visulatization flag [default = YAML; Locked to True or False]")
-    ### GROUP 6: Efficiency parameters
+       ####################################
+       ## GROUP 6: Efficiency parameters ##
+       ####################################
     efficiency = xyz_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
     efficiency.add_argument('--N_calc_sph', type = float, default = config['N_calc_sph'],)
@@ -947,15 +965,23 @@ def loadArgs():
     efficiency.add_argument('--tol', type = float, default = config['tol'],)
     efficiency.add_argument('--rand_frac', type = float, default = config['rand_frac'],)
 
-    ## SUBPARSER 2: For trajectory files (xtc, trr, etc.)
+    ########################################################
+    ########################################################
+    ## SUBPARSER 2: For trajectory files (xtc, trr, etc.) ##
+    ########################################################
+    ########################################################
     traj_parser = subparsers.add_parser('gmx', help = "Process GROMACS trajectory files")
-    ### GROUP 1: Required input files
+       ###################################
+       ## GROUP 1: Required input files ##
+       ###################################
     trj_files = traj_parser.add_argument_group('Required input files')
     trj_files.add_argument('trj_file', type = readable_file,
                             help = "Path to xtc/trr/gro file")
     trj_files.add_argument('top_file', type = readable_file,
                             help = "Path to tpr/gro file")
-    ### GROUP 2: Frame selection and threads
+       ##########################################
+       ## GROUP 2: Frame selection and threads ##
+       ##########################################
     traj_frames = traj_parser.add_argument_group('Frame selection and threads')
     traj_frames.add_argument('-b', '--t_min', type = float, default = config['t_min'],
                              help = "Start time (ps) [default = YAML]")
@@ -965,13 +991,17 @@ def loadArgs():
                              help = "Number of frames to analyze [default = YAML]")
     traj_frames.add_argument('-t', '--N_threads', type = int, default = config['N_threads'],
                              help = "Number of threads for parallelization [default = YAML]")
-    ### GROUP 3: MDAnalysis selection strings
+       ###########################################
+       ## GROUP 3: MDAnalysis selection strings ##
+       ###########################################
     traj_selection = traj_parser.add_argument_group('MDAnalysis selection strings')
     traj_selection.add_argument('-m', '--system_name', type = str, default = config['system_name'],
                                 help = "MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL' [default = YAML]")
     traj_selection.add_argument('-s', '--solvent_name', type = str, default = config['solvent_name'],
                                 help = "MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default = YAML]") 
-    ### GROUP 4: Important variables
+       ##################################
+       ## GROUP 4: Important variables ##
+       ##################################
     vars = traj_parser.add_argument_group('Important variables')
     vars.add_argument('-L', '--L_voxel', type = float, default = config['L_voxel'],
                       help = "Voxel side length (A) [default = YAML]")
@@ -984,16 +1014,20 @@ def loadArgs():
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
     vars.add_argument('--Surface_area', type = bool, choices = [True, False], default = config['Surface_area'],
-                      help = "Surface area calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
+                      help = "Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
     vars.add_argument('--Tortuosity', type = bool, choices = [True, False], default = config['Tortuosity'],
-                      help = "Tortuosity calculation setting; Requires --Voxel_dist = 'Uniform' and --tol = -1 [default = YAML; Locked to True or False]")
-    ### GROUP 5: Terminal printing and xyz generation
+                      help = "Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
+       ###################################################
+       ## GROUP 5: Terminal printing and xyz generation ##
+       ###################################################
     printing = traj_parser.add_argument_group('Terminal printing and xyz generation')
     printing.add_argument('--print_eff', type = int, choices = [0, 1, 2], default = config['print_eff'],
                           help = "Level of printing [default = YAML; Locked to 0, 1, or 2]")
     printing.add_argument('--print_xyz', type = bool, choices = [True, False], default = config['print_xyz'],
                           help = "xyz visulatization flag [default = YAML; Locked to True or False]")
-    ### GROUP 6: Efficiency parameters
+       ####################################
+       ## GROUP 6: Efficiency parameters ##
+       ####################################
     efficiency = traj_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
     efficiency.add_argument('--N_calc_sph', type = float, default = config['N_calc_sph'],)
@@ -1009,17 +1043,20 @@ def loadArgs():
     # Define args
     args = parser.parse_args(remaining_argv)
 
+    # If a .gro is provided instead of .xtc or .trr, N_threads = N_frames = 1
     if args.mode == 'gmx' and '.gro' in args.trj_file:
         if args.N_threads != 1:                        parser.error("gro file inputs require N_threads = 1")
         if args.N_frames != 1 and args.N_frames != -1: parser.error("gro file inputs require N_frames = 1")
     
+    # --Voxel_dist 'Uniform' and --tol -1 are required for SA calculations
     if args.Surface_area == True:
-        if args.Voxel_dist != 'Uniform':               parser.error("SA calculation requires Voxel_dist = 'Uniform'")
-        if args.tol != -1:                             parser.error("SA calculation requires tol = -1")
+        if args.Voxel_dist != 'Uniform':               parser.error("SA calculation requires --Voxel_dist 'Uniform'")
+        if args.tol != -1:                             parser.error("SA calculation requires --tol -1")
     
+    # --Voxel_dist 'Uniform' and --tol -1 are required for Tau calculations
     if args.Tortuosity == True:
-        if args.Voxel_dist != 'Uniform':               parser.error("Tortuosity calculation requires Voxel_dist = 'Uniform'")
-        if args.tol != -1:                             parser.error("Tortuosity calculation requires tol = -1")
+        if args.Voxel_dist != 'Uniform':               parser.error("Tortuosity calculation requires --Voxel_dist 'Uniform'")
+        if args.tol != -1:                             parser.error("Tortuosity calculation requires --tol -1")
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)
