@@ -21,7 +21,7 @@ PrO-VAT requires the following inputs:
      - ```python3 PrO-VAT.py {YAML} -h``` for more information
    - **Trajectory:** xyz or xtc/trr/gro file input for "xyz" or "gmx" mode, respectively
    - **Topology:** dat or tpr/gro file input for "xyz" or "gmx" mode, respectively. Note, gro files contain less topology information than tpr files
-     - **NOTE:** PrO-VAT reads in data using [MDAnalysis](https://userguide.mdanalysis.org/stable/formats/index.html), and therefore can be adapted to other trajectory and topology formats, e.g., LAMMPS
+     - **NOTE:** PrO-VAT reads in data using [MDAnalysis](https://userguide.mdanalysis.org/stable/formats/index.html), and therefore can be adapted to other trajectory and topology formats (see the "load_trajectory()" function in PrO-VAT.py), e.g., LAMMPS
    - **Optional arguments:** additional (optional) arguments can be added to overwrite the default settings defined in {**YAML**}
      - e.g., "-r 1.4" or "--probe_radius 1.4"
      - ```python3 PrO-VAT.py {YAML} {Mode} -h``` for more information
@@ -83,4 +83,4 @@ The development of PrO-VAT was supported by the Department of Energy (DOE)-Basic
  - Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
  - https://github.com/NMarioni98/PrO-VAT
 
-We thank [MDAnalysis](https://www.mdanalysis.org/) for simulation trajectory reading and analysis tools, [igraph](https://igraph.org/) for graphing/cluster analysis tools, [scikit-image](https://scikit-image.org/) for surface area analysis tools, and [PoreSpy](https://porespy.org/index.html) for tortuosity analysis tools.
+We thank [MDAnalysis](https://www.mdanalysis.org/) for simulation trajectory reading and analysis tools, [igraph](https://igraph.org/) for graphing/cluster analysis tools, [scikit-image](https://scikit-image.org/) for surface area analysis tools, and [PoreSpy](https://porespy.org/)/[OpenPNM](https://openpnm.org/) for tortuosity analysis tools.
