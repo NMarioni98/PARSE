@@ -1,2 +1,4 @@
-# Tortuosity Std - value of -1 denotes a failed tortuosity analysis on at least 1 frame
-0.0    7.09800    0.00000
+# Tortuosity Std - 0.0, 1.0, 2.0 = X, Y, and Z direction - value of -1 denotes a failed tortuosity analysis on at least 1 frame
+0.0    6.70400    0.00000
+1.0    7.17000    0.00000
+2.0    7.42000    0.00000

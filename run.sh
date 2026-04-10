@@ -31,14 +31,16 @@ cd ..
 #   --probe_radius:         defines the size of the probe, where the minimum pore size analyzed has a diameter of 2*probe_radius. Smaller values take exponentially longer to analyze. Typically 1.4-1.575 for a "water molecule" probe.
 #   --Voxel_dist:           create 'Uniform' or pseudo-"Random" voxel positions. Typically "Random", but visualizing the system using print_xyz is clearer with 'Uniform.
 #   --Surface_area:         calculate the Connolly and Lee-Richards surface area of the system matrix. Requires --Voxel_dist 'Uniform' and --tol -1.
-#   --Tortuosity:           calculate the 1D diffusional tortuosity of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1.
+#   --Tortuosity:           calculate the 1D diffusional tortuosity of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1. Memory intensive on large systems or small --L_voxel.
 #   --d_max and d_step:     defines the binning for the PSD. It may be useful to change d_step to achieve smoother profiles. Typically 50.0 and 0.25-0.50, respectively.
 #   --print_eff:            defines how much information is printing while PrO-VAT.py is running. Typically 1, but 2 is useful for trouble shooting memory errors or significant slowdowns in compute time.
 #   --print_xyz:            defines whether PrO-VAT.py generates xyz files to visualize the probe-occupiable volume that is analyzed. Typically False to conserve harddrive space (these xyz can get large for small L_voxel or large simulation boxes).
 #     - NOTE: system_name, t_min, t_max, N_frames, N_threads are "Locked" for xyz inputs
 
-# - Very large systems can run very slow. Setting tol > 0 can significantly speed up the calculation without losing significant accuracy.
-#   --tol: set the tolerance for measuring the PSD. --tol -1 means that all voxels are analyzed. tol > 0 means that the PSD calculation will end early when the largest error in the PSD is less than that value. Typically -1.
+# - Large systems or small --L_voxel can run very slow. Setting tol > 0 can significantly speed up the calculation without losing significant accuracy.
+#   --tol:            set the tolerance for measuring the PSD. --tol -1 means that all voxels are analyzed. tol > 0 means that the PSD calculation will end early when the largest error in the PSD is less than that value. Typically -1.
+#   --rand_frac:      Fraction of voxels to analyze each cycle during PSD and FFV calculation. Typically 0.10.
+#                     If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., --rand_frac 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed
 
 ###############################################################################
 ########## Running PrO-VAT using  GROMACS trajectories (xtc/trr/gro) ##########
@@ -47,10 +49,10 @@ cd ..
 cd gmx
 
 # Load in the trajectory data creating a PrO-VAT.hdf5 data file
-python3 ../PrO-VAT.py ../config.yaml gmx md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --Voxel_dist ''Uniform' --Surface_area True --Tortuosity True
+python3 ../PrO-VAT.py ../config.yaml gmx md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --Voxel_dist 'Uniform' --Surface_area True --Tortuosity True
 
 # Run the PSD analysis
-python3 ../PrO-VAT.py ../config.yaml gmx md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --Voxel_dist ''Uniform' --Surface_area True --Tortuosity True
+python3 ../PrO-VAT.py ../config.yaml gmx md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --Voxel_dist 'Uniform' --Surface_area True --Tortuosity True
 
 
 cd ..
@@ -70,5 +72,7 @@ cd ..
 # --N_threads:        number of threads.
 #   - NOTE: for a gro file input, t_min and t_max are not used, and N_frames = N_threads = 1.
 
-# - Very large systems can run very slow. Setting tol > 0 can significantly speed up the calculation without losing significant accuracy.
-#   --tol: set the tolerance for measuring the PSD. --tol -1 means that all voxels are analyzed. tol > 0 means that the PSD calculation will end early when the largest error in the PSD is less than that value. Typically -1.
+# - Large systems or small --L_voxel can run very slow. Setting tol > 0 can significantly speed up the calculation without losing significant accuracy.
+#   --tol:            set the tolerance for measuring the PSD. --tol -1 means that all voxels are analyzed. tol > 0 means that the PSD calculation will end early when the largest error in the PSD is less than that value. Typically -1.
+#   --rand_frac:      Fraction of voxels to analyze each cycle during PSD and FFV calculation. Typically 0.10.
+#                     If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., --rand_frac 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed

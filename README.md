@@ -64,6 +64,7 @@ PrO-VAT requires the following inputs:
      - **NOTE:** The SA calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Surface_area" in "config.yaml")
    - Tau.dat: 1D diffusional tortuosity of the percolated domain in the X, Y, and Z direction using simple Fickian diffusion algorithm
      - Tortuosity does not account for PBCs
+     - **NOTE:** Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems
      - **NOTE:** The tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Tortuosity" in "config.yaml")
    - {}.xyz: xyz files to visualize the free volume probed by PrO-VAT using OVITO
      - Free_Volume_Spheres visualizes the free volume *spheres* of maximum radius *probe_radius* (defined in "config.yaml") which make up the probe-occupiable free volume
