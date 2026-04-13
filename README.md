@@ -1,6 +1,6 @@
 # Probe-Occupiable Volume Analysis Tools (PrO-VAT)
 
-Written by: Nico Marioni, nmarioni@seas.upenn.edu
+Developed by: Nico Marioni, nmarioni@seas.upenn.edu
  - Developed using Python 3.12.X
    - Packages: PyYAML 6.0.3, numpy 2.3.3+, h5py 3.14.0+, MDAnalysis 2.9.0+, igraph 1.0.0, scikit-image 0.25.0+, porespy 3.0.4, openpm 3.6.1
 
@@ -59,11 +59,11 @@ PrO-VAT requires the following inputs:
    - PSD.dat: pore size distribution (PSD, or free volume distribution, channel width distribution, etc)
    - Cumulative_PSD.dat: cumulative PSD, where the PSD is the derivative of this profile
    - PSD_Plot.xlsx: excel plot of the cumulative PSD and PSD
-   - FFV.dat: volume fraction (FFV, free volume fraction, water volume fraction, porosity, etc)
+   - FFV.dat: Connolly and Lee-Richards volume fraction (FFV, free volume fraction, water volume fraction, porosity, etc)
    - SA.dat: a simple marching-cubes mesh surface area calculation of the Connolly and Lee-Richards pore surface
      - **NOTE:** The SA calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Surface_area" in "config.yaml")
    - Tau.dat: 1D diffusional tortuosity of the percolated domain in the X, Y, and Z direction using simple Fickian diffusion algorithm
-     - Tortuosity does not account for PBCs
+     - Tortuosity does not account for PBCs and applies to the Lee-Richards volume
      - **NOTE:** Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems
      - **NOTE:** The tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Tortuosity" in "config.yaml")
    - {}.xyz: xyz files to visualize the free volume probed by PrO-VAT using OVITO

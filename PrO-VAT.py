@@ -124,8 +124,8 @@ def volume_analysis(frame):
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
         time_Spheres = time.perf_counter()
         print('##### Generating Free Volume Spheres #####')
-        print("\nNumber of voxels-per-cube: ", N_cube)
-        print("Number of voxel cubes: ", np.ceil(l_x/vox_inc).astype(int)*np.ceil(l_y/vox_inc).astype(int)*np.ceil(l_z/vox_inc).astype(int))
+        print(f"\nNumber of voxels-per-cube: {N_cube}")
+        print(f"Number of voxel cubes: {np.ceil(l_x/vox_inc).astype(int)*np.ceil(l_y/vox_inc).astype(int)*np.ceil(l_z/vox_inc).astype(int)}")
 
     for x_i in np.arange(vox_inc,l_x+vox_inc,vox_inc):
         vox_track[0] += vox_inc
@@ -167,8 +167,8 @@ def volume_analysis(frame):
                     # Decreasing N_write_sph will reduce the number of distances generated each cycle, reducing memory usage
                     if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
                         if d == args.d_inc:
-                            print("\nVoxel block: ", (vox_track/vox_inc).astype(int))
-                        print("Distance, calculations, writes: {:3.1f} {:.1e} {:.1e}".format(d, len(sphere_temp)*len(sys[sys_mask]), len(dist_arr)))
+                            print(f"\nVoxel block: {(vox_track/vox_inc).astype(int)}")
+                        print(f"Distance, calculations, writes: {d:3.1f} {len(sphere_temp)*len(sys[sys_mask]):.1e} {len(dist_arr):.1e}")
 
                     if len(dist_arr) > 0:
                         dist_arr -= sys_radii[sys_mask][pair_arr[:,1]]                                                                          # Subtract radius of each system atom from the distance to get the distance from the voxel-center to the surface of the atom
@@ -200,8 +200,8 @@ def volume_analysis(frame):
     # Also prints the number of voxels within the system van der Waals free volume, voxels containing free volume spheres of radius r >= probe_radius, and voxels that need to be assessed whether they are in the free volume or not
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
         print(f"\nMaximum pore diameter: {max_diameter:.2f}")
-        print("Number of free volume spheres (r >= probe_radius): ", len(radii_arr[radii_arr >= args.probe_radius]))
-        print("Number of free volume voxels (r > 0): ", len(radii_arr[radii_arr != 0]))
+        print(f"Number of free volume spheres (r >= probe_radius): {len(radii_arr[radii_arr >= args.probe_radius])}")
+        print(f"Number of free volume voxels (r > 0): {len(radii_arr[radii_arr != 0])}")
         print(f"Time free volume spheres: {time_Spheres:.2f} s")
 
 
@@ -303,8 +303,8 @@ def volume_analysis(frame):
                     # Decreasing N_calc_PSD will reduce memory usage
                     if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (i == 0 or len(clust)*N_sol > args.N_calc_PSD/10):
                         if count_old == 0:
-                            print("\nCluster size: ", len(clust))
-                        print("Calculations: {:.1e}".format((count - count_old)*N_sol))
+                            print(f"\nCluster size: {len(clust)}")
+                        print(f"Calculations: {(count - count_old)*N_sol:.1e}")
                     
                     idx_x, idx_y, idx_z = np.unravel_index(clust[count_old:count], (l_x, l_y, l_z))                                             # Spatial indices
         
@@ -334,9 +334,9 @@ def volume_analysis(frame):
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
             print(f"\nMaximum pore diameter: {max_diameter:.2f}")
             if args.solvent_name == 'percolated':
-                print("Number of free volume spheres (r >= probe_radius) within the percolated domain: ", len(radii_arr[radii_arr >= args.probe_radius]))
+                print(f"Number of free volume spheres (r >= probe_radius) within the percolated domain: {len(radii_arr[radii_arr >= args.probe_radius])}")
             else:
-                print("Number of free volume spheres (r >= probe_radius) within the solvent domain: ", len(radii_arr[radii_arr >= args.probe_radius]))
+                print(f"Number of free volume spheres (r >= probe_radius) within the solvent domain: {len(radii_arr[radii_arr >= args.probe_radius])}")
             print(f"Time cluster: {time_Cluster:.2f} s\n")
 
     # Code to write coordinates and radius of each free volume sphere to a .xyz file, which can be visualized in OVITO, etc
@@ -353,7 +353,7 @@ def volume_analysis(frame):
                 else:
                     print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x - cell[0]/2, y - cell[1]/2, z - cell[2]/2, r), file=anaout)
         del idx_x; del idx_y; del idx_z
-        print('Free volume sphere xyz file printed\n')
+        print('Free volume sphere xyz file printed')
 
 
 
@@ -363,135 +363,142 @@ def volume_analysis(frame):
     # This part of the calculation determines the free volume fraction and cumulative probe-occupiable pore size distribution, where the distribution is defined as the probability that a random point (voxel) within the free volume resides within a free volume sphere of diameter d with minimum size probe_radius
     # This code will take each voxel not within the system volume (PSD_probes) and determine 1) if it lies within the free volume (FFV), and 2) the largest free volume sphere it lies within (PSD)
     # Changing L_voxel, N_calc_PSD, and d_step can reduce run time and memory usage
+    if args.PSD_FFV:
+        PSD_probes = np.indices((l_x, l_y, l_z), dtype=indexed_type).reshape(3, -1).T                                                               # Indices of all
 
-    PSD_probes = np.indices((l_x, l_y, l_z), dtype=indexed_type).reshape(3, -1).T                                                               # Indices of all
+        FFV_c = 0; FFV_lr = 0; FFV_total = 0                                                                                                        # Track number of voxels within the Connolly and Lee-Richards free volume against the total number to get FFV
+        d_arr = np.arange(0, args.d_max + args.d_step, args.d_step); PSD_arr = np.zeros_like(d_arr, dtype=int)                                      # d_arr is the histogram of free volume sphere sizes; PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
 
-    FFV_track = 0; FFV_total = 0                                                                                                                # Track number of voxels within the free volume against the total number to get FFV
-    d_arr = np.arange(0, args.d_max + args.d_step, args.d_step); PSD_arr = np.zeros_like(d_arr, dtype=int)                                      # d_arr is the histogram of free volume sphere sizes; PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
+        FFV_save = np.array([[],[],[]], dtype=indexed_type).T; d_save = np.array([], dtype=indexed_type)                                            # Save voxel-centers within the free volume for surface area calculations, and the size of the largest free volume sphere containing each voxel-center for printing in Free_Volume_Voxels.xyz
 
-    FFV_save = np.array([[],[],[]], dtype=indexed_type).T; d_save = np.array([], dtype=indexed_type)                                            # Save voxel-centers within the free volume for surface area calculations, and the size of the largest free volume sphere containing each voxel-center for printing in Free_Volume_Voxels.xyz
+        # Make sure 2*max_radius > d_max
+        if max_diameter > args.d_max:
+            raise ValueError(f"Largest pore diameter is greater than d_max: {max_diameter} > {args.d_max}")
 
-    # Make sure 2*max_radius > d_max
-    if max_diameter > args.d_max:
-        raise ValueError(f"Largest pore diameter is greater than d_max: {max_diameter} > {args.d_max}")
-    
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-        time_PSD = time.perf_counter()
-        print('\n##### Performing PSD/FFV Analysis #####\n')
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            time_PSD = time.perf_counter()
+            print('\n##### Performing PSD/FFV Analysis #####\n')
 
-    # Starting from the largest free volume spheres, find all free volume voxels within the desired free volume domain for FFV and PSD calulcations
-    cycle = 0; err = np.inf; N_rand = int(np.ceil((l_x * l_y * l_z) * args.rand_frac)); PSD_Old = np.zeros_like(PSD_arr)
-    while err > args.tol and len(PSD_probes) != 0:
-        if N_rand > len(PSD_probes):
-            N_rand = len(PSD_probes)
+        # Starting from the largest free volume spheres, find all free volume voxels within the desired free volume domain for FFV and PSD calulcations
+        cycle = 0; err = np.inf; N_rand = int(np.ceil((l_x * l_y * l_z) * args.rand_frac)); PSD_Old = np.zeros_like(PSD_arr)
+        while err > args.tol and len(PSD_probes) != 0:
+            if N_rand > len(PSD_probes):
+                N_rand = len(PSD_probes)
 
-        cycle += 1
-        # Track number of cycles
-        if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
-            print(f"PSD Cycle: {cycle:5d}/{int(np.ceil(1/args.rand_frac))}")
+            cycle += 1
+            # Track number of cycles
+            if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
+                print(f"PSD Cycle: {cycle:5d}/{int(np.ceil(1/args.rand_frac))}")
 
-        if args.rand_frac == 1.0:
-            PSD_temp = PSD_probes[:]
-            PSD_probes = np.array([])
-        else:
-            Rand_idx = np.random.choice(len(PSD_probes), size=N_rand, replace=False)
-            PSD_temp = PSD_probes[Rand_idx]
-            PSD_probes = np.delete(PSD_probes, Rand_idx, axis=0); del Rand_idx
-        PSD_temp = PSD_temp[radii_arr[
-                                      PSD_temp[:,0],
-                                      PSD_temp[:,1],
-                                      PSD_temp[:,2]
-                                                   ] != 0]
-        FFV_total += N_rand
-
-        for d in np.round(np.arange(args.d_max, 0, -args.d_step), decimals = 5):
-        
-            if d - args.d_step > max_diameter:
-                continue
-
-            if (d < 2*args.probe_radius) or (len(PSD_temp) == 0):
-                break
-
-            # For efficiency, we measure the distance between free volume spheres and the voxel-centers starting with the largest d_arr bin and moving down
-            if (d - args.d_step)/2 < args.probe_radius:
-                idx_x, idx_y, idx_z = np.where((radii_arr <= d/2) & (radii_arr >= args.probe_radius))
+            if args.rand_frac == 1.0:
+                PSD_temp = PSD_probes[:]
+                PSD_probes = np.array([])
             else:
-                idx_x, idx_y, idx_z = np.where((radii_arr <= d/2) & (radii_arr > (d - args.d_step)/2))
-            sphere_temp = np.stack((vox_x[idx_x],vox_y[idx_y],vox_z[idx_z]), axis=1, dtype=float_type); radii_temp = radii_arr[idx_x, idx_y, idx_z] # Positions (sphere_temp) and radii (radii_temp) of free volume spheres in the current PSD bin, radius (d - d_step)/2 < r <= d/2
-            if len(sphere_temp) == 0:
-                continue
+                Rand_idx = np.random.choice(len(PSD_probes), size=N_rand, replace=False)
+                PSD_temp = PSD_probes[Rand_idx]
+                PSD_probes = np.delete(PSD_probes, Rand_idx, axis=0); del Rand_idx
+            FFV_total += N_rand; FFV_lr += np.sum(radii_arr[PSD_temp[:,0],PSD_temp[:,1],PSD_temp[:,2]] >= args.probe_radius)
+            PSD_temp = PSD_temp[radii_arr[
+                                          PSD_temp[:,0],
+                                          PSD_temp[:,1],
+                                          PSD_temp[:,2]
+                                                       ] != 0]
 
-            # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_PSD distance calculations
-            count = 0
-            while count < len(sphere_temp) and len(PSD_temp) > 0:
-                count_old = count; count += min(int(args.N_calc_PSD/len(PSD_temp)), len(sphere_temp)-count_old)
+            for d in np.round(np.arange(args.d_max, 0, -args.d_step), decimals = 5):
+            
+                if d - args.d_step > max_diameter:
+                    continue
 
-                sph_temp = sphere_temp[count_old:count]; rad_temp = radii_temp[count_old:count]
+                if (d < 2*args.probe_radius) or (len(PSD_temp) == 0):
+                    break
 
-                pair_arr, dist_arr = distances.capped_distance(sph_temp, np.stack((                                                             # Distance between free volume spheres and voxel-centers
-                                                                                   vox_x[PSD_temp[:,0]],
-                                                                                   vox_y[PSD_temp[:,1]], 
-                                                                                   vox_z[PSD_temp[:,2]]
-                                                                                                         ), axis=1, dtype=float_type), d/2 + 0.5, box=cell)
-
-                # Useful print command for troubleshooting memory problems
-                # Decreasing N_calc_PSD will reduce memory usage
-                if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (len(sph_temp)*len(PSD_temp) > args.N_calc_PSD/10):
-                    if count_old == 0:
-                        print("\nDiameter: {} < d <= {}".format(d - args.d_step, d))
-                    print("Calculations, writes: {:.1e} {:.1e}".format(len(sph_temp)*len(PSD_temp), len(dist_arr)))
-                del sph_temp
-
-                if len(dist_arr) > 0:
-                    dist_arr -= rad_temp[pair_arr[:,0]]                                                                                         # Subtract radius of each free volume sphere from the distance to get the distance from the voxel-center to the surface of the free volume sphere
-                    pair_arr = np.unique(pair_arr[:,1][dist_arr < 0])                                                                           # Only consider voxel-centers that lie within the free volume sphere (adjusted distance < 0), and only count each occurence once (unique)
-
-                    FFV_track += len(pair_arr); PSD_arr[np.where(d_arr < d)[0]] += len(pair_arr)                                                # Voxel-centers w/n free volume sphere count towards the FFV and cumulatively towards the PSD
-
-                    FFV_save = np.append(FFV_save, PSD_temp[pair_arr], axis=0)                                                                  # Save free volume voxel-centers for printing
-                    d_save = np.append(d_save, np.zeros((len(pair_arr)), dtype=int) + int(d/args.d_step))
-
-                    PSD_temp = np.delete(PSD_temp, pair_arr, axis=0)                                                                            # No longer consider voxel-centers that are found within a free volume sphere in future loops (prevent double-counting)
-        
-        PSD = PSD_arr / PSD_arr[0]; PSD = -(PSD[1:] - PSD[:-1]) / args.d_step
-        if np.all(PSD_Old == 0):
-            PSD_Old = PSD
-            continue
-        err = np.max(np.abs(np.divide((PSD - PSD_Old), PSD, out=np.zeros_like(PSD), where=(PSD != 0)))); PSD_Old = PSD
-        
-        if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
-            if args.tol > 0:
-                print(f"Maximum Error/Tolerance: {err:.1e}/{args.tol:.1e}\n")
-            else:
-                print(f"Maximum Error: {err:.1e}\n")
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_PSD = time.perf_counter() - time_PSD
-    del PSD_probes; del sphere_temp; del pair_arr; del dist_arr; del idx_x; del idx_y; del idx_z
-
-    # Code to print the final FFV and PSD for the last frame analyzed
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
-        print("FFV: ", FFV_track/FFV_total, FFV_track, FFV_total)
-        print("\nPSD Final: ", PSD_arr[0])
-        print_string=''
-        for i in PSD_arr:
-            if i == 0:
-                continue
-            print_string += str(np.round(i / PSD_arr[0], decimals=5)) + ' '
-        print(print_string)
-        print(f"Time PSD/FFV: {time_PSD:.2f} s")
-
-    # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in OVITO
-    if (args.print_xyz) and (frame == frame_ids[-1]):
-        with open('Free_Volume_Voxels.xyz', 'w') as anaout:
-            print(str(len(FFV_save)), file=anaout)
-            print('Properties=species:S:1:pos:R:3:Radius:R:1:Alpha:R:1', file=anaout)
-            for i, sph in enumerate(FFV_save):
-                x = vox_x[sph[0]]; y = vox_y[sph[1]]; z = vox_z[sph[2]]; r = args.L_voxel/2; a = d_arr[d_save[i]]
-                if args.mode == 'xyz':
-                    print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x, y, z, r, a), file=anaout)
+                # For efficiency, we measure the distance between free volume spheres and the voxel-centers starting with the largest d_arr bin and moving down
+                if (d - args.d_step)/2 < args.probe_radius:
+                    idx_x, idx_y, idx_z = np.where((radii_arr <= d/2) & (radii_arr >= args.probe_radius))
                 else:
-                    print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x - cell[0]/2, y - cell[1]/2, z - cell[2]/2, r, a), file=anaout)
-        print('Free volume voxel xyz file printed\n')
-    del d_save; del vox_x; del vox_y; del vox_z
+                    idx_x, idx_y, idx_z = np.where((radii_arr <= d/2) & (radii_arr > (d - args.d_step)/2))
+                sphere_temp = np.stack((vox_x[idx_x],vox_y[idx_y],vox_z[idx_z]), axis=1, dtype=float_type); radii_temp = radii_arr[idx_x, idx_y, idx_z] # Positions (sphere_temp) and radii (radii_temp) of free volume spheres in the current PSD bin, radius (d - d_step)/2 < r <= d/2
+                if len(sphere_temp) == 0:
+                    continue
+
+                # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_PSD distance calculations
+                count = 0
+                while count < len(sphere_temp) and len(PSD_temp) > 0:
+                    count_old = count; count += min(int(args.N_calc_PSD/len(PSD_temp)), len(sphere_temp)-count_old)
+
+                    sph_temp = sphere_temp[count_old:count]; rad_temp = radii_temp[count_old:count]
+
+                    pair_arr, dist_arr = distances.capped_distance(sph_temp, np.stack((                                                             # Distance between free volume spheres and voxel-centers
+                                                                                       vox_x[PSD_temp[:,0]],
+                                                                                       vox_y[PSD_temp[:,1]], 
+                                                                                       vox_z[PSD_temp[:,2]]
+                                                                                                             ), axis=1, dtype=float_type), d/2 + 0.5, box=cell)
+
+                    # Useful print command for troubleshooting memory problems
+                    # Decreasing N_calc_PSD will reduce memory usage
+                    if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (len(sph_temp)*len(PSD_temp) > args.N_calc_PSD/10):
+                        if count_old == 0:
+                            print(f"\nDiameter: {d - args.d_step} < d <= {d}")
+                        print(f"Calculations, writes: {len(sph_temp)*len(PSD_temp):.1e} {len(dist_arr):.1e}")
+                    del sph_temp
+
+                    if len(dist_arr) > 0:
+                        dist_arr -= rad_temp[pair_arr[:,0]]                                                                                         # Subtract radius of each free volume sphere from the distance to get the distance from the voxel-center to the surface of the free volume sphere
+                        pair_arr = np.unique(pair_arr[:,1][dist_arr < 0])                                                                           # Only consider voxel-centers that lie within the free volume sphere (adjusted distance < 0), and only count each occurence once (unique)
+
+                        FFV_c += len(pair_arr); PSD_arr[np.where(d_arr < d)[0]] += len(pair_arr)                                                    # Voxel-centers w/n free volume sphere count towards the FFV and cumulatively towards the PSD
+
+                        FFV_save = np.append(FFV_save, PSD_temp[pair_arr], axis=0)                                                                  # Save free volume voxel-centers for printing
+                        d_save = np.append(d_save, np.zeros((len(pair_arr)), dtype=int) + int(d/args.d_step))
+
+                        PSD_temp = np.delete(PSD_temp, pair_arr, axis=0)                                                                            # No longer consider voxel-centers that are found within a free volume sphere in future loops (prevent double-counting)
+
+            PSD = PSD_arr / PSD_arr[0]; PSD = -(PSD[1:] - PSD[:-1]) / args.d_step
+            if np.all(PSD_Old == 0):
+                PSD_Old = PSD
+                continue
+            err = np.max(np.abs(np.divide((PSD - PSD_Old), PSD, out=np.zeros_like(PSD), where=(PSD != 0)))); PSD_Old = PSD
+
+            if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
+                if args.tol > 0:
+                    print(f"Maximum Error/Tolerance: {err:.1e}/{args.tol:.1e}\n")
+                else:
+                    print(f"Maximum Error: {err:.1e}\n")
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_PSD = time.perf_counter() - time_PSD
+        del PSD_probes; del sphere_temp; del pair_arr; del dist_arr; del idx_x; del idx_y; del idx_z
+
+        # Code to print the final FFV and PSD for the last frame analyzed
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            print(f"Connolly FFV: {FFV_c/FFV_total:0.3f}, {FFV_c}, {FFV_total}")
+            print(f"Lee-Richards FFV: {FFV_lr/FFV_total:0.3f}, {FFV_lr}, {FFV_total}")
+            print(f"\nPSD Final: {PSD_arr[0]}")
+            print_string=''
+            for i in PSD_arr:
+                if i == 0:
+                    continue
+                print_string += str(np.round(i / PSD_arr[0], decimals=5)) + ' '
+            print(print_string)
+            print(f"Time PSD/FFV: {time_PSD:.2f} s")
+
+        # Code to write coordinates of each voxel-center to a .xyz file, which can be visualized in OVITO
+        if (args.print_xyz) and (frame == frame_ids[-1]):
+            with open('Free_Volume_Voxels.xyz', 'w') as anaout:
+                print(str(len(FFV_save)), file=anaout)
+                print('Properties=species:S:1:pos:R:3:Radius:R:1:Alpha:R:1', file=anaout)
+                for i, sph in enumerate(FFV_save):
+                    x = vox_x[sph[0]]; y = vox_y[sph[1]]; z = vox_z[sph[2]]; r = args.L_voxel/2; a = d_arr[d_save[i]]
+                    if args.mode == 'xyz':
+                        print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x, y, z, r, a), file=anaout)
+                    else:
+                        print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x - cell[0]/2, y - cell[1]/2, z - cell[2]/2, r, a), file=anaout)
+            print('Free volume voxel xyz file printed')
+        del d_save; del vox_x; del vox_y; del vox_z
+    else:
+        FFV_c = -len(radii_arr.ravel()); FFV_lr = len(radii_arr[radii_arr >= args.probe_radius]); FFV_total = len(radii_arr.ravel())
+        d_arr = np.arange(0, args.d_max + args.d_step, args.d_step); PSD_arr = np.zeros_like(d_arr, dtype=int) - 1
+        
+        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            print(f"Lee-Richards FFV: {FFV_lr/FFV_total:0.3f}, {FFV_lr}, {FFV_total}")
 
 
 
@@ -503,19 +510,22 @@ def volume_analysis(frame):
             time_SA = time.perf_counter()
             print('\n##### Performing SA Analysis #####\n')
 
-        ######################################################
-        ############### Connolly Surface Area ################
-        ######################################################
+        if args.PSD_FFV:
+            ######################################################
+            ############### Connolly Surface Area ################
+            ######################################################
 
-        # Surface is defined by the free volume voxels
-        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                              # Create voxel lattice where free volume voxel-centers = True
+            # Surface is defined by the free volume voxels
+            SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                              # Create voxel lattice where free volume voxel-centers = True
 
-        # Create a simple mesh surface around the free volume and calculate the surface area
-        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
+            # Create a simple mesh surface around the free volume and calculate the surface area
+            SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
+            spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
 
-        verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
-        SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
+            verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
+            SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
+        else:
+            SA_c = -1
 
         ######################################################
         ### Lee-Richards "Surface Accessible" Surface Area ###
@@ -532,9 +542,10 @@ def volume_analysis(frame):
         verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                               # Marching cubes algorithm to create a surface mesh
         SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                   # Calculate the surface area of the free volume
 
-        volume = (l_x * L_voxel_x) * (l_y * L_voxel_y) * (l_z * L_voxel_z)
+        volume = (l_x * L_voxel_x) * (l_y * L_voxel_y) * (l_z * L_voxel_z)                                                                      # Normalize surface area to the true volume
         padded_volume = ((l_x + 2) * L_voxel_x) * ((l_y + 2) * L_voxel_y) * ((l_z + 2) * L_voxel_z)
-        SA_c *= (volume / padded_volume); SA_lr *= (volume / padded_volume)                                                                     # Normalize surface area to the true volume
+        if args.PSD_FFV: SA_c *= (volume / padded_volume)
+        SA_lr *= (volume / padded_volume)
 
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_SA = time.perf_counter() - time_SA
 
@@ -549,10 +560,11 @@ def volume_analysis(frame):
         if (args.print_xyz) and (frame == frame_ids[-1]):
             # Remove excess voxels due to padding
             verts_c_save = []
-            for i, sph in enumerate(verts_c):
-                if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2):
-                    continue
-                verts_c_save.append(sph)
+            if args.PSD_FFV:
+                for i, sph in enumerate(verts_c):
+                    if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2):
+                        continue
+                    verts_c_save.append(sph)
             
             verts_lr_save = []
             for i, sph in enumerate(verts_lr):
@@ -573,7 +585,7 @@ def volume_analysis(frame):
                         print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
                     else:
                         print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
-            print('Free volume surface xyz file printed\n')
+            print('Free volume surface xyz file printed')
     else:
         SA_c = 0; SA_lr = 0
     
@@ -599,6 +611,10 @@ def volume_analysis(frame):
             if "No pores remain" in str(e):                                                                                                     # If no percolating cluster found across any axis, return -1 for failed analysis
                 if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
                     print("Warning: Void space does not percolate along at least one axis. Setting tortuosity to -1.")
+                tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
+            elif "Solver failed to converge" in str(e):                                                                                         # If solver failed to converge across any axis, return -1 for failed analysis
+                if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+                    print("Error: Solver failed to converge along at least one axis. Setting tortuosity to -1.")
                 tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
             else:
                 raise e
@@ -627,7 +643,8 @@ def volume_analysis(frame):
         print(f"Time free volume spheres: {time_Spheres:.2f} s")
         if (args.solvent_name == 'percolated') or (N_sol > 0):
             print(f"Time cluster: {time_Cluster:.2f} s")
-        print(f"Time PSD/FFV: {time_PSD:.2f} s")
+        if args.PSD_FFV:
+            print(f"Time PSD/FFV: {time_PSD:.2f} s")
         if args.Surface_area == True:
             print(f"Time SA: {time_SA:.2f} s")
         if args.Tortuosity == True:
@@ -637,8 +654,10 @@ def volume_analysis(frame):
 
 
 
-    # Return the necessary information to complete the calculations: tortuosity_i/1000 gives the tortuosity in the ith direction, SA/100 gives the surface area, FFV_track / FFV_total gives the probe-occupiable free volume, PSD_arr / PSD_arr[0] gives the probe-occupiable PSD
-    PSD_arr = np.insert(PSD_arr, 0, FFV_total); PSD_arr = np.insert(PSD_arr, 0, FFV_track); PSD_arr = np.insert(PSD_arr, 0, int(SA_lr*100)); PSD_arr = np.insert(PSD_arr, 0, int(SA_c*100)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_z*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_y*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_x*1000))
+    # Return the necessary information to complete the calculations: tortuosity_i/1000 gives the tortuosity in the ith direction, SA/100 gives the surface area, FFV_XX / FFV_total gives the probe-occupiable free volume, PSD_arr / PSD_arr[0] gives the probe-occupiable PSD
+    PSD_arr = np.insert(PSD_arr, 0, FFV_total); PSD_arr = np.insert(PSD_arr, 0, FFV_lr); PSD_arr = np.insert(PSD_arr, 0, FFV_c)
+    PSD_arr = np.insert(PSD_arr, 0, int(SA_lr*100)); PSD_arr = np.insert(PSD_arr, 0, int(SA_c*100))
+    PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_z*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_y*1000)); PSD_arr = np.insert(PSD_arr, 0, int(tortuosity_x*1000))
     return PSD_arr
     
 
@@ -676,7 +695,7 @@ def load_trajectory():
     if len(Dummy_atoms) > 0 and len(system) > 0:
         for dummy in Dummy_atoms:
             if np.sum(system.names == dummy) > 0:
-                print("Removed {} {} atoms from system analysis".format(np.sum(system.names == dummy), dummy))
+                print(f"Removed {np.sum(system.names == dummy)} {dummy} atoms from system analysis")
                 system = system[system.names != dummy]
     
     # Create an array that tracks the radius of each system atom based on Size_array
@@ -695,7 +714,7 @@ def load_trajectory():
     # Print out system atom information
     print("Element N-in-System")
     for i,j in enumerate(sys_count):
-        if j > 0: print("{:>7s} {:11d}".format(Size_arr[i,0], j))
+        if j > 0: print(f"{Size_arr[i,0]:>7s} {j:11d}")
     
     if len(solvent) > 0:
         print("\nSOLVENT ATOMS")
@@ -704,7 +723,7 @@ def load_trajectory():
         if len(Dummy_atoms) > 0 and len(solvent) > 0:
             for dummy in Dummy_atoms:
                 if np.sum(solvent.names == dummy) > 0:
-                    print("Removed {} {} atoms from solvent analysis".format(np.sum(solvent.names == dummy), dummy))
+                    print(f"Removed {np.sum(solvent.names == dummy)} {dummy} atoms from solvent analysis")
                     solvent = solvent[solvent.names != dummy]
         
         # Create an array that tracks the radius of each system atom based on Size_array
@@ -723,11 +742,11 @@ def load_trajectory():
         for i,j in enumerate(sol_count):
             if j > 0:
                 if i == len(sol_count) - 1:
-                    print("{:>7s} {:11d}".format("Other", j))
+                    print(f"{"Other":>7s} {j:11d}")
                     print("\nElement 'Other' means the atom is not defined as part of the van der Waals volume list.")
                     print("This is not an error and does not impact the code output.")
                 else:
-                    print("{:>7s} {:11d}".format(Size_arr[i,0], j))
+                    print(f"{Size_arr[i,0]:>7s} {j:11d}")
 
     # Define the system times/frames to be calculated over
     print()
@@ -744,8 +763,8 @@ def load_trajectory():
             frame_ids = np.array([int((args.t_max - uta.trajectory[0].time)/dt)], dtype=int)
         else:
             frame_ids = np.linspace(int((args.t_min - uta.trajectory[0].time)/dt), int((args.t_max - uta.trajectory[0].time)/dt), args.N_frames, dtype=int)
-            print("Timestep: ~" + str(dt*(frame_ids[1] - frame_ids[0])) + " ps")
-    print("Number of frames: " + str(len(frame_ids)))
+            print(f"Timestep: ~{dt*(frame_ids[1] - frame_ids[0])} ps")
+    print(f"Number of frames: {len(frame_ids)}")
 
     # Load in the necessary data: "system" atom positions, "solvent" atom positions, cell dimensions
     r_system = np.zeros((len(frame_ids), len(system), 3), dtype=float_type)
@@ -802,7 +821,7 @@ def main():
     
     # Return the average and standard deviation (over the frames processed) of the tortuosity
     tortuosity_x = out_arr[:,0]/1000; tortuosity_y = out_arr[:,1]/1000; tortuosity_z = out_arr[:,2]/1000
-    if not np.all(tortuosity_x == 0):
+    if args.Tortuosity:
         if np.any(tortuosity_x == -1):
             tortuosity = np.array([-1, -1, -1, -1, -1, -1])
         else:
@@ -816,37 +835,39 @@ def main():
 
     # Return the average and standard deviation (over the frames processed) of the surface area
     SA_c = out_arr[:,3]/100; SA_lr = out_arr[:,4]/100; SA = np.array([np.mean(SA_c), np.std(SA_c), np.mean(SA_lr), np.std(SA_lr)])
-    if SA[0] != 0:
+    if args.Surface_area:
         with open('SA.dat', 'w') as anaout:
             print("# SA (A^2) Std - 0.0 = Connolly, 1.0 = Lee-Richards", file=anaout)
-            print('0.0 {:10.5f} {:10.5f}'.format(SA[0], SA[1]), file=anaout)
-            print('1.0 {:10.5f} {:10.5f}'.format(SA[2], SA[3]), file=anaout)
+            print('0.0 {:15.5f} {:10.5f}'.format(SA[0], SA[1]), file=anaout)
+            print('1.0 {:15.5f} {:10.5f}'.format(SA[2], SA[3]), file=anaout)
 
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
-    FFV = out_arr[:,5:7]; FFV = FFV[:,0] / FFV[:,1]; FFV = np.array([np.mean(FFV), np.std(FFV)])
+    FFV = out_arr[:,5:8]; FFV_c = FFV[:,0] / FFV[:,2]; FFV_lr = FFV[:,1] / FFV[:,2]; FFV = np.array([np.mean(FFV_c), np.std(FFV_c),np.mean(FFV_lr), np.std(FFV_lr)])
     with open('FFV.dat', 'w') as anaout:
-        print("# FFV Std", file=anaout)
+        print("# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards", file=anaout)
         print('0.0 {:10.5f} {:10.5f}'.format(FFV[0], FFV[1]), file=anaout)
+        print('1.0 {:10.5f} {:10.5f}'.format(FFV[2], FFV[3]), file=anaout)
 
-    # Return the average and standard deviation (over the frames processed) of the probe-occupiable pore size ditribution
-    d_arr = np.arange(0, args.d_max + args.d_step, args.d_step)
-    PSD_all = out_arr[:,7:]; PSD_all = np.divide(PSD_all.T, PSD_all[:,0], dtype=float).T
-    PSD_Cumulative = np.array([np.mean(PSD_all, axis=0), np.std(PSD_all, axis = 0)])
-    # PSD is the negative derivative of the cumulative sum
-    PSD = np.array([np.mean(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0), np.std(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0)])
+    if args.PSD_FFV:
+        # Return the average and standard deviation (over the frames processed) of the probe-occupiable pore size ditribution
+        d_arr = np.arange(0, args.d_max + args.d_step, args.d_step)
+        PSD_all = out_arr[:,8:]; PSD_all = np.divide(PSD_all.T, PSD_all[:,0], dtype=float).T
+        PSD_Cumulative = np.array([np.mean(PSD_all, axis=0), np.std(PSD_all, axis = 0)])
+        # PSD is the negative derivative of the cumulative sum
+        PSD = np.array([np.mean(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0), np.std(-(PSD_all[:,1:] - PSD_all[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0)])
 
-    with open('Cumulative_PSD.dat', 'w') as anaout:
-        print("# d (A) Cumulative_PSD Std", file=anaout)
-        for i in range(len(PSD_Cumulative[0,:])):
-            print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), PSD_Cumulative[0,i], PSD_Cumulative[1,i]), file=anaout)
+        with open('Cumulative_PSD.dat', 'w') as anaout:
+            print("# d (A) Cumulative_PSD Std", file=anaout)
+            for i in range(len(PSD_Cumulative[0,:])):
+                print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), PSD_Cumulative[0,i], PSD_Cumulative[1,i]), file=anaout)
 
-    with open('PSD.dat', 'w') as anaout:
-        print("# d (A) PSD Std", file=anaout) 
-        for i in range(len(PSD[0,:])):
-                if i == 0:
-                    print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), 0.0, 0.0), file=anaout)
-                else:
-                    print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), PSD[0,i-1], PSD[1,i-1]), file=anaout)
+        with open('PSD.dat', 'w') as anaout:
+            print("# d (A) PSD Std", file=anaout) 
+            for i in range(len(PSD[0,:])):
+                    if i == 0:
+                        print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), 0.0, 0.0), file=anaout)
+                    else:
+                        print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), PSD[0,i-1], PSD[1,i-1]), file=anaout)
 
     # Deletes the temporary .hdf5 file
     os.remove('PrO-VAT.hdf5')
@@ -936,6 +957,8 @@ def loadArgs():
                       help = "PSD bin size (A) [default = YAML]")
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
+    vars.add_argument('--PSD_FFV', type = string2bool, choices = [True, False], default = config['PSD_FFV'],
+                      help = "Pore size distribution and free volume fraction calculation setting [default = YAML; Locked to True or False]")
     vars.add_argument('--Surface_area', type = string2bool, choices = [True, False], default = config['Surface_area'],
                       help = "Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
     vars.add_argument('--Tortuosity', type = string2bool, choices = [True, False], default = config['Tortuosity'],
@@ -1008,6 +1031,8 @@ def loadArgs():
                       help = "PSD bin size (A) [default = YAML]")
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
+    vars.add_argument('--PSD_FFV', type = string2bool, choices = [True, False], default = config['PSD_FFV'],
+                      help = "Pore size distribution and free volume fraction calculation setting [default = YAML; Locked to True or False]")
     vars.add_argument('--Surface_area', type = string2bool, choices = [True, False], default = config['Surface_area'],
                       help = "Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
     vars.add_argument('--Tortuosity', type = string2bool, choices = [True, False], default = config['Tortuosity'],

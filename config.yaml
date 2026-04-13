@@ -69,13 +69,19 @@ d_step: 0.25
 #     Can overwrite when calling PrO-VAT.py using --Voxel_dist
 Voxel_dist: 'Random'
 
+# Set --PSD_FFV True to calculate the PSD and Connolly FFV. Lee-Richards FFV is still calculated.
+#     NOTE: --PSD_FFV False is useful if only the Lee-Richards FFV, Lee-Richards SA (--Surface_area True) and/or Tau (--Tortuosity True) is needed.
+#     Can overwrite when calling PrO-VAT.py using --PSD_FFV
+PSD_FFV: True
+
 # Set --Surface_area True to calculate the Connolly and Lee-Richards "Surface-accessible" surface area of the system matrix
 #     NOTE: SA calculation requires --Voxel_dist 'Uniform' and --tol -1
+#     NOTE: Connolly SA calculation requires --PSD_FFV True
 #     Can overwrite when calling PrO-VAT.py using --Surface_area
 Surface_area: False
 
 # Set --Tortuosity True to calculate the 1D diffusional tortuosity of the solvent matrix using a simple Fickian diffusion algorithm
-#     Tortuosity does not account for PBCs
+#     Tortuosity does not account for PBCs and applies to the Lee-Richards volume
 #     NOTE: Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems
 #     NOTE: Tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1
 #     Can overwrite when calling PrO-VAT.py using --Tortuosity

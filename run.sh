@@ -30,7 +30,8 @@ cd ..
 #   --L_voxel:              defines the approximate size of the voxels the system is broken down in to. Smaller voxels take exponentially longer to analyze. Typically 0.5-1.0 angstroms.
 #   --probe_radius:         defines the size of the probe, where the minimum pore size analyzed has a diameter of 2*probe_radius. Smaller values take exponentially longer to analyze. Typically 1.4-1.575 for a "water molecule" probe.
 #   --Voxel_dist:           create 'Uniform' or pseudo-"Random" voxel positions. Typically "Random", but visualizing the system using print_xyz is clearer with 'Uniform.
-#   --Surface_area:         calculate the Connolly and Lee-Richards surface area of the system matrix. Requires --Voxel_dist 'Uniform' and --tol -1.
+#   --PSD_FFV:              calculate the PSD and Connolly FFV of the solvent matrix.
+#   --Surface_area:         calculate the Connolly (--PSD_FFV True) and Lee-Richards surface area of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1.
 #   --Tortuosity:           calculate the 1D diffusional tortuosity of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1. Memory intensive on large systems or small --L_voxel.
 #   --d_max and d_step:     defines the binning for the PSD. It may be useful to change d_step to achieve smoother profiles. Typically 50.0 and 0.25-0.50, respectively.
 #   --print_eff:            defines how much information is printing while PrO-VAT.py is running. Typically 1, but 2 is useful for trouble shooting memory errors or significant slowdowns in compute time.
