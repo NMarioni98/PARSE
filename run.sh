@@ -14,7 +14,7 @@ python3 ../PrO-VAT.py ../config.yaml xyz polymer_matrix.xyz input.dat --Voxel_di
 
 cd ..
 
-# For a xyz file input, PrO-VAT.py relies on less input variables - many inputs are "Locked"
+# For a xyz file input, PrO-VAT.py relies on less input variables - several inputs are "Locked"
 # PrO-VAT.py takes the following inputs
 #    python3 {PATH}/PrO-VAT.py {Path}/{YAML config file} xyz {PATH}/{input .XYZ file} {PATH}/{input .DAT file} {Optional arguments}
 #     - All files, inclduing PrO-VAT.py, can be in the current folder, e.g., 'polymer_matrix.xyz', or a different folder, e.g., '{Path-to-file}/polymer_matrix.xyz'
@@ -26,7 +26,8 @@ cd ..
 #       2) Overwrite the default yaml parameter, e.g., adding "--Voxel_dist 'Uniform'" to the PrO-VAT.py command overwrites the "Voxel_dist" parameter in the yaml file, etc
 
 # Important considerations when running PrO-VAT.py:
-#   --solvent_name:         in "xyz" mode, solvent_name is either '' to probe the entire van der Waals free volume of the provided atoms, or 'percolated' to probe the largest (assumed percolated) free volume cluster.
+#   --system_name:          MDAnalysis selection string defining the system matrix, e.g., ''all', 'moltype MOL', 'resname PEO', 'resname SOL LI CL'. Typically 'all' for "xyz" mode.
+#   --solvent_name:         solvent_name is either '' to probe the entire van der Waals free volume of the provided atoms, 'percolated' to probe the largest (assumed percolated) free volume cluster, or an MDAnalysis selection string to only probe free volume clusters containg solvent atoms.
 #   --L_voxel:              defines the approximate size of the voxels the system is broken down in to. Smaller voxels take exponentially longer to analyze. Typically 0.5-1.0 angstroms.
 #   --probe_radius:         defines the size of the probe, where the minimum pore size analyzed has a diameter of 2*probe_radius. Smaller values take exponentially longer to analyze. Typically 1.4-1.575 for a "water molecule" probe.
 #   --Voxel_dist:           create 'Uniform' or pseudo-"Random" voxel positions. Typically "Random", but visualizing the system using print_xyz is clearer with 'Uniform.
@@ -65,8 +66,6 @@ cd ..
 #       - Alternatively, you can edit the included yaml file, or make a copy of the yaml file, edit it, and point PrO-VAT.py to the new file
 
 # Important considerations when running PrO-VAT.py - in addition to the variables above, "gmx" mode takes in:
-# --system_name:      MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL'
-# --solvent_name:     in "gmx" mode, solvent_name is either '' to probe the entire van der Waals free volume of the provided atoms, 'percolated' to probe the largest (assumed percolated) free volume cluster, or an MDAnalysis selection string to only probe free volume clusters containg solvent atoms.
 # --t_min:            start time for analysis in ps (-1 assumes the time of the first frame).
 # --t_max:            end time for analysis in ps (-1 assumes the time of the last frame).
 # --N_frames:         number of frames to analyze. For efficiency, this should be a multiple of N_threads.

@@ -60,9 +60,9 @@ PrO-VAT requires the following inputs:
    - Cumulative_PSD.dat: cumulative PSD, where the PSD is the derivative of this profile
    - PSD_Plot.xlsx: excel plot of the cumulative PSD and PSD
    - FFV.dat: Connolly and Lee-Richards volume fraction (FFV, free volume fraction, water volume fraction, porosity, etc)
-   - SA.dat: a simple marching-cubes mesh surface area calculation of the Connolly and Lee-Richards pore surface
+   - SA.dat: a simple marching-cubes mesh surface area calculation ([scikit-image](https://scikit-image.org/)) of the Connolly and Lee-Richards pore surface
      - **NOTE:** The SA calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Surface_area" in "config.yaml")
-   - Tau.dat: 1D diffusional tortuosity of the percolated domain in the X, Y, and Z direction using simple Fickian diffusion algorithm
+   - Tau.dat: 1D diffusional tortuosity of the percolated domain in the X, Y, and Z direction using simple Fickian diffusion algorithm ([PoreSpy](https://porespy.org/)/[OpenPNM](https://openpnm.org/))
      - Tortuosity does not account for PBCs and applies to the Lee-Richards volume
      - **NOTE:** Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems
      - **NOTE:** The tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Tortuosity" in "config.yaml")

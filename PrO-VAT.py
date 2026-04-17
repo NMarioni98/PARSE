@@ -939,10 +939,10 @@ def loadArgs():
        ## GROUP 3: MDAnalysis selection strings ##
        ###########################################
     xyz_selection = xyz_parser.add_argument_group('MDAnalysis selection strings')
-    xyz_selection.add_argument('-m', '--system_name', type = str, default = 'all', choices = ['all'],
-                               help = "MDAnalysis selection string defining the system matrix [Locked to 'all' for xyz input]")
-    xyz_selection.add_argument('-s', '--solvent_name', type = str, default = config['solvent_name'], choices = ['', 'percolated'],
-                               help = "MDAnalysis selection string defining the solvent matrix [default = YAML; Locked to '' or 'percolated' for xyz input]")
+    xyz_selection.add_argument('-m', '--system_name', type = str, default = config['system_name'],
+                               help = "MDAnalysis selection string defining the system matrix, e.g., 'all', 'moltype MOL', 'resname PEO', 'resname SOL LI CL' [default = YAML; Typically 'all' for PoreBlazer-style xyz + dat input.]")
+    xyz_selection.add_argument('-s', '--solvent_name', type = str, default = config['solvent_name'],
+                               help = "MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default = YAML; Typically '' or 'percolated' for PoreBlazer-style xyz + dat input.]")
        ##################################
        ## GROUP 4: Important variables ##
        ##################################
