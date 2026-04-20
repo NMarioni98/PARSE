@@ -33,7 +33,7 @@ system_name: 'all'
 # Default MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL'
 #     May leave blank to probe the entire free volume, e.g., '' (no solvent analysis - least expensive)
 #     May provide 'percolated' to analyze the largest free volume domain, which is typically percolated at sufficiently high solvent contents, e.g., 'percolated' (adds clustering analysis)
-#     ### GMX MODE ONLY ### - May provide a MDAnalysis selection string to define the solvent phase, where only the free volume clusters containing at least 1 solvent atom are analyzed (adds clustering + distance analysis - most expensive)
+#     May provide a MDAnalysis selection string to define the solvent phase, where only the free volume clusters containing at least 1 solvent atom are analyzed (adds clustering + distance analysis - most expensive)
 #     NOTE: Defining the solvent matrix (not --solvent_name '') can be resource intensive, specifically for systems with a very large number of voxels (large simulation box length and/or small L_voxel)
 #     Can overwrite when calling PrO-VAT.py using -s or --solvent_name
 solvent_name: ''
