@@ -70,6 +70,13 @@ def volume_analysis(frame):
     avg_sys_density = N_sys / cell[0] / cell[1] / cell[2]
     vol_d_inc = (4/3) * np.pi * (args.d_inc**3)
 
+    # --d_inc must be a minimum value to prevent an error in generating the free volume spheres
+    if args.d_inc < np.max(sys_radii) - np.min(sys_radii):
+        raise ValueError(f"Set --d_inc to {np.max(sys_radii) - np.min(sys_radii):.2f} or larger")
+    # In the niche case where all system atoms have the same vdW radius, this is not an issue
+    skip_dinc_check = False
+    if np.max(sys_radii) - np.min(sys_radii) == 0: skip_dinc_check = True
+
     # Track which frames are currently being processed
     print(f"Frame {frame}/{len(frame_ids)}")
 
@@ -86,13 +93,9 @@ def volume_analysis(frame):
     vox_z = np.linspace(0, cell[2], num = np.ceil(cell[2]/args.L_voxel).astype(int), dtype=float_type); vox_z = (vox_z[:-1] + vox_z[1:])/2      # Voxel-centers in the z direction
 
     # True L_voxel in x, y, and z
-    L_voxel_x = vox_x[1] - vox_x[0]
-    L_voxel_y = vox_y[1] - vox_y[0]
-    L_voxel_z = vox_z[1] - vox_z[0]
+    L_voxel_x = vox_x[1] - vox_x[0]; L_voxel_y = vox_y[1] - vox_y[0]; L_voxel_z = vox_z[1] - vox_z[0]
     # Box lengths in units of number of voxels
-    l_x = len(vox_x)
-    l_y = len(vox_y)
-    l_z = len(vox_z)
+    l_x = len(vox_x); l_y = len(vox_y); l_z = len(vox_z)
 
     # Use smallest integer data types possible (without losing precision) to reduce memory usage
     indexed_type = np.min_scalar_type(np.max([l_x, l_y, l_z]) - 1)
@@ -180,6 +183,7 @@ def volume_analysis(frame):
                             if (sph > sph_save) or (i+1 == len(pair_arr[:,0])):
                                 r_min = np.min(dist_arr[index:i])                                                                               # Minimum distance between voxel-center and system surface
 
+                                remove_sph = False                                                                                              # Only remove from future calculations if r_min < 0 or r_min is the same value for two cycles.
                                 if r_min > 0:                                                                                                   # Sphere does not overlap the system and radius >= 0
                                     coords = np.divide(
                                                        sphere_temp[sph_save],
@@ -187,11 +191,13 @@ def volume_analysis(frame):
                                                                  L_voxel_y,
                                                                  L_voxel_z])
                                                                             ).astype(indexed_type)
+                                    if radii_arr[coords[0],coords[1],coords[2]] == r_min: remove_sph = True
                                     radii_arr[coords[0],coords[1],coords[2]] = r_min
+                                else: remove_sph = True
 
-                                sphere_remove.append(sph_save)                                                                                  # Analysis complete, remove from future distance calculations
+                                if skip_dinc_check or remove_sph: sphere_remove.append(sph_save)                                                 # Analysis complete, remove from future distance calculations
                                 index = i; sph_save = sph
-                    sphere_temp = np.delete(sphere_temp, np.array(sphere_remove), axis=0)                                                       # Remove evaluated voxel-centers
+                    if len(sphere_remove) > 0: sphere_temp = np.delete(sphere_temp, np.array(sphere_remove), axis=0)                             # Remove evaluated voxel-centers
     if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1): time_Spheres = time.perf_counter() - time_Spheres
     max_radius = np.max(radii_arr); max_diameter = 2*max_radius
     del sys_mask; del sphere_temp; del pair_arr; del dist_arr; del sys; del sys_radii
@@ -367,7 +373,7 @@ def volume_analysis(frame):
         PSD_probes = np.indices((l_x, l_y, l_z), dtype=indexed_type).reshape(3, -1).T                                                               # Indices of all
 
         FFV_c = 0; FFV_lr = 0; FFV_total = 0                                                                                                        # Track number of voxels within the Connolly and Lee-Richards free volume against the total number to get FFV
-        d_arr = np.arange(0, args.d_max + args.d_step, args.d_step); PSD_arr = np.zeros_like(d_arr, dtype=int)                                      # d_arr is the histogram of free volume sphere sizes; PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
+        d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step),0,0); PSD_arr = np.zeros_like(d_arr, dtype=int)     # d_arr is the histogram of free volume sphere sizes; PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
 
         FFV_save = np.array([[],[],[]], dtype=indexed_type).T; d_save = np.array([], dtype=indexed_type)                                            # Save voxel-centers within the free volume for surface area calculations, and the size of the largest free volume sphere containing each voxel-center for printing in Free_Volume_Voxels.xyz
 
@@ -495,7 +501,7 @@ def volume_analysis(frame):
         del d_save; del vox_x; del vox_y; del vox_z
     else:
         FFV_c = -len(radii_arr.ravel()); FFV_lr = len(radii_arr[radii_arr >= args.probe_radius]); FFV_total = len(radii_arr.ravel())
-        d_arr = np.arange(0, args.d_max + args.d_step, args.d_step); PSD_arr = np.zeros_like(d_arr, dtype=int) - 1
+        d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step),0,0); PSD_arr = np.zeros_like(d_arr, dtype=int) - 1
         
         if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
             print(f"Lee-Richards FFV: {FFV_lr/FFV_total:0.3f}, {FFV_lr}, {FFV_total}")
@@ -516,14 +522,14 @@ def volume_analysis(frame):
             ######################################################
 
             # Surface is defined by the free volume voxels
-            SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                              # Create voxel lattice where free volume voxel-centers = True
+            SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                          # Create voxel lattice where free volume voxel-centers = True
 
             # Create a simple mesh surface around the free volume and calculate the surface area
-            SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-            spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
+            SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                               # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
+            spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                               # Define voxel size to dimensionalize surface area calulcations
 
-            verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
-            SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
+            verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                             # Marching cubes algorithm to create a surface mesh
+            SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                  # Calculate the surface area of the free volume
         else:
             SA_c = -1
 
@@ -710,6 +716,10 @@ def load_trajectory():
             sys_count[np.where(Size_arr[:,0] == name[0])[0][0]] += 1
         else:
             raise ValueError(f"Missing Atom Name and Size in Size_arr: {name}")
+    
+    # --d_inc must be a minimum value to prevent an error in generating the free volume spheres
+    if args.d_inc < np.max(sys_radii) - np.min(sys_radii):
+        raise ValueError(f"Set --d_inc to {np.max(sys_radii) - np.min(sys_radii):.2f} or larger")
 
     # Print out system atom information
     print("Element N-in-System")
@@ -850,7 +860,7 @@ def main():
 
     if args.PSD_FFV:
         # Return the average and standard deviation (over the frames processed) of the probe-occupiable pore size ditribution
-        d_arr = np.arange(0, args.d_max + args.d_step, args.d_step)
+        d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step),0,0)
         PSD_all = out_arr[:,8:]; PSD_all = np.divide(PSD_all.T, PSD_all[:,0], dtype=float).T
         PSD_Cumulative = np.array([np.mean(PSD_all, axis=0), np.std(PSD_all, axis = 0)])
         # PSD is the negative derivative of the cumulative sum
@@ -863,7 +873,7 @@ def main():
 
         with open('PSD.dat', 'w') as anaout:
             print("# d (A) PSD Std", file=anaout) 
-            for i in range(len(PSD[0,:])):
+            for i in range(len(PSD_Cumulative[0,:])):
                     if i == 0:
                         print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), 0.0, 0.0), file=anaout)
                     else:
