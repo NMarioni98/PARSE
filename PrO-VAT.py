@@ -87,7 +87,7 @@ def volume_analysis(frame):
     # Free volume sphere analysis
     # This part of the calculation determines the maximum size of voxel-centered free volume spheres without overlapping system atoms (the van der Waals volume), where the total volume of all spheres larger than probe_radius defines the probe-occupiable free volume of the system
     # This code will generate points at the center of voxels with side length L_voxel and grow these points into free volume spheres
-    # Changing L_voxel, N_write_sph, and d_inc can reduce run time and memory usage
+    # Changing L_voxel, N_write_max/N_calc_max, and d_inc can reduce run time and memory usage
     vox_x = np.linspace(0, cell[0], num = np.ceil(cell[0]/args.L_voxel).astype(int), dtype=float_type); vox_x = (vox_x[:-1] + vox_x[1:])/2      # Voxel-centers in the x direction
     vox_y = np.linspace(0, cell[1], num = np.ceil(cell[1]/args.L_voxel).astype(int), dtype=float_type); vox_y = (vox_y[:-1] + vox_y[1:])/2      # Voxel-centers in the y direction
     vox_z = np.linspace(0, cell[2], num = np.ceil(cell[2]/args.L_voxel).astype(int), dtype=float_type); vox_z = (vox_z[:-1] + vox_z[1:])/2      # Voxel-centers in the z direction
@@ -111,7 +111,11 @@ def volume_analysis(frame):
     radii_arr = np.zeros((l_x,l_y,l_z), dtype=float_type)                                                                                       # radii_arr tracks free volume sphere indices (position in array = position in voxelized system) and radius (value at that position), where we are interested in spheres of radius r >= probe_radius. All probes of r > 0 are saved for later use.
 
     # Divide the voxelized system into voxel cubes for efficient analysis
-    N_cube = args.N_write_sph / (avg_sys_density * vol_d_inc); L_cube = N_cube**(1/3)                                                           # To improve efficiency, voxels are looped over in cubes of N_cube voxel-centers
+    N_cube = np.min([                                                                                                                           # To improve efficiency, voxels are looped over in cubes of N_cube voxel-centers
+                    args.N_write_max / (avg_sys_density * vol_d_inc),
+                    ( args.N_calc_max / (avg_sys_density * (args.L_voxel + args.d_inc/2)**3) ) ** (1/2)
+                                                                                           ])
+    L_cube = N_cube**(1/3)
     vox_inc = np.ceil(                                                                                                                          # vox_inc = side length of voxel cube, such that each voxel cube is about the same size
                         np.min((l_x, l_y, l_z))
                       / np.ceil(
@@ -167,7 +171,7 @@ def volume_analysis(frame):
                     pair_arr, dist_arr = distances.capped_distance(sphere_temp, sys[sys_mask], d, box=cell)                                     # Distance between voxel-centers and system atoms
 
                     # Useful print command for troubleshooting memory problems
-                    # Decreasing N_write_sph will reduce the number of distances generated each cycle, reducing memory usage
+                    # Decreasing N_write_max/N_calc_maX will reduce the number of distances generated each cycle, reducing memory usage
                     if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
                         if d == args.d_inc:
                             print(f"\nVoxel block: {(vox_track/vox_inc).astype(int)}")
@@ -300,14 +304,14 @@ def volume_analysis(frame):
                     radii_arr[np.isin(membership, cluster_ids[i:]) & (radii_arr >= args.probe_radius)] = args.probe_radius/2                    # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
                     break
 
-                # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_PSD distance calculations
+                # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_max distance calculations
                 count = 0
                 while count < len(clust):
-                    count_old = count; count += min(int(args.N_calc_PSD/N_sol), len(clust)-count_old)
+                    count_old = count; count += min(int(args.N_calc_max/N_sol), len(clust)-count_old)
         
                     # Useful print command for troubleshooting memory problems
-                    # Decreasing N_calc_PSD will reduce memory usage
-                    if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (i == 0 or len(clust)*N_sol > args.N_calc_PSD/10):
+                    # Decreasing N_calc_max will reduce memory usage
+                    if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (i == 0 or len(clust)*N_sol > args.N_calc_max/10):
                         if count_old == 0:
                             print(f"\nCluster size: {len(clust)}")
                         print(f"Calculations: {(count - count_old)*N_sol:.1e}")
@@ -368,7 +372,7 @@ def volume_analysis(frame):
     # PSD/FFV analysis
     # This part of the calculation determines the free volume fraction and cumulative probe-occupiable pore size distribution, where the distribution is defined as the probability that a random point (voxel) within the free volume resides within a free volume sphere of diameter d with minimum size probe_radius
     # This code will take each voxel not within the system volume (PSD_probes) and determine 1) if it lies within the free volume (FFV), and 2) the largest free volume sphere it lies within (PSD)
-    # Changing L_voxel, N_calc_PSD, and d_step can reduce run time and memory usage
+    # Changing L_voxel, N_calc_max, and d_step can reduce run time and memory usage
     if args.PSD_FFV:
         PSD_probes = np.indices((l_x, l_y, l_z), dtype=indexed_type).reshape(3, -1).T                                                               # Indices of all
 
@@ -427,10 +431,10 @@ def volume_analysis(frame):
                 if len(sphere_temp) == 0:
                     continue
 
-                # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_PSD distance calculations
+                # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_max distance calculations
                 count = 0
                 while count < len(sphere_temp) and len(PSD_temp) > 0:
-                    count_old = count; count += min(int(args.N_calc_PSD/len(PSD_temp)), len(sphere_temp)-count_old)
+                    count_old = count; count += min(int(args.N_calc_max/len(PSD_temp)), len(sphere_temp)-count_old)
 
                     sph_temp = sphere_temp[count_old:count]; rad_temp = radii_temp[count_old:count]
 
@@ -441,8 +445,8 @@ def volume_analysis(frame):
                                                                                                              ), axis=1, dtype=float_type), d/2 + 0.5, box=cell)
 
                     # Useful print command for troubleshooting memory problems
-                    # Decreasing N_calc_PSD will reduce memory usage
-                    if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (len(sph_temp)*len(PSD_temp) > args.N_calc_PSD/10):
+                    # Decreasing N_calc_max will reduce memory usage
+                    if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (len(sph_temp)*len(PSD_temp) > args.N_calc_max/10):
                         if count_old == 0:
                             print(f"\nDiameter: {d - args.d_step} < d <= {d}")
                         print(f"Calculations, writes: {len(sph_temp)*len(PSD_temp):.1e} {len(dist_arr):.1e}")
@@ -899,6 +903,20 @@ def string2bool(input):
     elif input == 'False':
         return False
 
+def float_range(min_val, max_val):
+    # Limit float input to specified range
+    def float_range_checker(arg):
+        try:
+            f = float(arg)
+        except ValueError:    
+            raise argparse.ArgumentTypeError("Input is not a float.")
+        
+        if f < min_val or f > max_val:
+            raise argparse.ArgumentTypeError(f"Input restricted to floats between {min_val} and {max_val}")
+        return f
+        
+    return float_range_checker
+
 
 
 def loadArgs():
@@ -986,12 +1004,12 @@ def loadArgs():
        ####################################
     efficiency = xyz_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
-    efficiency.add_argument('--N_write_sph', type = float, default = config['N_write_sph'],)
+    efficiency.add_argument('--N_calc_max', type = float, default = config['N_calc_max'],)
+    efficiency.add_argument('--N_write_max', type = float, default = config['N_write_max'],)
     efficiency.add_argument('--d_inc', type = float, default = config['d_inc'],)
-    efficiency.add_argument('--N_calc_PSD', type = float, default = config['N_calc_PSD'],)
     efficiency.add_argument('--N_edge_gen', type = float, default = config['N_edge_gen'])
     efficiency.add_argument('--tol', type = float, default = config['tol'],)
-    efficiency.add_argument('--rand_frac', type = float, default = config['rand_frac'],)
+    efficiency.add_argument('--rand_frac', type = float_range(0.0, 1.0), default = config['rand_frac'],)
 
     ########################################################
     ########################################################
@@ -1060,12 +1078,12 @@ def loadArgs():
        ####################################
     efficiency = traj_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
-    efficiency.add_argument('--N_write_sph', type = float, default = config['N_write_sph'],)
+    efficiency.add_argument('--N_calc_max', type = float, default = config['N_calc_max'],)
+    efficiency.add_argument('--N_write_max', type = float, default = config['N_write_max'],)
     efficiency.add_argument('--d_inc', type = float, default = config['d_inc'],)
-    efficiency.add_argument('--N_calc_PSD', type = float, default = config['N_calc_PSD'],)
     efficiency.add_argument('--N_edge_gen', type = float, default = config['N_edge_gen'])
     efficiency.add_argument('--tol', type = float, default = config['tol'],)
-    efficiency.add_argument('--rand_frac', type = float, default = config['rand_frac'],)
+    efficiency.add_argument('--rand_frac', type = float_range(0.0, 1.0), default = config['rand_frac'],)
 
     # Define args
     args = parser.parse_args(remaining_argv)
@@ -1084,6 +1102,10 @@ def loadArgs():
     if args.Tortuosity == True:
         if args.Voxel_dist != 'Uniform':               parser.error("Tortuosity calculation requires --Voxel_dist 'Uniform'")
         if args.tol != -1:                             parser.error("Tortuosity calculation requires --tol -1")
+    
+    # When calculating the PSD from all frames (--tol -1 or --rand_frac >= 0.5), --rand_frac 1 is the most efficient
+    if args.tol == -1 or args.rand_frac >= 0.5:
+        args.rand_frac = 1
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)

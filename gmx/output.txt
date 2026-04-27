@@ -35,12 +35,12 @@
 
     #### Efficiency Parameters #####
     clustering        : Neumann
-    N_write_sph       : 1e+08
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
     d_inc             : 2
-    N_calc_PSD        : 1e+12
     N_edge_gen        : 1e+08
     tol               : -1
-    rand_frac         : 0.1
+    rand_frac         : 1
 
 ########################################
 ########################################
@@ -101,12 +101,12 @@ Trajectory loaded, terminating process. Run again to perform analysis
 
     #### Efficiency Parameters #####
     clustering        : Neumann
-    N_write_sph       : 1e+08
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
     d_inc             : 2
-    N_calc_PSD        : 1e+12
     N_edge_gen        : 1e+08
     tol               : -1
-    rand_frac         : 0.1
+    rand_frac         : 1
 
 ########################################
 ########################################
@@ -191,71 +191,44 @@ Distance, calculations, writes: 12.0 5.2e+06 1.1e+04
 Maximum pore diameter: 20.41
 Number of free volume spheres (r >= probe_radius): 167694
 Number of free volume voxels (r > 0): 471175
-Time free volume spheres: 20.20 s
+Time free volume spheres: 20.88 s
 
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
 
 Maximum pore diameter: 20.41
 Number of free volume spheres (r >= probe_radius) within the percolated domain: 166521
-Time cluster: 0.21 s
+Time cluster: 0.23 s
 
 Free volume sphere xyz file printed
 
 ##### Performing PSD/FFV Analysis #####
 
-PSD Cycle:     1/10
-PSD Cycle:     2/10
-Maximum Error: 2.1e-01
-
-PSD Cycle:     3/10
-Maximum Error: 1.3e-01
-
-PSD Cycle:     4/10
-Maximum Error: 3.3e-01
-
-PSD Cycle:     5/10
-Maximum Error: 1.2e-01
-
-PSD Cycle:     6/10
-Maximum Error: 1.8e-01
-
-PSD Cycle:     7/10
-Maximum Error: 4.5e-02
-
-PSD Cycle:     8/10
-Maximum Error: 6.2e-02
-
-PSD Cycle:     9/10
-Maximum Error: 7.3e-02
-
-PSD Cycle:    10/10
-Maximum Error: 4.9e-02
-
+PSD Cycle:     1/1
 Connolly FFV: 0.373, 290358, 778688
 Lee-Richards FFV: 0.214, 166521, 778688
 
 PSD Final: 290358
 1.0 1.0 0.99284 0.97954 0.95521 0.93878 0.92311 0.91438 0.88815 0.86614 0.8355 0.81732 0.80282 0.788 0.76848 0.74745 0.7263 0.70464 0.68739 0.66691 0.64186 0.62 0.6056 0.58478 0.56428 0.54715 0.52711 0.50185 0.47188 0.45391 0.43675 0.41526 0.38868 0.36852 0.35015 0.33294 0.3139 0.29808 0.28601 0.26907 0.25256 0.23181 0.22047 0.19527 0.18253 0.17401 0.15666 0.14588 0.13568 0.12078 0.09123 0.08796 0.0854 0.07741 0.07324 0.07007 0.06907 0.05601 0.04607 0.02907 0.02799 0.02737 0.02524 0.02443 0.02313 0.0224 0.02153 0.0198 0.01967 0.01749 0.0151 
-Time PSD/FFV: 9.25 s
+Time PSD/FFV: 6.21 s
 Free volume voxel xyz file printed
 
 ##### Performing SA Analysis #####
 
 Connolly SA (A^2):  94857.33
 Lee-Richards SA (A^2):  88143.13
-Time SA: 0.13 s
+Time SA: 0.12 s
 Free volume surface xyz file printed
 
 ##### Performing Tortuosity Analysis #####
 
 Directional Tortuosity:  X-6.40 Y-4.37 Z-4.45
 Average Tortuosity:  5.07
-Time Toruosity: 4.05 s
+Time Toruosity: 4.16 s
 
 ##### Summary of Calculation Times #####
 
-Time free volume spheres: 20.20 s
-Time cluster: 0.21 s
-Time PSD/FFV: 9.25 s
-Time SA: 0.13 s
-Time Toruosity: 4.05 s
+Time free volume spheres: 20.88 s
+Time cluster: 0.23 s
+Time PSD/FFV: 6.21 s
+Time SA: 0.12 s
+Time Toruosity: 4.16 s

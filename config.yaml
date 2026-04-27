@@ -149,25 +149,26 @@ Dummy_atoms:
 #     Neumann should be sufficient for MD simulations. Moore is more resource intensive
 clustering: 'Neumann'
 
+# Generating free volume voxels, free volume clusters that contain solvent, and generating PSD/FFV
+N_calc_max: 1e12        # Maximum number of distance calculations-per-loop. A lower number uses less memory.
+
 # Generating free volume spheres
-N_write_sph: 1e8        # Maximum number of distance writes-per-loop. A lower number uses less memory.
+N_write_max: 1e8        # Maximum number of distance writes-per-loop. A lower number uses less memory.
 d_inc: 2                # Incremental size of distance cutoff while generating free volume spheres.
                         # NOTE: N_write_sph and d_inc are used to determine the size of voxel cubes when generating free volume spheres
 
-# Finding free volume voxel clusters that contain solvent AND/OR generating PSD and FFV
-N_calc_PSD: 1e12        # Maximum number of distance calculations-per-loop. A lower number uses less memory.
-
 # Voxel cluster analysis
-N_edge_gen: 1e8        # Maximum number of voxel-voxel pairs (edges) to generate per loop. A lower number uses less memory.
+N_edge_gen: 1e8         # Maximum number of voxel-voxel pairs (edges) to generate per loop. A lower number uses less memory.
 
 # Generating PSD and FFV
 tol: -1                 # --tol -1 to calculate PSD and FFV using ALL voxels.
                         # tol > 0 to calculate PSD and FFV using random subset of voxels until the max error in the PSD err = |PSD(i) - PSD(i-1)|  / PSD(i) < tol
                         # NOTE: --tol -1 and tol > 0 converge to the same answer as tol -> 0, i.e., smaller values of tol (where tol > 0) increases the number of cycles performed, where --tol -1 performs 1/rand_frac cycles
                         # NOTE: Surface area and tortuosity calculations require --tol -1
-rand_frac: 0.10         # Fraction of voxels to analyze each cycle during PSD and FFV calculation.
+rand_frac: 0.01         # Fraction of voxels to analyze each cycle during PSD and FFV calculation.
                         # If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., --rand_frac 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed
-                        # NOTE:If --tol -1 or a significant fraction of the total number of voxels is being analyzed at the set value of tol > 0, --rand_frac can significantly impact performance
+                        # NOTE: If --tol -1 or --rand_frac >= 0.5, then --rand_frac 1. This calculates the PSD in a single cycle for maximum efficiency.
+                        # NOTE: If a significant fraction of the total number of voxels is being analyzed at the set value of tol > 0, --rand_frac can significantly impact performance
                         #      For a 10 nm box length frame with FFV ~ 0.5 and --L_voxel 0.5, Time PSD/FFV decreased from ~380s to ~216s to ~170s to ~168s to ~150s going from --rand_frac 0.01 to 0.05 to 0.10 to 0.25 to 1.0
                         #      For a 38.4 nm box length frame with FFV ~ 0.35 and --L_voxel 1.0, Time PSD/FFV decreased from ~3450s to ~1150s to ~995s to ~980s to ~920s going from --rand_frac 0.01 to 0.05 to 0.10 to 0.25 to 1.0
                         #          Tests performed using --N_frames 1 --N_threads 1 on a local desktop

@@ -41,7 +41,7 @@ cd ..
 
 # - Large systems or small --L_voxel can run very slow. Setting tol > 0 can significantly speed up the calculation without losing significant accuracy.
 #   --tol:            set the tolerance for measuring the PSD. --tol -1 means that all voxels are analyzed. tol > 0 means that the PSD calculation will end early when the largest error in the PSD is less than that value. Typically -1.
-#   --rand_frac:      Fraction of voxels to analyze each cycle during PSD and FFV calculation. Typically 0.10.
+#   --rand_frac:      Fraction of voxels to analyze each cycle during PSD and FFV calculation. rand_frac defaults to a value of 1 if --tol -1 or --rand_frac >= 0.5. Typically 0.01.
 #                     If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., --rand_frac 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed
 
 ###############################################################################
@@ -74,5 +74,5 @@ cd ..
 
 # - Large systems or small --L_voxel can run very slow. Setting tol > 0 can significantly speed up the calculation without losing significant accuracy.
 #   --tol:            set the tolerance for measuring the PSD. --tol -1 means that all voxels are analyzed. tol > 0 means that the PSD calculation will end early when the largest error in the PSD is less than that value. Typically -1.
-#   --rand_frac:      Fraction of voxels to analyze each cycle during PSD and FFV calculation. Typically 0.10.
+#   --rand_frac:      Fraction of voxels to analyze each cycle during PSD and FFV calculation. rand_frac defaults to a value of 1 if --tol -1 or --rand_frac >= 0.5. Typically 0.01.
 #                     If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., --rand_frac 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed
