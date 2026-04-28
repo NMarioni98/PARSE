@@ -112,92 +112,33 @@ Trajectory loaded, terminating process. Run again to perform analysis
 ########################################
 ########################################
 
-PSD Analysis
+Volume Analysis
 
 Frame 0/1
 ##### Generating Free Volume Spheres #####
 
-Number of voxels-per-cube: 97336
-Number of voxel cubes: 8
+Number of voxels-per-cube: 778688
+Number of voxel cubes: 1
 
 Voxel block: [0 0 0]
-Distance, calculations, writes: 2.0 2.0e+09 1.7e+05
-Distance, calculations, writes: 4.0 1.5e+09 5.9e+05
-Distance, calculations, writes: 6.0 1.2e+09 9.8e+05
-Distance, calculations, writes: 8.0 4.1e+08 4.0e+05
-Distance, calculations, writes: 10.0 7.7e+07 1.0e+05
-Distance, calculations, writes: 12.0 7.4e+06 1.3e+04
-
-Voxel block: [0 0 1]
-Distance, calculations, writes: 2.0 2.0e+09 1.8e+05
-Distance, calculations, writes: 4.0 1.5e+09 6.1e+05
-Distance, calculations, writes: 6.0 1.1e+09 9.8e+05
-Distance, calculations, writes: 8.0 4.1e+08 3.7e+05
-Distance, calculations, writes: 10.0 9.0e+07 1.2e+05
-Distance, calculations, writes: 12.0 8.8e+06 1.4e+04
-Distance, calculations, writes: 14.0 1.5e+05 5.8e+02
-Distance, calculations, writes: 16.0 1.6e+05 1.5e+03
-
-Voxel block: [0 1 0]
-Distance, calculations, writes: 2.0 2.0e+09 1.9e+05
-Distance, calculations, writes: 4.0 1.4e+09 6.2e+05
-Distance, calculations, writes: 6.0 1.1e+09 9.2e+05
-Distance, calculations, writes: 8.0 4.3e+08 3.6e+05
-Distance, calculations, writes: 10.0 1.2e+08 1.3e+05
-Distance, calculations, writes: 12.0 2.3e+07 3.5e+04
-
-Voxel block: [0 1 1]
-Distance, calculations, writes: 2.0 2.1e+09 2.1e+05
-Distance, calculations, writes: 4.0 1.4e+09 6.8e+05
-Distance, calculations, writes: 6.0 9.5e+08 9.9e+05
-Distance, calculations, writes: 8.0 2.8e+08 2.6e+05
-Distance, calculations, writes: 10.0 7.3e+07 8.5e+04
-Distance, calculations, writes: 12.0 8.1e+06 1.5e+04
-
-Voxel block: [1 0 0]
-Distance, calculations, writes: 2.0 2.0e+09 2.1e+05
-Distance, calculations, writes: 4.0 1.3e+09 6.7e+05
-Distance, calculations, writes: 6.0 8.9e+08 9.2e+05
-Distance, calculations, writes: 8.0 3.0e+08 2.4e+05
-Distance, calculations, writes: 10.0 1.2e+08 9.0e+04
-Distance, calculations, writes: 12.0 4.0e+07 3.8e+04
-Distance, calculations, writes: 14.0 6.9e+06 1.1e+04
-
-Voxel block: [1 0 1]
-Distance, calculations, writes: 2.0 2.0e+09 2.0e+05
-Distance, calculations, writes: 4.0 1.3e+09 6.7e+05
-Distance, calculations, writes: 6.0 9.3e+08 1.0e+06
-Distance, calculations, writes: 8.0 2.5e+08 2.7e+05
-Distance, calculations, writes: 10.0 4.0e+07 5.7e+04
-Distance, calculations, writes: 12.0 3.1e+06 5.8e+03
-
-Voxel block: [1 1 0]
-Distance, calculations, writes: 2.0 2.0e+09 1.9e+05
-Distance, calculations, writes: 4.0 1.4e+09 6.3e+05
-Distance, calculations, writes: 6.0 1.0e+09 9.3e+05
-Distance, calculations, writes: 8.0 4.0e+08 3.2e+05
-Distance, calculations, writes: 10.0 1.3e+08 1.3e+05
-Distance, calculations, writes: 12.0 1.9e+07 2.6e+04
-Distance, calculations, writes: 14.0 5.2e+05 1.2e+03
-
-Voxel block: [1 1 1]
-Distance, calculations, writes: 2.0 2.0e+09 1.8e+05
-Distance, calculations, writes: 4.0 1.4e+09 6.2e+05
-Distance, calculations, writes: 6.0 1.1e+09 9.7e+05
-Distance, calculations, writes: 8.0 3.8e+08 3.5e+05
-Distance, calculations, writes: 10.0 8.2e+07 1.0e+05
-Distance, calculations, writes: 12.0 5.2e+06 1.1e+04
+Distance, calculations, writes: 2.0 3.7e+10 1.5e+06
+Distance, calculations, writes: 4.0 2.2e+10 5.1e+06
+Distance, calculations, writes: 6.0 1.5e+10 7.7e+06
+Distance, calculations, writes: 8.0 4.6e+09 2.6e+06
+Distance, calculations, writes: 10.0 1.1e+09 8.2e+05
+Distance, calculations, writes: 12.0 1.6e+08 1.6e+05
+Distance, calculations, writes: 14.0 9.5e+06 1.3e+04
 
 Maximum pore diameter: 20.41
 Number of free volume spheres (r >= probe_radius): 167694
 Number of free volume voxels (r > 0): 471175
-Time free volume spheres: 20.88 s
+Time free volume spheres: 22.34 s
 
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
 
 Maximum pore diameter: 20.41
-Number of free volume spheres (r >= probe_radius) within the percolated domain: 166521
-Time cluster: 0.23 s
+Number of spheres (r >= probe_radius) within percolated domain: 166521
+Time cluster: 0.25 s
 
 Free volume sphere xyz file printed
 
@@ -208,27 +149,27 @@ Connolly FFV: 0.373, 290358, 778688
 Lee-Richards FFV: 0.214, 166521, 778688
 
 PSD Final: 290358
-1.0 1.0 0.99284 0.97954 0.95521 0.93878 0.92311 0.91438 0.88815 0.86614 0.8355 0.81732 0.80282 0.788 0.76848 0.74745 0.7263 0.70464 0.68739 0.66691 0.64186 0.62 0.6056 0.58478 0.56428 0.54715 0.52711 0.50185 0.47188 0.45391 0.43675 0.41526 0.38868 0.36852 0.35015 0.33294 0.3139 0.29808 0.28601 0.26907 0.25256 0.23181 0.22047 0.19527 0.18253 0.17401 0.15666 0.14588 0.13568 0.12078 0.09123 0.08796 0.0854 0.07741 0.07324 0.07007 0.06907 0.05601 0.04607 0.02907 0.02799 0.02737 0.02524 0.02443 0.02313 0.0224 0.02153 0.0198 0.01967 0.01749 0.0151 
-Time PSD/FFV: 6.21 s
+1.0 1.0 0.99284 0.97954 0.95521 0.93878 0.92311 0.91438 0.88815 0.86614 0.8355 0.81732 0.80282 0.788 0.76848 0.74745 0.7263 0.70464 0.68739 0.66691 0.64186 0.62 0.6056 0.58478 0.56428 0.54715 0.52711 0.50185 0.47188 0.45391 0.43675 0.41526 0.38868 0.36852 0.35015 0.33294 0.3139 0.29808 0.28601 0.26907 0.25256 0.23181 0.22047 0.19527 0.18253 0.17401 0.15666 0.14588 0.13568 0.12078 0.09123 0.08796 0.0854 0.07741 0.07324 0.07007 0.06907 0.05601 0.04607 0.02907 0.02799 0.02737 0.02524 0.02443 0.02313 0.0224 0.02153 0.0198 0.01967 0.01749 0.0151
+Time PSD/FFV: 6.87 s
 Free volume voxel xyz file printed
 
 ##### Performing SA Analysis #####
 
 Connolly SA (A^2):  94857.33
 Lee-Richards SA (A^2):  88143.13
-Time SA: 0.12 s
+Time SA: 0.13 s
 Free volume surface xyz file printed
 
 ##### Performing Tortuosity Analysis #####
 
 Directional Tortuosity:  X-6.40 Y-4.37 Z-4.45
 Average Tortuosity:  5.07
-Time Toruosity: 4.16 s
+Time Toruosity: 5.72 s
 
 ##### Summary of Calculation Times #####
 
-Time free volume spheres: 20.88 s
-Time cluster: 0.23 s
-Time PSD/FFV: 6.21 s
-Time SA: 0.12 s
-Time Toruosity: 4.16 s
+Time free volume spheres: 22.34 s
+Time cluster: 0.25 s
+Time PSD/FFV: 6.87 s
+Time SA: 0.13 s
+Time Toruosity: 5.72 s
