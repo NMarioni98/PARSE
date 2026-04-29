@@ -40,6 +40,7 @@ import porespy as ps
 import multiprocessing as mp
 import functools
 import os
+import sys
 import time
 import yaml
 import argparse
@@ -68,7 +69,6 @@ def export_spheres_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cel
 
     # Read in voxel_data
     vox_x, vox_y, vox_z = voxel_data['vox_x'], voxel_data['vox_y'], voxel_data['vox_z']
-    # Index of free volume spheres of size r >= probe_radius
     
     # Write .xyz file containing each free volume sphere of size r >= probe_radius
     #   Radius = radius of the free volume sphere
@@ -80,9 +80,9 @@ def export_spheres_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cel
             x, y, z = vox_x[idx_x[i]], vox_y[idx_y[i]], vox_z[idx_z[i]]
             r = radii_arr[idx_x[i], idx_y[i], idx_z[i]]
             if args.mode == 'xyz': 
-                print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x, y, z, r), file=anaout)
+                print(f"X {x:10.5f} {y:10.5f} {z:10.5f} {r:10.5f}", file=anaout)
             else: 
-                print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x - cell[0]/2, y - cell[1]/2, z - cell[2]/2, r), file=anaout)
+                print(f"X {x - cell[0]/2:10.5f} {y - cell[1]/2:10.5f} {z - cell[2]/2:10.5f} {r:10.5f}", file=anaout)
     print('Free volume sphere xyz file printed')
 
 def export_voxels_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cell: np.ndarray, d_arr: np.ndarray, FFV_save: np.ndarray, d_save: np.ndarray) -> None:
@@ -108,9 +108,9 @@ def export_voxels_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cell
             x, y, z = vox_x[sph[0]], vox_y[sph[1]], vox_z[sph[2]]
             r = args.L_voxel/2; a = d_arr[d_save[i]]
             if args.mode == 'xyz': 
-                print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x, y, z, r, a), file=anaout)
+                print(f"X {x:10.5f} {y:10.5f} {z:10.5f} {r:10.5f} {a:10.5f}", file=anaout)
             else: 
-                print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(x - cell[0]/2, y - cell[1]/2, z - cell[2]/2, r, a), file=anaout)
+                print(f"X {x - cell[0]/2:10.5f} {y - cell[1]/2:10.5f} {z - cell[2]/2:10.5f} {r:10.5f} {a:10.5f}", file=anaout)
     print('Free volume voxel xyz file printed')
 
 def export_surface_xyz(args: argparse.Namespace, cell: np.ndarray, verts_c: Optional[np.ndarray], verts_lr: np.ndarray) -> None:
@@ -140,11 +140,11 @@ def export_surface_xyz(args: argparse.Namespace, cell: np.ndarray, verts_c: Opti
         print(str(len(verts_c_save) + len(verts_lr_save)), file=anaout)
         print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
         for sph in verts_c_save:
-            if args.mode == 'xyz': print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
-            else: print('X {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
+            if args.mode == 'xyz': print(f"X {sph[0]:10.5f} {sph[1]:10.5f} {sph[2]:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
+            else: print(f"X {sph[0] - cell[0]/2:10.5f} {sph[1] - cell[1]/2:10.5f} {sph[2] - cell[2]/2:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
         for sph in verts_lr_save:
-            if args.mode == 'xyz': print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0], sph[1], sph[2], args.L_voxel/2), file=anaout)
-            else: print('Y {:10.5f} {:10.5f} {:10.5f} {:10.5f}'.format(sph[0] - cell[0]/2, sph[1] - cell[1]/2, sph[2] - cell[2]/2, args.L_voxel/2), file=anaout)
+            if args.mode == 'xyz': print(f"Y {sph[0]:10.5f} {sph[1]:10.5f} {sph[2]:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
+            else: print(f"Y {sph[0] - cell[0]/2:10.5f} {sph[1] - cell[1]/2:10.5f} {sph[2] - cell[2]/2:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
     print('Free volume surface xyz file printed')
 
 
@@ -175,10 +175,11 @@ def voxelize_system(args: argparse.Namespace, cell: np.ndarray) -> Dict[str, Any
     l_x = len(vox_x); l_y = len(vox_y); l_z = len(vox_z)
 
     if args.Voxel_dist == 'Random':
+        rng = np.random.default_rng()
         # Add random offsets to break up the uniformity of the voxels
-        vox_x = vox_x + np.random.uniform(low=-L_voxel_x/2, high=L_voxel_x/2, size=vox_x.size)
-        vox_y = vox_y + np.random.uniform(low=-L_voxel_y/2, high=L_voxel_y/2, size=vox_y.size)
-        vox_z = vox_z + np.random.uniform(low=-L_voxel_z/2, high=L_voxel_z/2, size=vox_z.size)
+        vox_x = vox_x + rng.uniform(low=-L_voxel_x/2, high=L_voxel_x/2, size=vox_x.size)
+        vox_y = vox_y + rng.uniform(low=-L_voxel_y/2, high=L_voxel_y/2, size=vox_y.size)
+        vox_z = vox_z + rng.uniform(low=-L_voxel_z/2, high=L_voxel_z/2, size=vox_z.size)
         
     # Use smallest integer data types possible (without losing precision) to reduce memory usage
     indexed_type = np.min_scalar_type(np.max([l_x, l_y, l_z]) - 1)
@@ -515,7 +516,8 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], fram
             PSD_temp = PSD_probes[:]
             PSD_probes = np.array([])
         else:
-            Rand_idx = np.random.choice(len(PSD_probes), size=N_rand, replace=False)
+            rng = np.random.default_rng()
+            Rand_idx = rng.choice(len(PSD_probes), size=N_rand, replace=False)
             PSD_temp = PSD_probes[Rand_idx]
             PSD_probes = np.delete(PSD_probes, Rand_idx, axis=0)
             
@@ -660,7 +662,7 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
 
 def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], frame: int, frame_ids: np.ndarray, radii_arr: np.ndarray) -> Tuple[np.ndarray, float]:
     """
-    Calculates Tortuosity using porespy along X, Y, and Z axes.
+    Calculates Tortuosity using PoreSpy along X, Y, and Z axes.
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
@@ -731,7 +733,8 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
     """
 
     # Sleep command to offset processes (limit spikes in memory usage) - no delay if N_threads = 1
-    time.sleep(np.random.randint(1,6)*(frame%args.N_threads))
+    rng = np.random.default_rng()
+    time.sleep(rng.integers(1,6)*(frame%args.N_threads))
 
     with h5py.File('PrO-VAT.hdf5','r') as f:
         sys = f['system'][frame]                                                                                                                # Position of all system atoms
@@ -873,9 +876,10 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
     # Add helpful error message if YAML file is not provided
     try:
         args, remaining_argv = config_parser.parse_known_args()
-    except:
-        print('\nERROR - Please provide a YAML config file, e.g., python3 /{Path}/PrO-VAT.py /{Path}/config.yaml')
-        exit()
+    except Exception as e:
+        print(f'\nERROR parsing configuration: {e}')
+        print('Please provide a valid YAML config file. Example: python3 PrO-VAT.py config.yaml gmx ...')
+        sys.exit(1)
 
     # Load the YAML data
     with open(args.yaml_file, 'r') as f:
@@ -1144,7 +1148,7 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
         for i,j in enumerate(sol_count):
             if j > 0:
                 if i == len(sol_count) - 1:
-                    print(f"{"Other":>7s} {j:11d}")
+                    print(f"{'Other':>7s} {j:11d}")
                     print("\nElement 'Other' means the atom is not defined as part of the van der Waals volume list.")
                     print("This is not an error and does not impact the code output.")
                 else: print(f"{Size_arr[i,0]:>7s} {j:11d}")
@@ -1220,8 +1224,9 @@ def main():
             load_Trajectory(args, Size_arr, Dummy_atoms)
         except ValueError as e:
             print(f"ERROR - {e}")
+            sys.exit(1)
         print('\nTrajectory loaded, terminating process. Run again to perform analysis')
-        exit()
+        sys.exit(0)
 
     with h5py.File('PrO-VAT.hdf5','r') as f:
         frame_ids = f['frames'][:]; frame_ids = np.arange(0,len(frame_ids),1)
@@ -1229,13 +1234,12 @@ def main():
     # Perform the analysis using multiprocessing
     print("Volume Analysis\n")
     try:
-        pool = mp.Pool(processes=args.N_threads)
         func = functools.partial(volume_analysis, args)
-        out_arr = pool.map(func, list(frame_ids))
-        pool.close()
-        pool.join()
+        with mp.Pool(processes=args.N_threads) as pool:
+            out_arr = pool.map(func, list(frame_ids))
     except ValueError as e:
         print(f"ERROR - {e}")
+        sys.exit(1)
     
     # Write .dat files
     if args.PSD_FFV:
@@ -1250,23 +1254,23 @@ def main():
         with open('Cumulative_PSD.dat', 'w') as anaout:
             print("# d (A) Cumulative_PSD Std", file=anaout)
             for i in range(len(PSD_Cumulative[0,:])):
-                print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), PSD_Cumulative[0,i], PSD_Cumulative[1,i]), file=anaout)
+                print(f" {np.round(d_arr[i], decimals=3):10.5f} {PSD_Cumulative[0,i]:10.5f} {PSD_Cumulative[1,i]:10.5f}", file=anaout)
 
         with open('PSD.dat', 'w') as anaout:
             print("# d (A) PSD Std", file=anaout) 
             for i in range(len(PSD_Cumulative[0,:])):
                     if i == 0:
-                        print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), 0.0, 0.0), file=anaout)
+                        print(f" {np.round(d_arr[i], decimals=3):10.5f} {0.0:10.5f} {0.0:10.5f}", file=anaout)
                     else:
-                        print(' {:10.5f} {:10.5f} {:10.5f}'.format(np.round(d_arr[i], decimals=3), PSD[0,i-1], PSD[1,i-1]), file=anaout)
+                        print(f" {np.round(d_arr[i], decimals=3):10.5f} {PSD[0,i-1]:10.5f} {PSD[1,i-1]:10.5f}", file=anaout)
 
     FFV = np.array([out['FFV'] for out in out_arr]); FFV_c = FFV[:,0] / FFV[:,2]; FFV_lr = FFV[:,1] / FFV[:,2]
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
     FFV = np.array([np.mean(FFV_c), np.std(FFV_c),np.mean(FFV_lr), np.std(FFV_lr)])
     with open('FFV.dat', 'w') as anaout:
         print("# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards", file=anaout)
-        print('0.0 {:10.5f} {:10.5f}'.format(FFV[0], FFV[1]), file=anaout)
-        print('1.0 {:10.5f} {:10.5f}'.format(FFV[2], FFV[3]), file=anaout)
+        print(f"0.0 {FFV[0]:10.5f} {FFV[1]:10.5f}", file=anaout)
+        print(f"1.0 {FFV[2]:10.5f} {FFV[3]:10.5f}", file=anaout)
 
     if args.Surface_area:
         SA = np.array([out['SA'] for out in out_arr]); SA_c = SA[:,0]; SA_lr = SA[:,1]
@@ -1274,8 +1278,8 @@ def main():
         SA = np.array([np.mean(SA_c), np.std(SA_c), np.mean(SA_lr), np.std(SA_lr)])
         with open('SA.dat', 'w') as anaout:
             print("# SA (A^2) Std - 0.0 = Connolly, 1.0 = Lee-Richards", file=anaout)
-            print('0.0 {:15.5f} {:10.5f}'.format(SA[0], SA[1]), file=anaout)
-            print('1.0 {:15.5f} {:10.5f}'.format(SA[2], SA[3]), file=anaout)
+            print(f"0.0 {SA[0]:15.5f} {SA[1]:10.5f}", file=anaout)
+            print(f"1.0 {SA[2]:15.5f} {SA[3]:10.5f}", file=anaout)
 
     if args.Tortuosity:
         tortuosity = np.array([out['tortuosity'] for out in out_arr]); tortuosity_x = tortuosity[:,0]; tortuosity_y = tortuosity[:,1]; tortuosity_z = tortuosity[:,2]
@@ -1287,12 +1291,17 @@ def main():
 
         with open('Tau.dat', 'w') as anaout:
             print("# Tortuosity Std - 0.0, 1.0, 2.0 = X, Y, and Z direction - value of -1 denotes a failed tortuosity analysis on at least 1 frame", file=anaout)
-            print('0.0 {:10.5f} {:10.5f}'.format(tortuosity[0], tortuosity[1]), file=anaout)
-            print('1.0 {:10.5f} {:10.5f}'.format(tortuosity[2], tortuosity[3]), file=anaout)
-            print('2.0 {:10.5f} {:10.5f}'.format(tortuosity[4], tortuosity[5]), file=anaout)
+            print(f"0.0 {tortuosity[0]:10.5f} {tortuosity[1]:10.5f}", file=anaout)
+            print(f"1.0 {tortuosity[2]:10.5f} {tortuosity[3]:10.5f}", file=anaout)
+            print(f"2.0 {tortuosity[4]:10.5f} {tortuosity[5]:10.5f}", file=anaout)
 
     # Deletes the temporary .hdf5 file
     os.remove('PrO-VAT.hdf5')
 
 if __name__ == "__main__":
+    try:
+        mp.set_start_method('spawn')
+    except RuntimeError:
+        pass
+
     main()
