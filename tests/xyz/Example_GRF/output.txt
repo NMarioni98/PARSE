@@ -1,0 +1,684 @@
+###################################################################################
+########## Load in the trajectory data creating a PrO-VAT.hdf5 data file ##########
+###################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : xyz
+
+    ### Files and Run Parameters ###
+    trj_file          : nonpolar_matrix.xyz
+    top_file          : input.dat
+    N_frames          : 1
+    N_repeats         : 1
+    N_threads         : 1
+
+    ######## System/Solvent ########
+    system_name       : all
+    solvent_name      : percolated
+
+    ########## Variables ###########
+    L_voxel           : 1.0
+    probe_radius      : 1.575
+    d_max             : 50
+    d_step            : 0.25
+    Voxel_dist        : Uniform
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 2
+    print_xyz         : True
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Loading trajectory data
+
+If the following is incorrect, check your dat file format
+XYZ cell size (A): 384.0 384.0 384.0
+
+If the following is incorrect, there may be inconsistencies between your atom ID name in the topology and the Element name in the YAML file (see 'Size_arr' and 'Dummy_atoms' for more details)
+
+SYSTEM ATOMS
+Element N-in-System
+      C     1273793
+
+Number of frames: 1
+Number of threads: 1
+
+Trajectory loaded, terminating process. Run again to perform analysis
+
+
+
+##################################################################################
+############################## Run the PSD analysis ##############################
+##################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : xyz
+
+    ### Files and Run Parameters ###
+    trj_file          : nonpolar_matrix.xyz
+    top_file          : input.dat
+    N_frames          : 1
+    N_repeats         : 1
+    N_threads         : 1
+
+    ######## System/Solvent ########
+    system_name       : all
+    solvent_name      : percolated
+
+    ########## Variables ###########
+    L_voxel           : 1.0
+    probe_radius      : 1.575
+    d_max             : 50
+    d_step            : 0.25
+    Voxel_dist        : Uniform
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 2
+    print_xyz         : True
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Volume Analysis
+
+Frame 1/1
+##### Generating Free Volume Spheres #####
+
+Number of voxels-per-cube: 2097152
+Number of voxel cubes: 27
+
+Voxel block: [0 0 0]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 4.9e+10 9.6e+05
+Distance, calculations, writes: 8.0 1.3e+10 4.6e+05
+Distance, calculations, writes: 10.0 1.1e+09 7.4e+04
+Distance, calculations, writes: 12.0 6.6e+06 9.5e+02
+
+Voxel block: [0 0 1]
+Distance, calculations, writes: 2.0 3.0e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.7e+10 1.0e+06
+Distance, calculations, writes: 8.0 1.7e+10 5.5e+05
+Distance, calculations, writes: 10.0 1.9e+09 1.1e+05
+Distance, calculations, writes: 12.0 1.7e+07 1.9e+03
+
+Voxel block: [0 0 2]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.5e+10 1.0e+06
+Distance, calculations, writes: 8.0 1.6e+10 5.3e+05
+Distance, calculations, writes: 10.0 1.8e+09 1.0e+05
+Distance, calculations, writes: 12.0 3.1e+07 3.7e+03
+
+Voxel block: [0 1 0]
+Distance, calculations, writes: 2.0 3.1e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 4.9e+10 9.3e+05
+Distance, calculations, writes: 8.0 1.4e+10 4.5e+05
+Distance, calculations, writes: 10.0 1.3e+09 7.3e+04
+Distance, calculations, writes: 12.0 3.3e+07 2.3e+03
+
+Voxel block: [0 1 1]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.7e+10 1.0e+06
+Distance, calculations, writes: 8.0 1.8e+10 5.7e+05
+Distance, calculations, writes: 10.0 1.9e+09 1.2e+05
+Distance, calculations, writes: 12.0 5.3e+06 6.8e+02
+
+Voxel block: [0 1 2]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.2e+10 9.8e+05
+Distance, calculations, writes: 8.0 1.4e+10 4.9e+05
+Distance, calculations, writes: 10.0 1.0e+09 6.8e+04
+Distance, calculations, writes: 12.0 3.8e+06 5.6e+02
+
+Voxel block: [0 2 0]
+Distance, calculations, writes: 2.0 3.1e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.1e+10 9.3e+05
+Distance, calculations, writes: 8.0 1.4e+10 4.7e+05
+Distance, calculations, writes: 10.0 1.5e+09 8.5e+04
+Distance, calculations, writes: 12.0 2.1e+07 2.3e+03
+
+Voxel block: [0 2 1]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.6e+10 1.0e+06
+Distance, calculations, writes: 8.0 1.7e+10 5.5e+05
+Distance, calculations, writes: 10.0 1.9e+09 1.1e+05
+Distance, calculations, writes: 12.0 1.8e+07 2.4e+03
+
+Voxel block: [0 2 2]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.4e+10 1.0e+06
+Distance, calculations, writes: 8.0 1.4e+10 5.0e+05
+Distance, calculations, writes: 10.0 1.0e+09 7.1e+04
+Distance, calculations, writes: 12.0 2.6e+06 4.5e+02
+
+Voxel block: [1 0 0]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.2e+10 9.9e+05
+Distance, calculations, writes: 8.0 1.4e+10 4.8e+05
+Distance, calculations, writes: 10.0 1.3e+09 8.4e+04
+Distance, calculations, writes: 12.0 5.3e+06 6.9e+02
+
+Voxel block: [1 0 1]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.4e+10 9.9e+05
+Distance, calculations, writes: 8.0 1.6e+10 5.1e+05
+Distance, calculations, writes: 10.0 2.0e+09 1.0e+05
+Distance, calculations, writes: 12.0 1.0e+08 6.9e+03
+
+Voxel block: [1 0 2]
+Distance, calculations, writes: 2.0 2.9e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.3e+10 9.9e+05
+Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
+Distance, calculations, writes: 10.0 1.6e+09 9.6e+04
+Distance, calculations, writes: 12.0 1.3e+07 1.6e+03
+
+Voxel block: [1 1 0]
+Distance, calculations, writes: 2.0 3.1e+11 1.7e+06
+Distance, calculations, writes: 4.0 1.3e+11 2.7e+06
+Distance, calculations, writes: 6.0 4.2e+10 8.6e+05
+Distance, calculations, writes: 8.0 1.0e+10 3.9e+05
+Distance, calculations, writes: 10.0 7.3e+08 5.2e+04
+Distance, calculations, writes: 12.0 1.8e+05 2.4e+01
+
+Voxel block: [1 1 1]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.5e+11 2.6e+06
+Distance, calculations, writes: 6.0 6.0e+10 1.1e+06
+Distance, calculations, writes: 8.0 1.8e+10 5.9e+05
+Distance, calculations, writes: 10.0 2.1e+09 1.2e+05
+Distance, calculations, writes: 12.0 3.4e+07 3.4e+03
+
+Voxel block: [1 1 2]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.5e+10 1.0e+06
+Distance, calculations, writes: 8.0 1.7e+10 5.4e+05
+Distance, calculations, writes: 10.0 2.0e+09 1.2e+05
+Distance, calculations, writes: 12.0 5.2e+07 4.2e+03
+
+Voxel block: [1 2 0]
+Distance, calculations, writes: 2.0 3.1e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.0e+10 9.2e+05
+Distance, calculations, writes: 8.0 1.4e+10 4.6e+05
+Distance, calculations, writes: 10.0 1.3e+09 7.9e+04
+Distance, calculations, writes: 12.0 5.3e+06 7.4e+02
+
+Voxel block: [1 2 1]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.2e+10 9.5e+05
+Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
+Distance, calculations, writes: 10.0 1.4e+09 8.8e+04
+Distance, calculations, writes: 12.0 5.1e+06 6.5e+02
+
+Voxel block: [1 2 2]
+Distance, calculations, writes: 2.0 2.9e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.3e+11 2.6e+06
+Distance, calculations, writes: 6.0 4.7e+10 9.2e+05
+Distance, calculations, writes: 8.0 1.3e+10 4.4e+05
+Distance, calculations, writes: 10.0 1.4e+09 8.0e+04
+Distance, calculations, writes: 12.0 1.8e+07 2.4e+03
+
+Voxel block: [2 0 0]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.3e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.0e+10 9.6e+05
+Distance, calculations, writes: 8.0 1.4e+10 4.8e+05
+Distance, calculations, writes: 10.0 1.4e+09 8.2e+04
+Distance, calculations, writes: 12.0 3.7e+07 2.2e+03
+
+Voxel block: [2 0 1]
+Distance, calculations, writes: 2.0 2.9e+11 1.4e+06
+Distance, calculations, writes: 4.0 1.5e+11 2.4e+06
+Distance, calculations, writes: 6.0 6.3e+10 1.1e+06
+Distance, calculations, writes: 8.0 2.1e+10 6.3e+05
+Distance, calculations, writes: 10.0 2.7e+09 1.5e+05
+Distance, calculations, writes: 12.0 4.2e+07 4.4e+03
+
+Voxel block: [2 0 2]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.3e+11 2.5e+06
+Distance, calculations, writes: 6.0 4.9e+10 9.3e+05
+Distance, calculations, writes: 8.0 1.4e+10 4.6e+05
+Distance, calculations, writes: 10.0 1.6e+09 8.8e+04
+Distance, calculations, writes: 12.0 5.8e+07 3.9e+03
+
+Voxel block: [2 1 0]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.3e+10 9.8e+05
+Distance, calculations, writes: 8.0 1.5e+10 5.0e+05
+Distance, calculations, writes: 10.0 1.4e+09 8.5e+04
+Distance, calculations, writes: 12.0 2.6e+07 2.4e+03
+
+Voxel block: [2 1 1]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 5.3e+10 9.9e+05
+Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
+Distance, calculations, writes: 10.0 1.5e+09 8.9e+04
+Distance, calculations, writes: 12.0 2.5e+07 1.9e+03
+
+Voxel block: [2 1 2]
+Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.4e+10 9.8e+05
+Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
+Distance, calculations, writes: 10.0 1.6e+09 1.0e+05
+Distance, calculations, writes: 12.0 2.7e+07 2.8e+03
+
+Voxel block: [2 2 0]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.3e+11 2.5e+06
+Distance, calculations, writes: 6.0 4.8e+10 9.3e+05
+Distance, calculations, writes: 8.0 1.2e+10 4.4e+05
+Distance, calculations, writes: 10.0 1.1e+09 6.9e+04
+Distance, calculations, writes: 12.0 1.6e+07 1.3e+03
+
+Voxel block: [2 2 1]
+Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
+Distance, calculations, writes: 6.0 4.8e+10 9.3e+05
+Distance, calculations, writes: 8.0 1.3e+10 4.4e+05
+Distance, calculations, writes: 10.0 1.4e+09 7.6e+04
+Distance, calculations, writes: 12.0 2.7e+07 2.5e+03
+
+Voxel block: [2 2 2]
+Distance, calculations, writes: 2.0 3.0e+11 1.5e+06
+Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
+Distance, calculations, writes: 6.0 5.3e+10 9.7e+05
+Distance, calculations, writes: 8.0 1.5e+10 5.0e+05
+Distance, calculations, writes: 10.0 1.5e+09 9.1e+04
+Distance, calculations, writes: 12.0 2.5e+07 2.8e+03
+
+Maximum pore diameter: 20.39
+Number of free volume spheres (r >= probe_radius): 12576806
+Number of free volume voxels (r > 0): 33102902
+Time free volume spheres: 405.69 s
+
+##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
+
+Maximum pore diameter: 20.39
+Number of spheres (r >= probe_radius) within percolated domain: 12565791
+Time cluster: 29.28 s
+
+Free volume sphere xyz file printed
+
+##### Performing PSD/FFV Analysis #####
+
+PSD Cycle:     1/1
+
+Diameter: 15.25 < d <= 15.5
+Calculations, writes: 1.5e+11 9.7e+05
+
+Diameter: 15.0 < d <= 15.25
+Calculations, writes: 1.9e+11 1.0e+06
+
+Diameter: 14.75 < d <= 15.0
+Calculations, writes: 2.4e+11 1.2e+06
+
+Diameter: 14.5 < d <= 14.75
+Calculations, writes: 3.0e+11 1.2e+06
+
+Diameter: 14.25 < d <= 14.5
+Calculations, writes: 3.7e+11 1.5e+06
+
+Diameter: 14.0 < d <= 14.25
+Calculations, writes: 4.5e+11 1.6e+06
+
+Diameter: 13.75 < d <= 14.0
+Calculations, writes: 5.4e+11 1.7e+06
+
+Diameter: 13.5 < d <= 13.75
+Calculations, writes: 6.4e+11 2.2e+06
+
+Diameter: 13.25 < d <= 13.5
+Calculations, writes: 7.5e+11 1.9e+06
+
+Diameter: 13.0 < d <= 13.25
+Calculations, writes: 8.7e+11 2.0e+06
+
+Diameter: 12.75 < d <= 13.0
+Calculations, writes: 1.0e+12 1.8e+06
+
+Diameter: 12.5 < d <= 12.75
+Calculations, writes: 1.0e+12 2.0e+06
+Calculations, writes: 1.6e+11 2.7e+05
+
+Diameter: 12.25 < d <= 12.5
+Calculations, writes: 1.0e+12 1.9e+06
+Calculations, writes: 3.3e+11 6.1e+05
+
+Diameter: 12.0 < d <= 12.25
+Calculations, writes: 1.0e+12 1.6e+06
+Calculations, writes: 4.8e+11 8.3e+05
+
+Diameter: 11.75 < d <= 12.0
+Calculations, writes: 1.0e+12 1.7e+06
+Calculations, writes: 6.6e+11 1.1e+06
+
+Diameter: 11.5 < d <= 11.75
+Calculations, writes: 1.0e+12 1.3e+06
+Calculations, writes: 8.6e+11 1.1e+06
+
+Diameter: 11.25 < d <= 11.5
+Calculations, writes: 1.0e+12 1.3e+06
+Calculations, writes: 1.0e+12 1.3e+06
+
+Diameter: 11.0 < d <= 11.25
+Calculations, writes: 1.0e+12 1.2e+06
+Calculations, writes: 1.0e+12 1.1e+06
+Calculations, writes: 2.7e+11 3.5e+05
+
+Diameter: 10.75 < d <= 11.0
+Calculations, writes: 1.0e+12 1.0e+06
+Calculations, writes: 1.0e+12 1.0e+06
+Calculations, writes: 4.7e+11 5.0e+05
+
+Diameter: 10.5 < d <= 10.75
+Calculations, writes: 1.0e+12 9.1e+05
+Calculations, writes: 1.0e+12 9.3e+05
+Calculations, writes: 7.0e+11 7.0e+05
+
+Diameter: 10.25 < d <= 10.5
+Calculations, writes: 1.0e+12 6.5e+05
+Calculations, writes: 1.0e+12 6.7e+05
+Calculations, writes: 8.9e+11 6.1e+05
+
+Diameter: 10.0 < d <= 10.25
+Calculations, writes: 1.0e+12 7.5e+05
+Calculations, writes: 1.0e+12 7.7e+05
+Calculations, writes: 1.0e+12 7.4e+05
+Calculations, writes: 1.2e+11 9.8e+04
+
+Diameter: 9.75 < d <= 10.0
+Calculations, writes: 1.0e+12 9.3e+05
+Calculations, writes: 1.0e+12 9.7e+05
+Calculations, writes: 1.0e+12 9.2e+05
+Calculations, writes: 3.5e+11 3.6e+05
+
+Diameter: 9.5 < d <= 9.75
+Calculations, writes: 1.0e+12 6.0e+05
+Calculations, writes: 1.0e+12 6.4e+05
+Calculations, writes: 1.0e+12 6.1e+05
+Calculations, writes: 5.8e+11 3.8e+05
+
+Diameter: 9.25 < d <= 9.5
+Calculations, writes: 1.0e+12 7.5e+05
+Calculations, writes: 1.0e+12 7.8e+05
+Calculations, writes: 1.0e+12 7.7e+05
+Calculations, writes: 8.0e+11 6.3e+05
+
+Diameter: 9.0 < d <= 9.25
+Calculations, writes: 1.0e+12 7.4e+05
+Calculations, writes: 1.0e+12 7.6e+05
+Calculations, writes: 1.0e+12 7.3e+05
+Calculations, writes: 1.0e+12 7.4e+05
+
+Diameter: 8.75 < d <= 9.0
+Calculations, writes: 1.0e+12 4.3e+05
+Calculations, writes: 1.0e+12 4.4e+05
+Calculations, writes: 1.0e+12 4.2e+05
+Calculations, writes: 1.0e+12 4.4e+05
+Calculations, writes: 2.7e+11 1.2e+05
+
+Diameter: 8.5 < d <= 8.75
+Calculations, writes: 1.0e+12 4.4e+05
+Calculations, writes: 1.0e+12 4.5e+05
+Calculations, writes: 1.0e+12 4.3e+05
+Calculations, writes: 1.0e+12 4.3e+05
+Calculations, writes: 4.8e+11 2.2e+05
+
+Diameter: 8.25 < d <= 8.5
+Calculations, writes: 1.0e+12 5.3e+05
+Calculations, writes: 1.0e+12 5.5e+05
+Calculations, writes: 1.0e+12 5.5e+05
+Calculations, writes: 1.0e+12 5.4e+05
+Calculations, writes: 6.9e+11 3.9e+05
+
+Diameter: 8.0 < d <= 8.25
+Calculations, writes: 1.0e+12 5.6e+05
+Calculations, writes: 1.0e+12 5.7e+05
+Calculations, writes: 1.0e+12 5.5e+05
+Calculations, writes: 1.0e+12 5.5e+05
+Calculations, writes: 9.1e+11 5.1e+05
+
+Diameter: 7.75 < d <= 8.0
+Calculations, writes: 1.0e+12 5.0e+05
+Calculations, writes: 1.0e+12 4.9e+05
+Calculations, writes: 1.0e+12 4.9e+05
+Calculations, writes: 1.0e+12 5.0e+05
+Calculations, writes: 1.0e+12 5.1e+05
+Calculations, writes: 1.6e+11 8.5e+04
+
+Diameter: 7.5 < d <= 7.75
+Calculations, writes: 1.0e+12 5.0e+05
+Calculations, writes: 1.0e+12 5.0e+05
+Calculations, writes: 1.0e+12 5.0e+05
+Calculations, writes: 1.0e+12 5.0e+05
+Calculations, writes: 1.0e+12 5.1e+05
+Calculations, writes: 3.5e+11 1.8e+05
+
+Diameter: 7.25 < d <= 7.5
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 1.0e+12 3.3e+05
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 5.5e+11 1.8e+05
+
+Diameter: 7.0 < d <= 7.25
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 1.0e+12 2.3e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 7.9e+11 1.8e+05
+
+Diameter: 6.75 < d <= 7.0
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.6e+05
+Calculations, writes: 1.0e+12 2.8e+05
+
+Diameter: 6.5 < d <= 6.75
+Calculations, writes: 1.0e+12 3.5e+05
+Calculations, writes: 1.0e+12 3.5e+05
+Calculations, writes: 1.0e+12 3.6e+05
+Calculations, writes: 1.0e+12 3.5e+05
+Calculations, writes: 1.0e+12 3.5e+05
+Calculations, writes: 1.0e+12 3.6e+05
+Calculations, writes: 1.9e+11 6.8e+04
+
+Diameter: 6.25 < d <= 6.5
+Calculations, writes: 1.0e+12 2.4e+05
+Calculations, writes: 1.0e+12 2.3e+05
+Calculations, writes: 1.0e+12 2.4e+05
+Calculations, writes: 1.0e+12 2.3e+05
+Calculations, writes: 1.0e+12 2.4e+05
+Calculations, writes: 1.0e+12 2.4e+05
+Calculations, writes: 3.7e+11 8.6e+04
+
+Diameter: 6.0 < d <= 6.25
+Calculations, writes: 1.0e+12 3.1e+05
+Calculations, writes: 1.0e+12 3.0e+05
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 1.0e+12 3.1e+05
+Calculations, writes: 1.0e+12 3.1e+05
+Calculations, writes: 1.0e+12 3.1e+05
+Calculations, writes: 5.6e+11 1.8e+05
+
+Diameter: 5.75 < d <= 6.0
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.6e+05
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 7.4e+11 2.1e+05
+
+Diameter: 5.5 < d <= 5.75
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 1.0e+12 3.1e+05
+Calculations, writes: 1.0e+12 3.3e+05
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 1.0e+12 3.2e+05
+Calculations, writes: 9.6e+11 3.1e+05
+
+Diameter: 5.25 < d <= 5.5
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.9e+05
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.8e+11 5.1e+04
+
+Diameter: 5.0 < d <= 5.25
+Calculations, writes: 1.0e+12 2.3e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.3e+05
+Calculations, writes: 1.0e+12 2.3e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.3e+05
+Calculations, writes: 3.4e+11 7.7e+04
+
+Diameter: 4.75 < d <= 5.0
+Calculations, writes: 1.0e+12 1.2e+05
+Calculations, writes: 1.0e+12 1.2e+05
+Calculations, writes: 1.0e+12 1.3e+05
+Calculations, writes: 1.0e+12 1.3e+05
+Calculations, writes: 1.0e+12 1.2e+05
+Calculations, writes: 1.0e+12 1.2e+05
+Calculations, writes: 1.0e+12 1.3e+05
+Calculations, writes: 4.8e+11 6.1e+04
+
+Diameter: 4.5 < d <= 4.75
+Calculations, writes: 1.0e+12 1.7e+05
+Calculations, writes: 1.0e+12 1.6e+05
+Calculations, writes: 1.0e+12 1.7e+05
+Calculations, writes: 1.0e+12 1.7e+05
+Calculations, writes: 1.0e+12 1.7e+05
+Calculations, writes: 1.0e+12 1.7e+05
+Calculations, writes: 1.0e+12 1.7e+05
+Calculations, writes: 6.0e+11 1.1e+05
+
+Diameter: 4.25 < d <= 4.5
+Calculations, writes: 1.0e+12 1.6e+05
+Calculations, writes: 1.0e+12 1.5e+05
+Calculations, writes: 1.0e+12 1.6e+05
+Calculations, writes: 1.0e+12 1.6e+05
+Calculations, writes: 1.0e+12 1.5e+05
+Calculations, writes: 1.0e+12 1.5e+05
+Calculations, writes: 1.0e+12 1.5e+05
+Calculations, writes: 7.5e+11 1.2e+05
+
+Diameter: 4.0 < d <= 4.25
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 9.9e+11 2.2e+05
+
+Diameter: 3.75 < d <= 4.0
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.7e+05
+Calculations, writes: 1.0e+12 2.8e+05
+Calculations, writes: 1.5e+11 4.2e+04
+
+Diameter: 3.5 < d <= 3.75
+Calculations, writes: 1.0e+12 1.8e+05
+Calculations, writes: 1.0e+12 1.8e+05
+Calculations, writes: 1.0e+12 1.8e+05
+Calculations, writes: 1.0e+12 1.8e+05
+Calculations, writes: 1.0e+12 1.8e+05
+Calculations, writes: 1.0e+12 1.8e+05
+Calculations, writes: 1.0e+12 1.8e+05
+Calculations, writes: 1.0e+12 1.9e+05
+Calculations, writes: 3.6e+11 6.6e+04
+
+Diameter: 3.25 < d <= 3.5
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.1e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 1.0e+12 2.2e+05
+Calculations, writes: 5.2e+11 1.1e+05
+
+Diameter: 3.0 < d <= 3.25
+Calculations, writes: 1.0e+12 8.7e+04
+Calculations, writes: 1.0e+12 8.8e+04
+Calculations, writes: 1.0e+12 8.7e+04
+Calculations, writes: 4.7e+11 4.2e+04
+Connolly FFV: 0.362, 20341068, 56181887
+Lee-Richards FFV: 0.224, 12565791, 56181887
+
+PSD Final: 20341068
+1.0 1.0 0.99702 0.99152 0.98205 0.9774 0.97133 0.96794 0.95489 0.94357 0.93021 0.92273 0.91669 0.91056 0.89666 0.88382 0.87181 0.85997 0.85045 0.83949 0.81962 0.80657 0.79744 0.78082 0.76088 0.74102 0.72103 0.69673 0.67691 0.6599 0.64127 0.61598 0.59314 0.56612 0.53497 0.50964 0.48089 0.45129 0.4214 0.3921 0.36514 0.33654 0.30671 0.27916 0.24903 0.22253 0.19755 0.17302 0.15216 0.12917 0.11064 0.09195 0.07723 0.06375 0.05347 0.0423 0.0326 0.02465 0.0199 0.01482 0.0113 0.0078 0.00573 0.00454 0.00366 0.00306 0.00283 0.00182 0.00105 0.00064 0.00022
+Time PSD/FFV: 919.07 s
+Free volume voxel xyz file printed
+
+##### Summary of Calculation Times #####
+
+Time free volume spheres: 405.69 s
+Time cluster: 29.28 s
+Time PSD/FFV: 919.07 s

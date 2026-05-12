@@ -1,0 +1,8 @@
+pore.xyz
+8.0 8.0 8.0
+90 90 90
+
+# When using a xyz file input, please create a file like this input.dat
+# Line 1: Name of the xyz file
+# Line 2: X, Y, and Z box lengths in Angstroms separated by spaces
+# Line 3: 90 90 90 defines a 3D cubic box

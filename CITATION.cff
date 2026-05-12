@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Marioni"
+    given-names: "Nico"
+    orcid: "https://orcid.org/0009-0001-2307-3064"
+title: "PrO-VAT: Probe-Occupiable Volume Analysis Tools"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.YOUR_CONCEPT_DOI # Replace with your Concept DOI
+    description: "The concept DOI for all versions of PrO-VAT"
+repository-code: "https://github.com/NMarioni98/PrO-VAT"

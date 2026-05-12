@@ -1,0 +1,175 @@
+###################################################################################
+########## Load in the trajectory data creating a PrO-VAT.hdf5 data file ##########
+###################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : gmx
+
+    ### Files and Run Parameters ###
+    trj_file          : md.xtc
+    top_file          : md.tpr
+    t_min             : -1
+    t_max             : -1
+    N_frames          : 24
+    N_repeats         : 1
+    N_threads         : 8
+
+    ######## System/Solvent ########
+    system_name       : not resname SOL H3O
+    solvent_name      : percolated
+
+    ########## Variables ###########
+    L_voxel           : 1.0
+    probe_radius      : 1.575
+    d_max             : 50
+    d_step            : 0.25
+    Voxel_dist        : Random
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 1
+    print_xyz         : False
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Loading trajectory data
+
+If the following is incorrect, there may be inconsistencies between your atom ID name in the topology and the Element name in the YAML file (see 'Size_arr' and 'Dummy_atoms' for more details)
+
+SYSTEM ATOMS
+Element N-in-System
+      H       23414
+      C       19008
+      O        3630
+      S        1210
+
+Timestep: ~2500.0 ps
+Number of frames: 24
+Number of threads: 8
+
+Trajectory loaded, terminating process. Run again to perform analysis
+
+
+
+
+##################################################################################
+############################## Run the PSD analysis ##############################
+##################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : gmx
+
+    ### Files and Run Parameters ###
+    trj_file          : md.xtc
+    top_file          : md.tpr
+    t_min             : -1
+    t_max             : -1
+    N_frames          : 24
+    N_repeats         : 1
+    N_threads         : 8
+
+    ######## System/Solvent ########
+    system_name       : not resname SOL H3O
+    solvent_name      : percolated
+
+    ########## Variables ###########
+    L_voxel           : 1.0
+    probe_radius      : 1.575
+    d_max             : 50
+    d_step            : 0.25
+    Voxel_dist        : Random
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 1
+    print_xyz         : False
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Volume Analysis
+
+Frame 1/24
+Frame 2/24
+Frame 3/24
+Frame 4/24
+Frame 5/24
+Frame 6/24
+Frame 7/24
+Frame 8/24
+Frame 9/24
+Frame 10/24
+Frame 11/24
+Frame 12/24
+Frame 13/24
+Frame 14/24
+Frame 15/24
+Frame 16/24
+Frame 17/24
+Frame 18/24
+Frame 19/24
+Frame 20/24
+Frame 21/24
+Frame 22/24
+Frame 23/24
+Frame 24/24
+##### Generating Free Volume Spheres #####
+
+Number of voxels-per-cube: 778688
+Number of voxel cubes: 1
+
+Maximum pore diameter: 18.46
+Number of free volume spheres (r >= probe_radius): 165016
+Number of free volume voxels (r > 0): 471587
+Time free volume spheres: 38.39 s
+
+##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
+
+Maximum pore diameter: 18.46
+Number of spheres (r >= probe_radius) within percolated domain: 163896
+Time cluster: 0.31 s
+
+
+##### Performing PSD/FFV Analysis #####
+
+Connolly FFV: 0.364, 283784, 778688
+Lee-Richards FFV: 0.210, 163896, 778688
+
+PSD Final: 283784
+1.0 1.0 0.9947 0.97885 0.96018 0.94092 0.92092 0.90026 0.87933 0.85867 0.83942 0.81812 0.7958 0.77534 0.75296 0.73315 0.71074 0.68808 0.66738 0.64844 0.62839 0.60804 0.58286 0.56013 0.53447 0.51425 0.49438 0.4746 0.45607 0.42887 0.40978 0.38727 0.36843 0.34656 0.32655 0.30674 0.29165 0.27857 0.26319 0.23973 0.2196 0.19449 0.18434 0.17217 0.16352 0.15392 0.13672 0.12333 0.11427 0.10849 0.09342 0.08537 0.08088 0.07705 0.07369 0.06204 0.05252 0.05053 0.04847 0.04554 0.0441 0.02608 0.02331
+Time PSD/FFV: 9.30 s
+
+##### Summary of Calculation Times #####
+
+Time free volume spheres: 38.39 s
+Time cluster: 0.31 s
+Time PSD/FFV: 9.30 s

@@ -1,0 +1,8 @@
+h5py
+mdanalysis>=2.7.0
+numpy>=2.3.0
+porespy>=3.0.0
+python-igraph
+PyYAML
+scikit-image
+openpnm

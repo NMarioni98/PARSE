@@ -1,0 +1,145 @@
+###################################################################################
+########## Load in the trajectory data creating a PrO-VAT.hdf5 data file ##########
+###################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : xyz
+
+    ### Files and Run Parameters ###
+    trj_file          : pore.xyz
+    top_file          : input.dat
+    N_frames          : 1
+    N_repeats         : 1
+    N_threads         : 1
+
+    ######## System/Solvent ########
+    system_name       : all
+    solvent_name      :
+
+    ########## Variables ###########
+    L_voxel           : 0.25
+    probe_radius      : 0.1
+    d_max             : 5.0
+    d_step            : 0.2
+    Voxel_dist        : Uniform
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 2
+    print_xyz         : True
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Loading trajectory data
+
+If the following is incorrect, check your dat file format
+XYZ cell size (A): 8.0 8.0 8.0
+
+If the following is incorrect, there may be inconsistencies between your atom ID name in the topology and the Element name in the YAML file (see 'Size_arr' and 'Dummy_atoms' for more details)
+
+SYSTEM ATOMS
+Element N-in-System
+      C        1250
+
+Number of frames: 1
+Number of threads: 1
+
+Trajectory loaded, terminating process. Run again to perform analysis
+
+
+
+##################################################################################
+############################## Run the PSD analysis ##############################
+##################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : xyz
+
+    ### Files and Run Parameters ###
+    trj_file          : pore.xyz
+    top_file          : input.dat
+    N_frames          : 1
+    N_repeats         : 1
+    N_threads         : 1
+
+    ######## System/Solvent ########
+    system_name       : all
+    solvent_name      :
+
+    ########## Variables ###########
+    L_voxel           : 0.25
+    probe_radius      : 0.1
+    d_max             : 5.0
+    d_step            : 0.2
+    Voxel_dist        : Uniform
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 2
+    print_xyz         : True
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Volume Analysis
+
+Frame 1/1
+##### Generating Free Volume Spheres #####
+
+Number of voxels-per-cube: 29791
+Number of voxel cubes: 1
+
+Voxel block: [0 0 0]
+Distance, calculations, writes: 2.0 3.7e+07 2.4e+06
+Distance, calculations, writes: 4.0 1.1e+07 3.2e+06
+
+Maximum pore diameter: 2.92
+Number of free volume spheres (r >= probe_radius): 10571
+Number of free volume voxels (r > 0): 10571
+Time free volume spheres: 3.42 s
+Free volume sphere xyz file printed
+
+##### Performing PSD/FFV Analysis #####
+
+PSD Cycle:     1/1
+Connolly FFV: 0.355, 10571, 29791
+Lee-Richards FFV: 0.355, 10571, 29791
+
+PSD Final: 10571
+1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+Time PSD/FFV: 0.82 s
+Free volume voxel xyz file printed
+
+##### Summary of Calculation Times #####
+
+Time free volume spheres: 3.42 s
+Time PSD/FFV: 0.82 s

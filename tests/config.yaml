@@ -1,0 +1,185 @@
+# Default MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL', 'name OW HW1 HW2'
+#     The system matrix defines the van der Waals volume, of which the free volume is analyzed
+#      - NOTE: You can probe the solvent (polar, etc) domain by defining the polymer as the system matrix, or the polymer (non-polar, etc) domain by defining the solvent as the system matrix
+#     Can overwrite when calling PrO-VAT.py using -m or --system_name
+system_name: 'all'
+
+# Default MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL'
+#     May leave blank to probe the entire free volume, e.g., '' (no solvent analysis - least expensive)
+#     May provide 'percolated' to analyze the largest free volume domain, which is typically percolated at sufficiently high solvent contents, e.g., 'percolated' (adds clustering analysis)
+#     May provide a MDAnalysis selection string to define the solvent phase, where only the free volume clusters containing at least 1 solvent atom are analyzed (adds clustering + distance analysis - most expensive)
+#     NOTE: Defining the solvent matrix (not --solvent_name '') can be resource intensive, specifically for systems with a very large number of voxels (large simulation box length and/or small L_voxel)
+#     Can overwrite when calling PrO-VAT.py using -s or --solvent_name
+solvent_name: ''
+
+#######################################################################
+### The following are IGNORED for PoreBlazer-style xyz/dat analysis ###
+#######################################################################
+
+# Default start time for analysis in ps (-1 assumes the time of the first frame)
+#     Can overwrite when calling PrO-VAT.py using -b or --t_min
+t_min: -1
+
+# Default end time for analysis in ps (-1 assumes the time of the last frame)
+#     Can overwrite when calling PrO-VAT.py using -e or --t_max
+t_max: -1
+
+# Default number of frames to analyze (-1 assumes N_frames = N_threads, N_frames = 1 for GRO file inputs)
+#     For efficiency, N_frames should be a multiple of the number of threads, --N_threads
+#     NOTE: --N_frames 1 always uses the last frame in the trajectory (--t_max) if multiple frames are provided.
+#     Can overwrite when calling PrO-VAT.py using -n or --N_frames
+N_frames: -1
+
+######################################################################
+############################# END IGNORE #############################
+######################################################################
+
+# Number of times to analyze each frame. Typically --N_repeats 1.
+#     NOTE: --N_repeats > 1 requires --Voxel_dist 'Random', allowing better sampling of each frame through pseudo-random voxelization. Only impacts Cumulative PSD, PSD, and FFV.
+#     NOTE: If more frames are available, always prioritize increasing --N_frames over --N_repeats. --N_repeats > 1 can smooth out single-frame analyses and reduce artifacts due to the cubic nature of voxels.
+#     NOTE: Extra repeats add sampling to that frame, but do not act as independent frames for the standard deviation, i.e., if --N_frames 1 --N_repeats 8, the standard deviation = 0 for all bins in PSD.
+#     NOTE: Total number of frames analyzed = N_frames * N_repeats. --N_repeats > 1 can be parallelized with --N_threads > 1 even if --N_frames 1.
+#     Can overwrite when calling PrO-VAT.py using --N_repeats
+N_repeats: 1
+
+# Default number of threads for parallelization across all frames (N_frames * N_repeats)
+#     If N_threads > (N_frames * N_repeats), N_threads = (N_frames * N_repeats)
+#     NOTE: Parallelization does not work across multiple compute nodes within a single python run
+#     Can overwrite when calling PrO-VAT.py using -t or --N_threads
+N_threads: 1
+
+
+
+######################################################################
+####################### General use parameters #######################
+######################################################################
+
+# Default voxel side length (in Angstroms). Typically 0.5 A for atomistic simulations.
+#     NOTE: Smaller voxel side lengths increase compute time and resources significantly
+#     Can overwrite when calling PrO-VAT.py using -L or --L_voxel
+L_voxel: 1.0
+
+# Default probe radius (in Angstroms), where probe_radius defines the smallest 'pore' in the PSD. Typically ~1.5 A for a "water" molecule probe.
+#     NOTE: Smaller probe radii increase compute time and resources significantly
+#     Can overwrite when calling PrO-VAT.py using -r or --probe_radius
+probe_radius: 1.575
+
+# Max PSD diameter (in Angstroms), i.e., the maximum diameter in the PSD distribution
+#     NOTE: d_max must be larger than the biggest diameter pore in the system
+#     Can overwrite when calling PrO-VAT.py using --d_max
+d_max: 50
+
+# PSD bin size (in Angstroms), i.e., the step size of the PSD distribution
+#     Can overwrite when calling PrO-VAT.py using --d_step
+d_step: 0.25
+
+# Voxel distribution can be 'Uniform' (a set grid where all voxels are evenly spaced) or 'Random' (voxels are pseudo-randomly offset from their uniform center)
+#     'Random' should be used when analyzing multiple frames over a single trajectory, or if performing multiple analyses on the same frame
+#     NOTE: --Surface_area True and --Tortuosity True require --Voxel_dist 'Uniform'
+#     Can overwrite when calling PrO-VAT.py using --Voxel_dist
+Voxel_dist: 'Random'
+
+# Set --PSD_FFV True to calculate the PSD and Connolly FFV. Lee-Richards FFV is still calculated if --PSD_FFV False.
+#     NOTE: --PSD_FFV False is useful if only the Lee-Richards FFV, Lee-Richards SA (--Surface_area True) and/or Tau (--Tortuosity True) is needed.
+#     Can overwrite when calling PrO-VAT.py using --PSD_FFV
+PSD_FFV: True
+
+# Set --Surface_area True to calculate the Connolly and Lee-Richards "Surface-accessible" surface area of the system matrix
+#     --L_voxel 0.5 has been found to exhibit good agreement with Lee-Richards SA calculations made using FreeSASA (https://freesasa.github.io/python/) for atomistic MD simulations of moderately hydrated ion exchange membranes.
+#     NOTE: SA calculation requires --Voxel_dist 'Uniform' and --tol -1
+#     NOTE: Connolly SA calculation requires --PSD_FFV True
+#     Can overwrite when calling PrO-VAT.py using --Surface_area
+Surface_area: False
+
+# Set --Tortuosity True to calculate the 1D diffusional tortuosity of the solvent matrix using a simple Fickian diffusion algorithm
+#     Tortuosity does not account for PBCs and applies to the Lee-Richards volume
+#     NOTE: Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems
+#     NOTE: Tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1
+#     Can overwrite when calling PrO-VAT.py using --Tortuosity
+Tortuosity: False
+
+# Define the print state of the analysis
+#     --print_eff 0 to suppress all printing
+#     --print_eff 1 to print information about the end of each compute section of code and compute times
+#     --print_eff 2 to print information about the number of calculations and writes during each compute section of code, in addition to the above
+#     If N-threads > 1, prints are always associated to the last frame of the trajectory input
+#     Recommended to debug with nt = N_frames = 1
+#     Can overwrite when calling PrO-VAT.py using --print_eff
+print_eff: 2
+
+# Set --print_xyz True to write useful xyz files for visualization in OVITO
+#     xyz files are always associated to the last frame of the trajectory input
+#     Recommend installing OVITO(-basic) version 3.7.12 (https://www.ovito.org/download_history/)
+#     Can overwrite when calling PrO-VAT.py using --print_xyz
+print_xyz: True
+
+
+
+#######################################################################
+######################### van der Waals radii #########################
+#######################################################################
+
+# van der Waals radii - defines the volume of each atom in the system matrix
+#     Default values are from Bondi (1964): https://www.knowledgedoor.com/2/elements_handbook/bondi_van_der_waals_radius.html
+#     Topology atom names are compared against the Element name in Size_arr
+#     First, the entire name is compared against the Element list, then the first character of the name is compared against the Element list
+# [Element, Radius (A)]
+Size_arr:
+ - [H,  1.20]
+ - [C,  1.70]
+ - [N,  1.55]
+ - [O,  1.52]
+ - [F,  1.47]
+ - [S,  1.80]
+ - [P,  1.80]
+ - [LI, 1.82]
+ - [NA, 2.27]
+ - [K,  2.75]
+ - [MG, 1.73]
+ - [CL, 1.75]
+ - [BR, 1.85]
+ - [I,  1.98]
+
+# Define dummy atom names within your system which should not be included in the system and solvent analysis
+#     Dummy atom names should be an exact match to your system topology
+#     e.g., MW for TIP4P, LP1 and LP2 for TIP5P
+Dummy_atoms:
+ - MW
+ - LP1
+ - LP2
+
+
+
+########################################################################
+#################### Advanced efficiency parameters ####################
+########################################################################
+
+# Define the clustering algorithm: 'Neumann' or 'Moore' 3D neighborhoods - this is only used if solvent_name is specified (not --solvent_name '')
+#     Neumann: Voxels are 'paired' based on face-to-face interactions, i.e., each voxel can be paired to a maximum of 6 neighboring voxels (central voxel of a 3x3x3 lattice can pair to the center voxel of each face of the lattice)
+#     Moore: Voxels are 'paired' based on face and diagonal interactions, i.e., each voxel can be paired to a maximum of 26 neighboring voxels (central voxel of a 3x3x3 lattice can pair to all other voxels in the lattice)
+#     Neumann should be sufficient for MD simulations. Moore is more resource intensive
+clustering: 'Neumann'
+
+# Generating free volume voxels, free volume clusters that contain solvent, and generating PSD/FFV. --N_calc_max 1e12 has been found to work well on modern laptops, desktops, and compute clusters.
+N_calc_max: 1e12        # Maximum number of distance calculations-per-loop. A lower number uses less memory.
+
+# Generating free volume spheres
+N_write_max: 1e8        # Maximum number of distance writes-per-loop. A lower number uses less memory. --N_write_max 1e8 has been found to work well on modern laptops, desktops, and compute clusters.
+d_inc: 2                # Incremental size of distance cutoff while generating free volume spheres.
+                        # NOTE: N_write_max and d_inc are used to determine the size of voxel cubes when generating free volume spheres
+
+# Voxel cluster analysis
+N_edge_gen: 1e8         # Maximum number of voxel-voxel pairs (edges) to generate per loop. A lower number uses less memory. --N_edge_gen 1e8 has been found to work well on modern laptops, desktops, and compute clusters.
+
+# Generating PSD and FFV
+tol: -1                 # --tol -1 to calculate PSD and FFV using ALL voxels.
+                        # tol > 0 to calculate PSD and FFV using random subset of voxels until the max error in the PSD err = |PSD(i) - PSD(i-1)|  / PSD(i) < tol
+                        # NOTE: --tol -1 and tol > 0 converge to the same answer as tol -> 0, i.e., smaller values of tol (where tol > 0) increases the number of cycles performed, where --tol -1 performs 1/rand_frac cycles
+                        # NOTE: Surface area and tortuosity calculations require --tol -1
+rand_frac: 0.01         # Fraction of voxels to analyze each cycle during PSD and FFV calculation.
+                        # If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., --rand_frac 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed
+                        # NOTE: If --tol -1 or --rand_frac >= 0.5, then --rand_frac 1. This calculates the PSD in a single cycle for maximum efficiency.
+                        # NOTE: If a significant fraction of the total number of voxels is being analyzed at the set value of tol > 0, --rand_frac can significantly impact performance
+                        #      For a 10 nm box length frame with FFV ~ 0.5 and --L_voxel 0.5, Time PSD/FFV decreased from ~380s to ~216s to ~170s to ~168s to ~150s going from --rand_frac 0.01 to 0.05 to 0.10 to 0.25 to 1.0
+                        #      For a 38.4 nm box length frame with FFV ~ 0.35 and --L_voxel 1.0, Time PSD/FFV decreased from ~3450s to ~1150s to ~995s to ~980s to ~920s going from --rand_frac 0.01 to 0.05 to 0.10 to 0.25 to 1.0
+                        #          Tests performed using --N_frames 1 --N_threads 1 on a local desktop

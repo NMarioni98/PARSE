@@ -17,9 +17,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 # PrO-VAT: Probe-Occupiable Volume Analysis Tools
 # PrO-VAT.py calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals volume of the defined system matrix from a GROMACS (xtc/trr/gro + tpr/gro) or PoreBlazer-style (xyz + dat) trajectory
-# This script was specifically desgined to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system
-# The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortusoity (Tau), and xyz visualizations
-# Given the system matrix (e.g., polymer matrix, non-polar domain, polar domain, etc), this code can analyze the total free volumne, free volume of the largest cluster (assumed percolated), or the free volume of clusters containing (defined) solvent atoms
+# This script was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system
+# The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations
+# Given the system matrix (e.g., polymer matrix, non-polar domain, polar domain, etc), this code can analyze the total free volume, free volume of the largest cluster (assumed percolated), or the free volume of clusters containing (defined) solvent atoms
 # This script was written based on the methods used for PoreBlazer (https://github.com/SarkisovGitHub/PoreBlazer) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems
 #
 # As written, this code reads in GROMACS trajectory or PoreBlazer xyz and dat data using MDAnalysis
@@ -65,7 +65,8 @@ def export_spheres_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cel
         args (argparse.Namespace): Parsed command-line arguments.
         voxel_data (Dict[str, Any]): Dictionary containing grid coordinates and specific numpy datatypes.
         cell (np.ndarray): Array of simulation cell dimensions.
-        sys_radii (np.ndarray): vdW radius of all system atoms."""
+        sys_radii (np.ndarray): vdW radius of all system atoms.
+    """
 
     # Read in voxel_data
     vox_x, vox_y, vox_z = voxel_data['vox_x'], voxel_data['vox_y'], voxel_data['vox_z']
@@ -94,7 +95,8 @@ def export_voxels_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cell
         cell (np.ndarray): Array of simulation cell dimensions.
         d_arr (np.ndarray): PSD bins.
         FFV_save (np.ndarray): Index of free volume voxels.
-        d_save (np.ndarray): Index of the diameter bin for the largest free volume sphere containing each free volume voxel."""
+        d_save (np.ndarray): Index of the diameter bin for the largest free volume sphere containing each free volume voxel.
+    """
 
     # Read in voxel_data
     vox_x, vox_y, vox_z = voxel_data['vox_x'], voxel_data['vox_y'], voxel_data['vox_z']
@@ -120,7 +122,8 @@ def export_surface_xyz(args: argparse.Namespace, cell: np.ndarray, verts_c: Opti
         args (argparse.Namespace): Parsed command-line arguments.
         cell (np.ndarray): Array of simulation cell dimensions.
         verts_c (Optional[np.ndarray]): Surface mesh data for the Connolly surface.
-        verts_lr (np.ndarray): Surface mesh data for the Lee-Richards surface."""
+        verts_lr (np.ndarray): Surface mesh data for the Lee-Richards surface.
+    """
 
     # Remove excess voxels due to padding
     verts_c_save, verts_lr_save = [], []
@@ -195,15 +198,14 @@ def voxelize_system(args: argparse.Namespace, cell: np.ndarray) -> Dict[str, Any
 
 
 
-def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str, Any], frame: int, frame_ids: np.ndarray, cell: np.ndarray, sys: np.ndarray, sys_radii: np.ndarray) -> Tuple[np.ndarray, float, float]:
+def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str, Any], last_frame: bool, cell: np.ndarray, sys: np.ndarray, sys_radii: np.ndarray) -> Tuple[np.ndarray, float, float]:
     """
     Find the largest free volume sphere centered on each voxel.
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
         voxel_data (Dict[str, Any]): Dictionary containing grid coordinates and specific numpy datatypes.
-        frame (int): Index of current frame.
-        frame_ids (np.ndarray): Index of all frames to be analyzed.
+        last_frame (bool): True if the current frame is the last frame in frame_ids.
         cell (np.ndarray): Array of simulation cell dimensions.
         sys (np.ndarray): Coordinates of all system atoms.
         sys_radii (np.ndarray): vdW radius of all system atoms.
@@ -241,7 +243,7 @@ def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str,
     vox_track = np.array((-vox_inc,0,0), dtype=int)                                                                                             # vox_track tracks the location of the cubes in x, y, and z compared to the position in vox_x, vox_y, and vox_z
 
     # Prints the number of voxels-per-cube and number of voxel cubes
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_Spheres = time.perf_counter()
         print('##### Generating Free Volume Spheres #####')
         print(f"\nNumber of voxels-per-cube: {N_cube}")
@@ -283,7 +285,7 @@ def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str,
 
                     # Useful print command for troubleshooting memory problems
                     # Decreasing N_write_max/N_calc_maX will reduce the number of distances generated each cycle, reducing memory usage
-                    if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
+                    if (args.print_eff == 2) and (last_frame or args.N_threads == 1):
                         if d == args.d_inc: print(f"\nVoxel block: {(vox_track/vox_inc).astype(int)}")
                         print(f"Distance, calculations, writes: {d:3.1f} {len(sphere_temp)*len(sys[sys_mask]):.1e} {len(dist_arr):.1e}")
 
@@ -311,7 +313,7 @@ def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str,
 
     # Useful print command for troubleshooting problems: prints the number of voxel-centers within the free volume and the diameter of the largest sphere (pore)
     # Also prints the number of voxels within the system van der Waals free volume, voxels containing free volume spheres of radius r >= probe_radius, and voxels that need to be assessed whether they are in the free volume or not
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_Spheres = time.perf_counter() - time_Spheres
         print(f"\nMaximum pore diameter: {max_diameter:.2f}")
         print(f"Number of free volume spheres (r >= probe_radius): {len(radii_arr[radii_arr >= args.probe_radius])}")
@@ -322,15 +324,14 @@ def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str,
 
 
 
-def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, Any], frame: int, frame_ids: np.ndarray, cell: np.ndarray, radii_arr: np.ndarray, sol: np.ndarray) -> Tuple[np.ndarray, float, float]:
+def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, Any], last_frame: bool, cell: np.ndarray, radii_arr: np.ndarray, sol: np.ndarray) -> Tuple[np.ndarray, float, float]:
     """
     Handles Moore/Neumann clustering and percolation to identify connected domains.
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
         voxel_data (Dict[str, Any]): Dictionary containing grid coordinates and specific numpy datatypes.
-        frame (int): Index of current frame.
-        frame_ids (np.ndarray): Index of all frames to be analyzed.
+        last_frame (bool): True if the current frame is the last frame in frame_ids.
         cell (np.ndarray): Array of simulation cell dimensions.
         radii_arr (np.ndarray): Radius of the largest free volume sphere centered on each voxel.
         sol (np.ndarray): Coordinates of all solvent atoms.
@@ -345,7 +346,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
     indexed_type, linear_type, signed_linear_type = voxel_data['indexed_type'], voxel_data['linear_type'], voxel_data['signed_linear_type']
     N_sol = len(sol)                                                                                                                            # Number of solvent atoms
     
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_Cluster = time.perf_counter()
         print('\n##### Performing Clustering Analysis - Percolated/Solvent-Domain #####')
     else: time_Cluster = 0.0
@@ -432,7 +433,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
 
                 # Useful print command for troubleshooting memory problems
                 # Decreasing N_calc_max will reduce memory usage
-                if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (i == 0 or len(clust)*N_sol > args.N_calc_max/10):
+                if (args.print_eff == 2) and (last_frame or args.N_threads == 1) and (i == 0 or len(clust)*N_sol > args.N_calc_max/10):
                     if count_old == 0: print(f"\nCluster size: {len(clust)}")
                     print(f"Calculations: {(count - count_old)*N_sol:.1e}")
                 
@@ -453,7 +454,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
     max_diameter = 2*np.max(radii_arr)
 
     # Useful print command for troubleshooting problems
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_Cluster = time.perf_counter() - time_Cluster
         print(f"\nMaximum pore diameter: {max_diameter:.2f}")
         if args.solvent_name == 'percolated':
@@ -466,15 +467,14 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
 
 
 
-def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], frame: int, frame_ids: np.ndarray, cell: np.ndarray, radii_arr: np.ndarray, max_diameter: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, float]:
+def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last_frame: bool, cell: np.ndarray, radii_arr: np.ndarray, max_diameter: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, float]:
     """
     Calculates Fractional Free Volume and Pore Size Distributions.
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
         voxel_data (Dict[str, Any]): Dictionary containing grid coordinates and specific numpy datatypes.
-        frame (int): Index of current frame.
-        frame_ids (np.ndarray): Index of all frames to be analyzed.
+        last_frame (bool): True if the current frame is the last frame in frame_ids.
         cell (np.ndarray): Array of simulation cell dimensions.
         radii_arr (np.ndarray): Radius of the largest free volume sphere centered on each voxel.
         max_diameter (float): Largest free volume sphere diameter.
@@ -497,19 +497,19 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], fram
     if max_diameter > args.d_max:
         raise ValueError(f"Largest pore diameter is greater than d_max: {max_diameter} > {args.d_max}")
 
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_PSD = time.perf_counter()
         print('\n##### Performing PSD/FFV Analysis #####\n')
     else: time_PSD = 0.0
 
-    # Starting from the largest free volume spheres, find all free volume voxels within the desired free volume domain for FFV and PSD calulcations
-    cycle = 0; err = np.inf; N_rand = int(np.ceil((l_x * l_y * l_z) * args.rand_frac)); PSD_Old = np.zeros_like(PSD_arr)
+    # Starting from the largest free volume spheres, find all free volume voxels within the desired free volume domain for FFV and PSD calculations
+    cycle = 0; err = np.inf; N_rand = int(np.ceil((l_x * l_y * l_z) * args.rand_frac)); PSD_Old = np.zeros_like(PSD_arr); N_calc_max_temp = args.N_write_max
     while err > args.tol and len(PSD_probes) != 0:
         if N_rand > len(PSD_probes): N_rand = len(PSD_probes)
 
         # Track number of cycles
         cycle += 1
-        if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
+        if (args.print_eff == 2) and (last_frame or args.N_threads == 1):
             print(f"PSD Cycle: {cycle:5d}/{int(np.ceil(1/args.rand_frac))}")
 
         if args.rand_frac == 1.0:
@@ -539,18 +539,22 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], fram
             if len(sphere_temp) == 0: continue
 
             # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_max distance calculations
-            count = 0
+            count = 0; increase_max = False
             while count < len(sphere_temp) and len(PSD_temp) > 0:
-                count_old = count; count += min(int(args.N_calc_max/len(PSD_temp)), len(sphere_temp)-count_old)
+                count_old = count; count += min(int(N_calc_max_temp/len(PSD_temp)), len(sphere_temp)-count_old)
 
                 sph_temp = sphere_temp[count_old:count]; rad_temp = radii_temp[count_old:count]
                 pair_arr, dist_arr = distances.capped_distance(sph_temp, np.stack((vox_x[PSD_temp[:,0]], vox_y[PSD_temp[:,1]], vox_z[PSD_temp[:,2]]), axis=1, dtype=float_type), d/2 + 0.5, box=cell) # Distance between free volume spheres and voxel-centers
 
+                # Control the number of writes
+                if not increase_max and N_calc_max_temp < args.N_calc_max and count < len(sphere_temp) and len(dist_arr) < args.N_write_max/10: increase_max = True
+
                 # Useful print command for troubleshooting memory problems
                 # Decreasing N_calc_max will reduce memory usage
-                if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1) and (len(sph_temp)*len(PSD_temp) > args.N_calc_max/10):
+                if (args.print_eff == 2) and (last_frame or args.N_threads == 1) and ( (len(sph_temp)*len(PSD_temp) > args.N_calc_max/10) or (len(dist_arr) > args.N_write_max/10) ):
                     if count_old == 0: print(f"\nDiameter: {d - args.d_step} < d <= {d}")
                     print(f"Calculations, writes: {len(sph_temp)*len(PSD_temp):.1e} {len(dist_arr):.1e}")
+                
                 
                 if len(dist_arr) > 0:
                     dist_arr -= rad_temp[pair_arr[:,0]]                                                                                         # Subtract radius of each free volume sphere from the distance to get the distance from the voxel-center to the surface of the free volume sphere
@@ -562,6 +566,7 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], fram
                     d_save = np.append(d_save, np.zeros((len(pair_arr)), dtype=int) + int(d/args.d_step))
 
                     PSD_temp = np.delete(PSD_temp, pair_arr, axis=0)                                                                            # No longer consider voxel-centers that are found within a free volume sphere in future loops (prevent double-counting)
+            if increase_max: N_calc_max_temp = min(args.N_calc_max, 10*N_calc_max_temp)
 
         PSD = PSD_arr / PSD_arr[0]; PSD = -(PSD[1:] - PSD[:-1]) / args.d_step
         if np.all(PSD_Old == 0):
@@ -569,12 +574,12 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], fram
             continue
         err = np.max(np.abs(np.divide((PSD - PSD_Old), PSD, out=np.zeros_like(PSD), where=(PSD != 0)))); PSD_Old = PSD
 
-        if (args.print_eff == 2) and (frame == frame_ids[-1] or args.N_threads == 1):
+        if (args.print_eff == 2) and (last_frame or args.N_threads == 1):
             if args.tol > 0: print(f"Maximum Error/Tolerance: {err:.1e}/{args.tol:.1e}\n")
             else: print(f"Maximum Error: {err:.1e}\n")
 
     # Code to print the final FFV and PSD for the last frame analyzed
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_PSD = time.perf_counter() - time_PSD
         print(f"Connolly FFV: {FFV_c/FFV_total:0.3f}, {FFV_c}, {FFV_total}")
         print(f"Lee-Richards FFV: {FFV_lr/FFV_total:0.3f}, {FFV_lr}, {FFV_total}")
@@ -589,15 +594,14 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], fram
 
 
 
-def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any], frame: int, frame_ids: np.ndarray, cell: np.ndarray, radii_arr: np.ndarray, FFV_save: np.ndarray) -> Tuple[np.ndarray, Tuple[Optional[np.ndarray], np.ndarray], float]:
+def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any], last_frame: bool, cell: np.ndarray, radii_arr: np.ndarray, FFV_save: np.ndarray) -> Tuple[np.ndarray, Tuple[Optional[np.ndarray], np.ndarray], float]:
     """
     Calculates Connolly and Lee-Richards surface areas, returning surface meshes.
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
         voxel_data (Dict[str, Any]): Dictionary containing grid coordinates and specific numpy datatypes.
-        frame (int): Index of current frame.
-        frame_ids (np.ndarray): Index of all frames to be analyzed.
+        last_frame (bool): True if the current frame is the last frame in frame_ids.
         cell (np.ndarray): Array of simulation cell dimensions.
         radii_arr (np.ndarray): Radius of the largest free volume sphere centered on each voxel.
         FFV_save (np.ndarray): Index of free volume voxels.
@@ -610,7 +614,7 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
     L_voxel_x, L_voxel_y, L_voxel_z = voxel_data['L_voxel_x'], voxel_data['L_voxel_y'], voxel_data['L_voxel_z']
     l_x, l_y, l_z = voxel_data['l_x'], voxel_data['l_y'], voxel_data['l_z']
     
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_SA = time.perf_counter()
         print('\n##### Performing SA Analysis #####\n')
     else: time_SA = 0.0
@@ -623,7 +627,7 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
 
         # Create a simple mesh surface around the free volume and calculate the surface area
         SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calulcations
+        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calculations
 
         verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
         SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
@@ -639,7 +643,7 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
 
     # Create a simple mesh surface around the free volume and calculate the surface area
     SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                       # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-    spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                       # Define voxel size to dimensionalize surface area calulcations
+    spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                       # Define voxel size to dimensionalize surface area calculations
 
     verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                   # Marching cubes algorithm to create a surface mesh
     SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                       # Calculate the surface area of the free volume
@@ -650,7 +654,7 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
     if args.PSD_FFV: SA_c *= (volume / padded_volume)
     SA_lr *= (volume / padded_volume)
 
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_SA = time.perf_counter() - time_SA
         print(f"Connolly SA (A^2):  {SA_c:.2f}")
         print(f"Lee-Richards SA (A^2):  {SA_lr:.2f}")
@@ -660,15 +664,14 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
 
 
 
-def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], frame: int, frame_ids: np.ndarray, radii_arr: np.ndarray) -> Tuple[np.ndarray, float]:
+def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], last_frame: bool, radii_arr: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Calculates Tortuosity using PoreSpy along X, Y, and Z axes.
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
         voxel_data (Dict[str, Any]): Dictionary containing grid coordinates and specific numpy datatypes.
-        frame (int): Index of current frame.
-        frame_ids (np.ndarray): Index of all frames to be analyzed.
+        last_frame (bool): True if the current frame is the last frame in frame_ids.
         radii_arr (np.ndarray): Radius of the largest free volume sphere centered on each voxel.
         
     Returns:
@@ -678,7 +681,7 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], f
     # Read in voxel_data
     l_x, l_y, l_z = voxel_data['l_x'], voxel_data['l_y'], voxel_data['l_z']
     
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_tau = time.perf_counter()
         print('\n##### Performing Tortuosity Analysis #####\n')
     else: time_tau = 0.0
@@ -693,24 +696,24 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], f
         sim_z = ps.simulations.tortuosity_fd(tortuosity_arr, axis=2); tortuosity_z = sim_z.tortuosity
     except Exception as e:
         if "No pores remain" in str(e):                                                                                                         # If no percolating cluster found across any axis, return -1 for failed analysis
-            if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
                 print("Warning: Void space does not percolate along at least one axis. Setting tortuosity to -1.")
             tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
         elif "Solver failed to converge" in str(e):                                                                                             # If solver failed to converge across any axis, return -1 for failed analysis
-            if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+            if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
                 print("Error: Solver failed to converge along at least one axis. Setting tortuosity to -1.")
             tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
         else: raise e
 
     tortuosity = np.mean([tortuosity_x, tortuosity_y, tortuosity_z])                                                                            # Average tortuosity across all 3 dimensions
 
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_tau = time.perf_counter() - time_tau
         if tortuosity == -1: print(f"No 1D percolated clusters found, tortuosity not measured.")
         else:
             print(f"Directional Tortuosity:  X-{tortuosity_x:.2f} Y-{tortuosity_y:.2f} Z-{tortuosity_z:.2f}")
             print(f"Average Tortuosity:  {tortuosity:.2f}")
-        print(f"Time Toruosity: {time_tau:.2f} s")
+        print(f"Time Tortuosity: {time_tau:.2f} s")
 
     return np.array([tortuosity_x, tortuosity_y, tortuosity_z], dtype=float), time_tau
 
@@ -720,13 +723,13 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], f
 ####################### Analysis  Pipeline ###########################
 ######################################################################
 
-def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
+def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
     """
     Orchestrates the volume analysis pipeline for a single frame.
     
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
-        frame (int): Index of current frame.
+        frame_idx (int): Index of current frame_idx.
         
     Returns:
         Dict[str, Any]: Dictionary containing PSD, FFV, SA, and tortuosity data for the current frame.
@@ -734,17 +737,19 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
 
     # Sleep command to offset processes (limit spikes in memory usage) - no delay if N_threads = 1
     rng = np.random.default_rng()
-    time.sleep(rng.integers(1,6)*(frame%args.N_threads))
+    time.sleep(frame_idx%args.N_threads)
 
     with h5py.File('PrO-VAT.hdf5','r') as f:
+        frame_ids = f['frames'][:]; frame = frame_ids[frame_idx]
         sys = f['system'][frame]                                                                                                                # Position of all system atoms
         sys_radii = f['sys_radii'][:]                                                                                                           # van der Waals radii of all system atoms
         sol = f['solvent'][frame]                                                                                                               # Position of all solvent atoms
         cell = f['cells'][frame]                                                                                                                # Size of the cell
-        frame_ids = f['frames'][:]; frame_ids = np.arange(0,len(frame_ids),1)
+    if frame_idx == len(frame_ids) - 1: last_frame = True
+    else:                               last_frame = False
 
     # Track which frames are currently being processed
-    print(f"Frame {frame}/{len(frame_ids)}")
+    print(f"Frame {frame_idx + 1}/{len(frame_ids)}")
 
     # Voxelize the system
     voxel_data = voxelize_system(args, cell)
@@ -753,7 +758,7 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
     #   For each voxel, find the largest voxel-centered free volume sphere without overlapping system atoms (the van der Waals volume), where the total volume of all spheres larger than probe_radius defines the probe-occupiable free volume of the system
     #   Changing L_voxel, N_write_max/N_calc_max, and d_inc can reduce run time and memory usage
     radii_arr, max_diameter, time_Spheres = generate_free_volume_spheres(
-        args, voxel_data, frame, frame_ids, cell, sys, sys_radii
+        args, voxel_data, last_frame, cell, sys, sys_radii
     )
 
     # Clustering Analysis
@@ -762,12 +767,12 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
     #   NOTE: This section is the most sensitive to memory errors. Consider setting solvent_name = "" if consistently running out of memory (OOM).
     if (args.solvent_name == 'percolated') or (len(sol) > 0):
         radii_arr, max_diameter, time_Cluster = perform_clustering_analysis(
-            args, voxel_data, frame, frame_ids, cell, radii_arr, sol
+            args, voxel_data, last_frame, cell, radii_arr, sol
         )
     else: time_Cluster = 0
     
     # Export free volume spheres to .xyz file for visualization
-    if args.print_xyz and frame == frame_ids[-1]:
+    if args.print_xyz and last_frame:
         export_spheres_xyz(args, voxel_data, cell, radii_arr)
 
     # PSD/FFV Analysis
@@ -776,10 +781,10 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
     #   Changing L_voxel, N_calc_max, and d_step can reduce run time and memory usage
     if args.PSD_FFV:
         d_arr, PSD_arr, FFV_data, FFV_save, d_save, time_PSD = calculate_psd_ffv(
-            args, voxel_data, frame, frame_ids, cell, radii_arr, max_diameter
+            args, voxel_data, last_frame, cell, radii_arr, max_diameter
         )
         # Export free volume voxels to .xyz file for visualization
-        if args.print_xyz and frame == frame_ids[-1]:
+        if args.print_xyz and last_frame:
             export_voxels_xyz(args, voxel_data, cell, d_arr, FFV_save, d_save)
     else:
         d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step), 0, 0); PSD_arr = np.zeros_like(d_arr, dtype=int) - 1
@@ -788,17 +793,17 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
         FFV_data = np.array([FFV_c, FFV_lr, FFV_total], dtype=int)
 
         FFV_save, time_PSD = None, 0
-        if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+        if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
             print(f"Lee-Richards FFV: {FFV_lr/FFV_total:0.3f}, {FFV_lr}, {FFV_total}")
 
     # SA Analysis
     #   Find the Connolly and Lee-Richards surface using a marching cubes algorithm and calculate the surface area
     if args.Surface_area:
         SA_data, surface_meshes, time_SA = calculate_surface_area(
-            args, voxel_data, frame, frame_ids, cell, radii_arr, FFV_save
+            args, voxel_data, last_frame, cell, radii_arr, FFV_save
         )
         # Export free volume surface to .xyz file for visualization
-        if args.print_xyz and frame == frame_ids[-1]:
+        if args.print_xyz and last_frame:
             export_surface_xyz(args, cell, surface_meshes[0], surface_meshes[1])
     else: SA_data, time_SA = np.array([0,0], dtype=float), 0
 
@@ -806,18 +811,18 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
     #   Calculate the tortuosity of the Lee-Richards volume using PoreSpy
     if args.Tortuosity:
         tortuosity_data, time_tau = calculate_tortuosity(
-            args, voxel_data, frame, frame_ids, radii_arr
+            args, voxel_data, last_frame, radii_arr
         )
     else: tortuosity_data, time_tau = np.array([0, 0, 0], dtype=float), 0
 
     # Print time statistics
-    if (args.print_eff >= 1) and (frame == frame_ids[-1] or args.N_threads == 1):
+    if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         print("\n##### Summary of Calculation Times #####\n")
         print(f"Time free volume spheres: {time_Spheres:.2f} s")
         if (args.solvent_name == 'percolated') or (len(sol) > 0): print(f"Time cluster: {time_Cluster:.2f} s")
         if args.PSD_FFV: print(f"Time PSD/FFV: {time_PSD:.2f} s")
         if args.Surface_area: print(f"Time SA: {time_SA:.2f} s")
-        if args.Tortuosity: print(f"Time Toruosity: {time_tau:.2f} s")
+        if args.Tortuosity: print(f"Time Tortuosity: {time_tau:.2f} s")
     
     return {
         'PSD_arr': PSD_arr,
@@ -833,7 +838,9 @@ def volume_analysis(args: argparse.Namespace, frame: int) -> Dict[str, Any]:
 ######################################################################
 
 def readable_file(path):
-    """Check if a path exists and is a file."""
+    """
+    Check if a path exists and is a file.
+    """
     if not os.path.isfile(path):
         raise argparse.ArgumentTypeError(f"The file '{path}' does not exist.")
     elif not os.access(path, os.R_OK):
@@ -841,22 +848,68 @@ def readable_file(path):
     return path
 
 def string2bool(input):
-    """Convert string input to boolean"""
+    """
+    Convert string input to boolean
+    """
     if input == 'True':
         return True
     elif input == 'False':
         return False
 
-def float_range(min_val, max_val):
-    """Limit float input to specified range"""
+def int_range(min_val, max_val, min_incl, max_incl, negative_one):
+    """
+    Limit integer input to specified range
+    """
+    def int_range_checker(arg):
+        try:
+            f = int(arg)
+        except ValueError:    
+            raise argparse.ArgumentTypeError("Input is not an integer.")
+        
+        if negative_one and f == -1:
+            return f
+        
+        if min_incl and max_incl and not (min_val <= f and f <= max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to integers in [{min_val}, {max_val}] or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to integers in [{min_val}, {max_val}]")
+        elif (not min_incl) and max_incl and not (min_val < f and f <= max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to integers in ({min_val}, {max_val}] or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to integers in ({min_val}, {max_val}]")
+        elif min_incl and (not max_incl) and not (min_val <= f and f < max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to integers in [{min_val}, {max_val}) or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to integers in [{min_val}, {max_val})")
+        elif (not min_incl) and (not max_incl) and not (min_val < f and f < max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to integers in ({min_val}, {max_val}) or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to integers in ({min_val}, {max_val})")
+        return f
+        
+    return int_range_checker
+
+def float_range(min_val, max_val, min_incl, max_incl, negative_one):
+    """
+    Limit float input to specified range
+    """
     def float_range_checker(arg):
         try:
             f = float(arg)
         except ValueError:    
             raise argparse.ArgumentTypeError("Input is not a float.")
         
-        if f < min_val or f > max_val:
-            raise argparse.ArgumentTypeError(f"Input restricted to floats between {min_val} and {max_val}")
+        if negative_one and f == -1:
+            return f
+        
+        if min_incl and max_incl and not (min_val <= f and f <= max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to floats in [{min_val}, {max_val}] or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to floats in [{min_val}, {max_val}]")
+        elif (not min_incl) and max_incl and not (min_val < f and f <= max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to floats in ({min_val}, {max_val}] or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to floats in ({min_val}, {max_val}]")
+        elif min_incl and (not max_incl) and not (min_val <= f and f < max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to floats in [{min_val}, {max_val}) or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to floats in [{min_val}, {max_val})")
+        elif (not min_incl) and (not max_incl) and not (min_val < f and f < max_val):
+            if negative_one:    raise argparse.ArgumentTypeError(f"Input restricted to floats in ({min_val}, {max_val}) or -1")
+            else:               raise argparse.ArgumentTypeError(f"Input restricted to floats in ({min_val}, {max_val})")
         return f
         
     return float_range_checker
@@ -864,10 +917,12 @@ def float_range(min_val, max_val):
 
 
 def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
-    """Read in inputs from YAML file and command line using argparser.
+    """
+    Read in inputs from YAML file and command line using argparser.
         
     Returns:
-        Tuple[argparse.Namespace, np.ndarray, np.ndarray]: Parsed command-line arguments, array of atoms and vdW radii, and array of dummy atom names."""
+        Tuple[argparse.Namespace, np.ndarray, np.ndarray]: Parsed command-line arguments, array of atoms and vdW radii, and array of dummy atom names.
+    """
     
     # Define parser for YAML config file
     config_parser = argparse.ArgumentParser(add_help=False)
@@ -910,8 +965,10 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
     xyz_frames = xyz_parser.add_argument_group('Frame selection and threads')
     xyz_frames.add_argument('-n', '--N_frames', type = int, default = 1, choices = [1],
                             help = "Number of frames to analyze [Locked to 1 frame for xyz analysis]")
-    xyz_frames.add_argument('-t', '--N_threads', type = int, default = 1, choices = [1],
-                            help = "Number of threads for parallelization [Locked to 1 thread for xyz analysis]")
+    xyz_frames.add_argument('--N_repeats', type = int_range(0.0, np.inf, False, False, False), default = config['N_repeats'],
+                             help = "Number of times to analyze each frame. --N_repeats > 1 requires --Voxel_dist 'Random' [default = YAML]")
+    xyz_frames.add_argument('-t', '--N_threads', type = int_range(0.0, np.inf, False, False, False), default = config['N_threads'],
+                             help = "Number of threads for parallelization [default = YAML]")
        ###########################################
        ## GROUP 3: MDAnalysis selection strings ##
        ###########################################
@@ -924,13 +981,13 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
        ## GROUP 4: Important variables ##
        ##################################
     vars = xyz_parser.add_argument_group('Important variables')
-    vars.add_argument('-L', '--L_voxel', type = float, default = config['L_voxel'],
+    vars.add_argument('-L', '--L_voxel', type = float_range(0.0, np.inf, False, False, False), default = config['L_voxel'],
                       help = "Voxel side length (A) [default = YAML]")
-    vars.add_argument('-r', '--probe_radius', type = float, default = config['probe_radius'],
+    vars.add_argument('-r', '--probe_radius', type = float_range(0.0, np.inf, False, False, False), default = config['probe_radius'],
                       help = "Probe radius (A) [default = YAML]")
-    vars.add_argument('--d_max', type = float, default = config['d_max'],
+    vars.add_argument('--d_max', type = float_range(0.0, np.inf, False, False, False), default = config['d_max'],
                       help = "Max PSD diameter (A) [default = YAML]")
-    vars.add_argument('--d_step', type = float, default = config['d_step'],
+    vars.add_argument('--d_step', type = float_range(0.0, np.inf, False, False, False), default = config['d_step'],
                       help = "PSD bin size (A) [default = YAML]")
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
@@ -947,18 +1004,18 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
     printing.add_argument('--print_eff', type = int, choices = [0, 1, 2], default = config['print_eff'],
                           help = "Level of printing [default = YAML; Locked to 0, 1, or 2]")
     printing.add_argument('--print_xyz', type = string2bool, choices = [True, False], default = config['print_xyz'],
-                          help = "xyz visulatization flag [default = YAML; Locked to True or False]")
+                          help = "xyz visualization flag [default = YAML; Locked to True or False]")
        ####################################
        ## GROUP 6: Efficiency parameters ##
        ####################################
     efficiency = xyz_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
-    efficiency.add_argument('--N_calc_max', type = float, default = config['N_calc_max'],)
-    efficiency.add_argument('--N_write_max', type = float, default = config['N_write_max'],)
-    efficiency.add_argument('--d_inc', type = float, default = config['d_inc'],)
-    efficiency.add_argument('--N_edge_gen', type = float, default = config['N_edge_gen'])
-    efficiency.add_argument('--tol', type = float, default = config['tol'],)
-    efficiency.add_argument('--rand_frac', type = float_range(0.0, 1.0), default = config['rand_frac'],)
+    efficiency.add_argument('--N_calc_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_calc_max'],)
+    efficiency.add_argument('--N_write_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_write_max'],)
+    efficiency.add_argument('--d_inc', type = float_range(0.0, np.inf, False, False, False), default = config['d_inc'],)
+    efficiency.add_argument('--N_edge_gen', type = float_range(0.0, np.inf, False, False, False), default = config['N_edge_gen'])
+    efficiency.add_argument('--tol', type = float_range(0.0, 1.0, False, True, True), default = config['tol'],)
+    efficiency.add_argument('--rand_frac', type = float_range(0.0, 1.0, False, True, False), default = config['rand_frac'],)
 
     ########################################################
     ########################################################
@@ -978,13 +1035,15 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
        ## GROUP 2: Frame selection and threads ##
        ##########################################
     traj_frames = traj_parser.add_argument_group('Frame selection and threads')
-    traj_frames.add_argument('-b', '--t_min', type = float, default = config['t_min'],
+    traj_frames.add_argument('-b', '--t_min', type = float_range(0.0, np.inf, True, False, True), default = config['t_min'],
                              help = "Start time (ps) [default = YAML]")
-    traj_frames.add_argument('-e', '--t_max', type = float, default = config['t_max'],
+    traj_frames.add_argument('-e', '--t_max', type = float_range(0.0, np.inf, True, False, True), default = config['t_max'],
                              help = "End time (ps) [default = YAML]")
-    traj_frames.add_argument('-n', '--N_frames', type = int, default = config['N_frames'],
+    traj_frames.add_argument('-n', '--N_frames', type = int_range(0.0, np.inf, False, False, True), default = config['N_frames'],
                              help = "Number of frames to analyze [default = YAML]")
-    traj_frames.add_argument('-t', '--N_threads', type = int, default = config['N_threads'],
+    traj_frames.add_argument('--N_repeats', type = int_range(0.0, np.inf, False, False, False), default = config['N_repeats'],
+                             help = "Number of times to analyze each frame. --N_repeats > 1 requires --Voxel_dist 'Random' [default = YAML]")
+    traj_frames.add_argument('-t', '--N_threads', type = int_range(0.0, np.inf, False, False, False), default = config['N_threads'],
                              help = "Number of threads for parallelization [default = YAML]")
        ###########################################
        ## GROUP 3: MDAnalysis selection strings ##
@@ -998,13 +1057,13 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
        ## GROUP 4: Important variables ##
        ##################################
     vars = traj_parser.add_argument_group('Important variables')
-    vars.add_argument('-L', '--L_voxel', type = float, default = config['L_voxel'],
+    vars.add_argument('-L', '--L_voxel', type = float_range(0.0, np.inf, False, False, False), default = config['L_voxel'],
                       help = "Voxel side length (A) [default = YAML]")
-    vars.add_argument('-r', '--probe_radius', type = float, default = config['probe_radius'],
+    vars.add_argument('-r', '--probe_radius', type = float_range(0.0, np.inf, False, False, False), default = config['probe_radius'],
                       help = "Probe radius (A) [default = YAML]")
-    vars.add_argument('--d_max', type = float, default = config['d_max'],
+    vars.add_argument('--d_max', type = float_range(0.0, np.inf, False, False, False), default = config['d_max'],
                       help = "Max PSD diameter (A) [default = YAML]")
-    vars.add_argument('--d_step', type = float, default = config['d_step'],
+    vars.add_argument('--d_step', type = float_range(0.0, np.inf, False, False, False), default = config['d_step'],
                       help = "PSD bin size (A) [default = YAML]")
     vars.add_argument('--Voxel_dist', type = str, choices = ['Uniform', 'Random'], default = config['Voxel_dist'],
                       help = "Voxel distribution setting [default = YAML; Locked to 'Uniform' or 'Random']")
@@ -1021,37 +1080,41 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
     printing.add_argument('--print_eff', type = int, choices = [0, 1, 2], default = config['print_eff'],
                           help = "Level of printing [default = YAML; Locked to 0, 1, or 2]")
     printing.add_argument('--print_xyz', type = string2bool, choices = [True, False], default = config['print_xyz'],
-                          help = "xyz visulatization flag [default = YAML; Locked to True or False]")
+                          help = "xyz visualization flag [default = YAML; Locked to True or False]")
        ####################################
        ## GROUP 6: Efficiency parameters ##
        ####################################
     efficiency = traj_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
-    efficiency.add_argument('--N_calc_max', type = float, default = config['N_calc_max'],)
-    efficiency.add_argument('--N_write_max', type = float, default = config['N_write_max'],)
-    efficiency.add_argument('--d_inc', type = float, default = config['d_inc'],)
-    efficiency.add_argument('--N_edge_gen', type = float, default = config['N_edge_gen'])
-    efficiency.add_argument('--tol', type = float, default = config['tol'],)
-    efficiency.add_argument('--rand_frac', type = float_range(0.0, 1.0), default = config['rand_frac'],)
+    efficiency.add_argument('--N_calc_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_calc_max'],)
+    efficiency.add_argument('--N_write_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_write_max'],)
+    efficiency.add_argument('--d_inc', type = float_range(0.0, np.inf, False, False, False), default = config['d_inc'],)
+    efficiency.add_argument('--N_edge_gen', type = float_range(0.0, np.inf, False, False, False), default = config['N_edge_gen'])
+    efficiency.add_argument('--tol', type = float_range(0.0, 1.0, False, True, True), default = config['tol'],)
+    efficiency.add_argument('--rand_frac', type = float_range(0.0, 1.0, False, True, False), default = config['rand_frac'],)
 
     # Define args
     args = parser.parse_args(remaining_argv)
 
-    # If a .gro is provided instead of .xtc or .trr, N_threads = N_frames = 1
+    if args.Voxel_dist == 'Uniform' and args.N_repeats != 1:        parser.error("--N_repeats 1 if --Voxel_dist 'Uniform'")
+    # If a .gro is provided instead of .xtc or .trr, N_frames = 1. If --Voxel_dist 'Uniform', --N_threads 1.
     if args.mode == 'gmx' and '.gro' in args.trj_file:
-        if args.N_threads != 1:                        parser.error("gro file inputs require N_threads = 1")
-        if args.N_frames != 1 and args.N_frames != -1: parser.error("gro file inputs require N_frames = 1")
+        if args.N_frames == -1:                                     args.N_frames = 1
+        if args.N_frames != 1:                                      parser.error("gro file inputs require --N_frames 1")
+        if args.Voxel_dist == 'Uniform' and args.N_threads != 1:    parser.error("gro file inputs require --N_threads 1 if --Voxel_dist 'Uniform'")
     # --Voxel_dist 'Uniform' and --tol -1 are required for SA calculations
     if args.Surface_area == True:
-        if args.Voxel_dist != 'Uniform':               parser.error("SA calculation requires --Voxel_dist 'Uniform'")
-        if args.tol != -1:                             parser.error("SA calculation requires --tol -1")
+        if args.Voxel_dist != 'Uniform':                            parser.error("SA calculation requires --Voxel_dist 'Uniform'")
+        if args.tol != -1:                                          parser.error("SA calculation requires --tol -1")
     # --Voxel_dist 'Uniform' and --tol -1 are required for Tau calculations
     if args.Tortuosity == True:
-        if args.Voxel_dist != 'Uniform':               parser.error("Tortuosity calculation requires --Voxel_dist 'Uniform'")
-        if args.tol != -1:                             parser.error("Tortuosity calculation requires --tol -1")
+        if args.Voxel_dist != 'Uniform':                            parser.error("Tortuosity calculation requires --Voxel_dist 'Uniform'")
+        if args.tol != -1:                                          parser.error("Tortuosity calculation requires --tol -1")
     # When calculating the PSD from all frames (--tol -1 or --rand_frac >= 0.5), --rand_frac 1 is the most efficient
-    if args.tol == -1 or args.rand_frac >= 0.5:
-        args.rand_frac = 1
+    if args.tol == -1 or args.rand_frac >= 0.5:                     args.rand_frac = 1
+
+    # If N_threads > N_frames * N_repeats, N_threads = N_frames * N_repeats
+    if args.N_threads > args.N_frames * args.N_repeats:             args.N_threads = int(args.N_frames * args.N_repeats)
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)
@@ -1062,7 +1125,8 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
 
 
 def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms: np.ndarray) -> None:
-    """Loads in the trajectory and saves the necessary data to a temporary h5py .hdf5 I/O file.
+    """
+    Loads in the trajectory and saves the necessary data to a temporary h5py .hdf5 I/O file.
     
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
@@ -1156,7 +1220,7 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
     # Define the system times/frames to be calculated over
     print()
     if args.mode == 'xyz' or '.gro' in args.trj_file:
-        frame_ids = np.array([0], dtype=int)                                                    # .xyz and .gro trajectories are assumed to contained only a single frame
+        frame_ids = np.zeros(1, dtype=int)                                                    # .xyz and .gro trajectories are assumed to contained only a single frame
     else:
         if args.t_min == -1:    args.t_min    = uta.trajectory[0].time
         if args.t_max == -1:    args.t_max    = uta.trajectory[-1].time
@@ -1164,10 +1228,16 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
 
         dt = np.round((uta.trajectory[1].time - uta.trajectory[0].time),3)
 
+        start_idx = int((args.t_min - uta.trajectory[0].time) / dt)
+        end_idx = int((args.t_max - uta.trajectory[0].time) / dt)
+        available_frames = end_idx - start_idx + 1
+
+        if available_frames < args.N_frames: raise ValueError(f"Not enough frames within the time range provided: {args.t_min}-{args.t_max} ps = {available_frames} frames")
+
         if args.N_frames == 1:                                                                  # If only analyzing one frame, analyze the final frame
-            frame_ids = np.array([int((args.t_max - uta.trajectory[0].time)/dt)], dtype=int)
+            frame_ids = np.array([end_idx], dtype=int)
         else:
-            frame_ids = np.linspace(int((args.t_min - uta.trajectory[0].time)/dt), int((args.t_max - uta.trajectory[0].time)/dt), args.N_frames, dtype=int)
+            frame_ids = np.linspace(start_idx, end_idx, args.N_frames, dtype=int)
             print(f"Timestep: ~{dt*(frame_ids[1] - frame_ids[0])} ps")
     print(f"Number of frames: {len(frame_ids)}")
 
@@ -1183,6 +1253,17 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
 
         if args.mode == 'xyz': cells[i] = cell
         else: cells[i] = ts.dimensions
+
+        if np.any(cells[i,:3] / args.L_voxel < 1):      raise ValueError(f"--L_voxel is larger than at least one side of the simulation cell: {args.L_voxel} A, ({cells[i,0]:.3f},{cells[i,1]:.3f},{cells[i,2]:.3f}) A")
+        if np.any(cells[i,:3] / args.probe_radius < 1): raise ValueError(f"--probe_radius is larger than at least one side of the simulation cell: {args.probe_radius} A, ({cells[i,0]:.3f},{cells[i,1]:.3f},{cells[i,2]:.3f}) A")
+
+    
+    # Convert frame_ids from index in the trajectory to index in the array and add repeats
+    frame_ids = np.arange(0,len(frame_ids),1)
+    if args.N_repeats > 1:
+        frame_ids = np.repeat(frame_ids, args.N_repeats)
+        print(f"Number of frames + repeats: {len(frame_ids)}")
+    print(f"Number of threads: {args.N_threads}")
 
     # Save necessary information to a temporary .hdf5 file for later use in the calculation
     with h5py.File('PrO-VAT.hdf5','w') as f:
@@ -1229,14 +1310,19 @@ def main():
         sys.exit(0)
 
     with h5py.File('PrO-VAT.hdf5','r') as f:
-        frame_ids = f['frames'][:]; frame_ids = np.arange(0,len(frame_ids),1)
+        frame_ids = f['frames'][:]
 
     # Perform the analysis using multiprocessing
     print("Volume Analysis\n")
     try:
-        func = functools.partial(volume_analysis, args)
-        with mp.Pool(processes=args.N_threads) as pool:
-            out_arr = pool.map(func, list(frame_ids))
+        if args.N_threads == 1:
+            out_arr = []
+            for frame in frame_ids:
+                out_arr.append(volume_analysis(args, frame))
+        else:
+            func = functools.partial(volume_analysis, args)
+            with mp.Pool(processes=args.N_threads) as pool:
+                out_arr = pool.map(func, range(len(frame_ids)))
     except ValueError as e:
         print(f"ERROR - {e}")
         sys.exit(1)
@@ -1244,9 +1330,14 @@ def main():
     # Write .dat files
     if args.PSD_FFV:
         d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step),0,0)
-        PSD_arr = np.array([out['PSD_arr'] for out in out_arr]); PSD_arr = np.divide(PSD_arr.T, PSD_arr[:,0], dtype=float).T
+        PSD_arr = np.array([out['PSD_arr'] for out in out_arr])
 
-        # Return the average and standard deviation (over the frames processed) of the probe-occupiable pore size ditribution
+        # Account for N_repeats
+        if args.N_repeats > 1: PSD_arr = np.sum(PSD_arr.reshape(args.N_frames, args.N_repeats, -1), axis=1)
+
+        PSD_arr = np.divide(PSD_arr.T, PSD_arr[:,0], dtype=float).T
+
+        # Return the average and standard deviation (over the frames processed) of the probe-occupiable pore size distribution
         PSD_Cumulative = np.array([np.mean(PSD_arr, axis=0), np.std(PSD_arr, axis = 0)])
         # PSD is the negative derivative of the cumulative sum
         PSD = np.array([np.mean(-(PSD_arr[:,1:] - PSD_arr[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0), np.std(-(PSD_arr[:,1:] - PSD_arr[:,:len(d_arr)-1])/(d_arr[1:] - d_arr[:len(d_arr)-1]), axis=0)])
@@ -1264,7 +1355,10 @@ def main():
                     else:
                         print(f" {np.round(d_arr[i], decimals=3):10.5f} {PSD[0,i-1]:10.5f} {PSD[1,i-1]:10.5f}", file=anaout)
 
-    FFV = np.array([out['FFV'] for out in out_arr]); FFV_c = FFV[:,0] / FFV[:,2]; FFV_lr = FFV[:,1] / FFV[:,2]
+    FFV = np.array([out['FFV'] for out in out_arr])
+    # Account for N_repeats
+    if args.N_repeats > 1: FFV = np.sum(FFV.reshape(args.N_frames, args.N_repeats, -1), axis=1)
+    FFV_c = FFV[:,0] / FFV[:,2]; FFV_lr = FFV[:,1] / FFV[:,2]
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
     FFV = np.array([np.mean(FFV_c), np.std(FFV_c),np.mean(FFV_lr), np.std(FFV_lr)])
     with open('FFV.dat', 'w') as anaout:

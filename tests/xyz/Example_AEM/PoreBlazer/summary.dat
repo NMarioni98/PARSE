@@ -1,0 +1,31 @@
+ polymer_matrix.xyz
+V_A^3   902915.418
+M _g/mol   246270.586
+RHO_g/cm^3        0.453
+PLD_A         4.19
+LCD_A         9.48
+ D            1
+ Total               
+S_AC_A^2          NaN
+S_AC_m^2/cm^3          NaN
+S_AC_m^2/g          NaN
+ Total               
+V_He_A^3   557392.616
+V_He_cm^3/g        1.363
+V_G_A^3   614866.809
+V_G cm^3/g:        1.504
+V_PO A^3:   449098.718
+V_PO cm^3/g:        1.098
+FV_PO:      0.49739
+ Network-accessible  
+S_AC_A^2          NaN
+S_AC_m^2/cm^3          NaN
+S_AC_m^2/g          NaN
+ Network-accessible  
+V_He_A^3   555509.706
+V_He_cm^3/g        1.358
+V_G_A^3   614127.933
+V_G cm^3/g:        1.502
+V_PO A^3:   429521.076
+V_PO cm^3/g:        1.050
+FV_PO:      0.47570
