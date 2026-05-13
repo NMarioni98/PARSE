@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 """ 
 
 # PrO-VAT: Probe-Occupiable Volume Analysis Tools
-# PrO-VAT.py calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals volume of the defined system matrix from a GROMACS (xtc/trr/gro + tpr/gro) or PoreBlazer-style (xyz + dat) trajectory
+# PrO-VAT.py calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals free volume of the defined system matrix from a GROMACS (xtc/trr/gro + tpr/gro) or PoreBlazer-style (xyz + dat) trajectory
 # This script was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system
 # The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations
 # Given the system matrix (e.g., polymer matrix, non-polar domain, polar domain, etc), this code can analyze the total free volume, free volume of the largest cluster (assumed percolated), or the free volume of clusters containing (defined) solvent atoms

@@ -4,19 +4,19 @@ Developed by: Nico Marioni, nmarioni@seas.upenn.edu
  - Developed using Python 3.12.X
    - Packages: PyYAML 6.0.3, numpy 2.3.3+, h5py 3.14.0+, MDAnalysis 2.9.0+, python-igraph 1.0.0, scikit-image 0.25.0+, porespy 3.0.4, openpnm 3.6.1
 
-PrO-VAT calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals volume of the defined system matrix from a GROMACS (gro/xtc/trr + tpr/gro) or PoreBlazer-style (xyz + dat) trajectory. This software was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system. The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations. This software was written based on the methods used for [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) ([Publication](https://doi.org/10.1021/acs.chemmater.0c03575)) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems.
+PrO-VAT calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals free volume of the defined system matrix from a GROMACS (gro/xtc/trr + tpr/gro) or PoreBlazer-style (xyz + dat) trajectory. This software was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system. The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations. This software was written based on the methods used for [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) ([Publication](https://doi.org/10.1021/acs.chemmater.0c03575)) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems.
 
 
 
 ## Methodology
 
-Briefly, PrO-VAT probes the van der Waals free volume of a defined system matrix. The probed free volume can be further refined to the largest continuous cluster (assumed percolated) or only free volume clusters which contain solvent atoms. See --solvent_name in config.yaml for more details. The free volume is segregated into the Connolly (probe-occupiable) and Lee-Richards (surface-accessible) volumes, where the surface of the Connolly and Lee-Richards volumes are traced by the edge and center of a probe of defined radius as it is "rolled across" the volume of the system matrix. (see **Figure A**). The Connolly volume is used to measure the PSD, Connolly FFV, and Connolly SA. The Lee-Richards volume is used to measure the Lee-Richards FFV, Lee-Richards, SA, and Tau-.
+Briefly, PrO-VAT probes the van der Waals (vdW) free volume of a defined system matrix. The probed free volume can be further refined to the largest continuous free volume cluster (assumed percolated) or only free volume clusters which contain solvent atoms. The free volume is segregated into the Connolly (probe-occupiable) and Lee-Richards (surface-accessible) volumes, where the surface of the Connolly and Lee-Richards volumes are traced by the edge and center of a probe of defined radius as it is "rolled across" the volume of the system matrix. (see **Figure A**). The Connolly volume is used to measure the PSD, Connolly FFV, and Connolly SA. The Lee-Richards volume is used to measure the Lee-Richards FFV, Lee-Richards, SA, and Tau.
 
-Algorithmically, the free volume is determined as follows. First, the system box is divided into voxels. For each voxel, the largest voxel-centered free volume sphere without overlapping the system matrix is calculated, where free volume spheres of radius *r* >= probe_radius define the Connolly volume. A cluster analysis is optionally applied to only consider the largest cluster of free volume spheres, or only free volume clusters which contain solvent atoms. To calculate the Cumulative PSD, we calculate the largest free volume sphere that contains each voxel center that lies outside the system matrix (see **Figure B**, where the blue circle is the largest sphere centered on the blue voxel, and the right circle is the largest sphere that contains the blue voxel). The Cumulative PSD is defined as the probability that a random voxel center within the free volume resides within a free volume sphere of diameter *d* or smaller. From this definition, the PSD is defined as the derivative of the Cumulative PSD with respect to *d*. The FFV is calculated as the fraction of total voxels in the Connolly and Lee-Richards volumes. The SA is calculated using a scikit-image [surface mesh](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.mesh_surface_area) determined by a simple [marching cubes](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.marching_cubes) algorithm applied to the Connolly and Lee-Richards volumes. The tortuosity is calculated using [PoreSpy](https://porespy.org/examples/simulations/reference/tortuosity_fd.html) on the Lee-Richards volume.
+Algorithmically, the free volume is determined as follows. First, the system box is divided into uniform voxels. The voxels may be pseudo-randomly offset from the uniform centers to reduce bias due to the cubic voxel geometry. See --Voxel_dist in config.yaml for more details. For each voxel, the largest voxel-centered free volume sphere without overlapping the system matrix vdW volume is calculated, where free volume spheres of radius *r* >= --probe_radius define the Connolly volume. A cluster analysis is optionally applied to only consider the largest cluster of free volume spheres, or only free volume clusters which contain solvent atoms. See --solvent_name in config.yaml for more details. To calculate the Cumulative PSD, we find the largest free volume sphere that contains each voxel center that lies outside the system matrix (see **Figure B**, where the blue circle is the largest sphere centered on the blue voxel, and the red circle is the largest sphere that contains the blue voxel). The Cumulative PSD is defined as the probability that a random voxel center within the free volume resides within a free volume sphere of diameter *d* or smaller. From this definition, the PSD is defined as the negative derivative of the Cumulative PSD with respect to *d*. The FFV is calculated as the fraction of total voxels in the Connolly and Lee-Richards volumes. The SA is calculated using a scikit-image [surface mesh](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.mesh_surface_area) determined by a simple [marching cubes](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.marching_cubes) algorithm applied to the Connolly and Lee-Richards volumes. The tortuosity is calculated using [PoreSpy](https://porespy.org/examples/simulations/reference/tortuosity_fd.html) on the Lee-Richards volume.
 
 ![PrO-VAT](assets/methodology.png)
 
-**Figures C and D** depict [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/) renders (see **/test/** for more details) of the polymer matrix with the (C) voxelized Connolly volume and (D) Connolly and Lee-Richards surfaces from **/tests/gmx/Example_CEM/**. The polymer matrix is represented by the polymer atoms with their respective van der Waals radii, while the voxelized volume and surfaces are represented by cubes of side length --L_voxel 1.0 A. **Figure E** compares the Cumulative PSD and PSD  calculated using PrO-VAT and [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer), where PrO-VAT is calculated from the Connolly Volume in **Figure C**. To ensure a fair 1-to-1 comparison, PoreBlazer is given comparable inputs to PrO-VAT, the distributions are shifted, and the PSD derivative is re-calculated to match PrO-VATs output (see **/test/gmx/Example_CEM/** for more details). Deviations between PrO-VAT and PoreBlazer are attributed to minor differences in the voxelization algorithm and PSD binning. **Figure F** compares the PSD evaluated over a single frame with a Uniform voxel distribution, the same frame analyzed 8 times with randomized voxel distributions (see --N_repeats in config.yaml for more details), and the average and standard deviation of 24 evenly spaced frames (dt = 2.5 ns) with randomized voxel distributions.
+**Figures C and D** depict [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/) renders (see **/test/** for more details) of the polymer matrix with the (C) voxelized Connolly volume and (D) Connolly and Lee-Richards surfaces from **/tests/gmx/Example_CEM/**. The polymer matrix is represented by the polymer atoms with their respective vdW radii, while the voxelized volume and surfaces are represented by cubes of side length --L_voxel 1.0 A. **Figure E** compares the Cumulative PSD and PSD calculated using PrO-VAT and [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer), where PrO-VAT analyzes the Connolly Volume in **Figure C**. To ensure a fair 1-to-1 comparison, PoreBlazer is given comparable inputs to PrO-VAT, the distributions are shifted, and the PSD derivative is re-calculated to match PrO-VATs output (see **/test/gmx/Example_CEM/** for more details). Deviations between PrO-VAT and PoreBlazer are attributed to minor differences in the voxelization algorithm and PSD binning. **Figure F** compares the PSD evaluated over a single frame with a uniform voxel distribution, the same frame analyzed 8 times with randomized voxel distributions, and the average and standard deviation of 24 evenly spaced frames (dt = 2.5 ns) with randomized voxel distributions (see --Voxel_dist, --N_repeats, and --N_frames in config.yaml for more details).
 
 ![PrO-VAT](assets/examples.png)
 
@@ -47,21 +47,27 @@ PrO-VAT requires the following inputs:
 
 ### PrO-VAT Inputs (config.yaml)
 ```
-usage: PrO-VAT.py xyz [-h] [-n {1}] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME] [-L L_VOXEL] [-r PROBE_RADIUS] [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}]
-                      [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}] [--print_xyz {True,False}] [--clustering {Neumann,Moore}]
-                      [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX] [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
+usage: PrO-VAT.py gmx [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME]
+                      [-L L_VOXEL] [-r PROBE_RADIUS] [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}]
+                      [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}]
+                      [--print_xyz {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX]
+                      [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
                       trj_file top_file
 
 options:
   -h, --help            show this help message and exit
 
 Required input files:
-  trj_file              Path to xyz file
-  top_file              Path to dat file
+  trj_file              Path to xtc/trr/gro file
+  top_file              Path to tpr/gro file
 
 Frame selection and threads:
-  -n {1}, --N_frames {1}
-                        Number of frames to analyze [Locked to 1 frame for xyz analysis]
+  -b T_MIN, --t_min T_MIN
+                        Start time (ps) [default = YAML]
+  -e T_MAX, --t_max T_MAX
+                        End time (ps) [default = YAML]
+  -n N_FRAMES, --N_frames N_FRAMES
+                        Number of frames to analyze [default = YAML]
   --N_repeats N_REPEATS
                         Number of times to analyze each frame. --N_repeats > 1 requires --Voxel_dist 'Random' [default = YAML]
   -t N_THREADS, --N_threads N_THREADS
@@ -69,11 +75,11 @@ Frame selection and threads:
 
 MDAnalysis selection strings:
   -m SYSTEM_NAME, --system_name SYSTEM_NAME
-                        MDAnalysis selection string defining the system matrix, e.g., 'all', 'moltype MOL', 'resname PEO', 'resname SOL LI CL' [default = YAML; Typically 'all' for PoreBlazer-style xyz + dat
-                        input.]
+                        MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL'
+                        [default = YAML]
   -s SOLVENT_NAME, --solvent_name SOLVENT_NAME
-                        MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default = YAML; Typically '' or 'percolated' for PoreBlazer-style xyz + dat
-                        input.]
+                        MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default =
+                        YAML]
 
 Important variables:
   -L L_VOXEL, --L_voxel L_VOXEL
@@ -87,9 +93,11 @@ Important variables:
   --PSD_FFV {True,False}
                         Pore size distribution and free volume fraction calculation setting [default = YAML; Locked to True or False]
   --Surface_area {True,False}
-                        Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
+                        Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or
+                        False]
   --Tortuosity {True,False}
-                        Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
+                        Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or
+                        False]
 
 Terminal printing and xyz generation:
   --print_eff {0,1,2}   Level of printing [default = YAML; Locked to 0, 1, or 2]
@@ -115,14 +123,14 @@ Efficiency parameters - see YAML description for more details [default = YAML]:
  - **config.yaml:** yaml file containing default inputs for PrO-VAT
    - See the file for more details on each input
 
-### Examples
+### Tests and Examples
  - **/tests/xyz/Example_\*/:** example analyses on PoreBlazer-style xyz/dat trajectory input for PrO-VAT
    - Example_{Cylindrical_Pore, Rectangular_Pore, 2D_Channel} contain ideal pore and channel geometries
      - PrO-VAT and PoreBlazer complete calculations in approx. 1 min.
    - Example_AEM contains an anion exchange membrane (*p*5CNMe3 - *λ* = 10) from: https://doi.org/10.1021/acs.macromol.5c01789
      - PrO-VAT completes calculations in approx. 40 s, PoreBlazer completes calculations in approx. 5 min.
    - Example_GRF contains a Gaussian random field reconstruction of a cation exchange membrane (*p*5PhSH - *λ* = 6) from: Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
-     - PrO-VAT completes calculations in approx. 25 mins., PoreBlazer fails to run.
+     - PrO-VAT completes calculations in approx. 25 min., PoreBlazer fails to complete calculations within 12 hr.
  - **/tests/gmx/Example_\*/:** example analyses on GROMACS gro/gro, gro/tpr, xtc/tpr, trr/tpr input for PrO-VAT
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
      - PrO-VAT completes calculations over 1 frame in approx. 40 s and over 24 frames in approx. 3.5 min., PoreBlazer completes calculations over 1 frame in approx. 5 min.
