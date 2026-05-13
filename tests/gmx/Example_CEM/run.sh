@@ -31,10 +31,10 @@ python3 ../../../PrO-VAT.py ../../config.yaml gmx md.xtc md.tpr -m 'not resname 
 # Run the PSD analysis
 python3 ../../../PrO-VAT.py ../../config.yaml gmx md.xtc md.tpr -m 'not resname SOL H3O' -s 'percolated' --N_frames 24 --N_threads 8 --print_eff 1 --print_xyz False
 
-# polymer_matrx (probes water domain): -m 'not resname SOL H3O'
-# nonpolar_matrx (probes polar domain): -m 'not (resname SOL H3O or name S1 O1 O2 O3)'
-# water_matrx (probes polymer domain): -m 'resname SOL H3O'
-# polar_matrx (probes nonpolar domain): -m 'resname SOL H3O or name S1 O1 O2 O3'
+# polymer_matrix (probes water domain): -m 'not resname SOL H3O'
+# nonpolar_matrix (probes polar domain): -m 'not (resname SOL H3O or name S1 O1 O2 O3)'
+# water_matrix (probes polymer domain): -m 'resname SOL H3O'
+# polar_matrix (probes nonpolar domain): -m 'resname SOL H3O or name S1 O1 O2 O3'
 
 # For a GROMACS input, PrO-VAT.py can take more inputs, enabling parallelization over many frames
 # PrO-VAT.py takes the following inputs
@@ -44,7 +44,7 @@ python3 ../../../PrO-VAT.py ../../config.yaml gmx md.xtc md.tpr -m 'not resname 
 
 # Important considerations when running PrO-VAT.py - in addition to the variables above, "gmx" mode takes in:
 #   --system_name:      MDAnalysis selection string defining the system matrix, e.g., ''all', 'moltype MOL', 'resname PEO', 'resname SOL LI CL'. Typically 'all' for "xyz" mode.
-#   --solvent_name:     solvent_name is either '' to probe the entire van der Waals free volume of the provided atoms, 'percolated' to probe the largest (assumed percolated) free volume cluster, or an MDAnalysis selection string to only probe free volume clusters containg solvent atoms.
+#   --solvent_name:     solvent_name is either '' to probe the entire van der Waals free volume of the provided atoms, 'percolated' to probe the largest (assumed percolated) free volume cluster, or an MDAnalysis selection string to only probe free volume clusters containing solvent atoms.
 #   --L_voxel:          defines the approximate size of the voxels the system is broken down in to. Smaller voxels take exponentially longer to analyze. Typically 0.5-1.0 angstroms.
 #   --probe_radius:     defines the size of the probe, where the minimum pore size analyzed has a diameter of 2*probe_radius. Smaller values take exponentially longer to analyze. Typically 1.4-1.575 for a "water molecule" probe.
 #   --Voxel_dist:       create 'Uniform' or pseudo-"Random" voxel positions. Typically "Random", but visualizing the system using print_xyz is clearer with 'Uniform.
@@ -52,8 +52,8 @@ python3 ../../../PrO-VAT.py ../../config.yaml gmx md.xtc md.tpr -m 'not resname 
 #   --Surface_area:     calculate the Connolly (--PSD_FFV True) and Lee-Richards surface area of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1.
 #   --Tortuosity:       calculate the 1D diffusional tortuosity of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1. Memory intensive on large systems or small --L_voxel.
 #   --d_max and d_step: defines the binning for the PSD. It may be useful to change d_step to achieve smoother profiles. Typically 50.0 and 0.25-0.50, respectively.
-#   --print_eff:        defines how much information is printing while PrO-VAT.py is running. Typically 1, but 2 is useful for trouble shooting memory errors or significant slowdowns in compute time.
-#   --print_xyz:        defines whether PrO-VAT.py generates xyz files to visualize the probe-occupiable volume that is analyzed. Typically False to conserve harddrive space (these xyz can get large for small L_voxel or large simulation boxes).
+#   --print_eff:        defines how much information is printing while PrO-VAT.py is running. Typically 1, but 2 is useful for troubleshooting memory errors or significant slowdowns in compute time.
+#   --print_xyz:        defines whether PrO-VAT.py generates xyz files to visualize the probe-occupiable volume that is analyzed. Typically False to conserve hard drive space (these xyz can get large for small L_voxel or large simulation boxes).
 #   --t_min:            start time for analysis in ps (-1 assumes the time of the first frame).
 #   --t_max:            end time for analysis in ps (-1 assumes the time of the last frame).
 #   --N_frames:         number of frames to analyze. For efficiency, this should be a multiple of N_threads.

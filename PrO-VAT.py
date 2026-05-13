@@ -102,7 +102,7 @@ def export_voxels_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cell
     vox_x, vox_y, vox_z = voxel_data['vox_x'], voxel_data['vox_y'], voxel_data['vox_z']
     
     # Write .xyz file containing each free volume voxel
-    #   Radius = L_voxel/2, Alpha = Diameter (largest diamter of that bin of d_arr) of the largest free volume sphere which contains the center of this voxel.
+    #   Radius = L_voxel/2, Alpha = Diameter (largest diameter of that bin of d_arr) of the largest free volume sphere which contains the center of this voxel.
     with open('Free_Volume_Voxels.xyz', 'w') as anaout:
         print(str(len(FFV_save)), file=anaout)
         print('Properties=species:S:1:pos:R:3:Radius:R:1:Alpha:R:1', file=anaout)
@@ -402,7 +402,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
                                   edge_Graph_idx[Graph_radii[edge_Graph_idx]]
             ), axis=1, dtype=linear_type))
 
-    # Graph (cluster) analsysis
+    # Graph (cluster) analysis
     clusters = G.components()
     membership = np.array(clusters.membership, dtype=linear_type)
     cluster_ids = np.argsort(clusters.sizes())[::-1]
@@ -558,7 +558,7 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
                 
                 if len(dist_arr) > 0:
                     dist_arr -= rad_temp[pair_arr[:,0]]                                                                                         # Subtract radius of each free volume sphere from the distance to get the distance from the voxel-center to the surface of the free volume sphere
-                    pair_arr = np.unique(pair_arr[:,1][dist_arr < 0])                                                                           # Only consider voxel-centers that lie within the free volume sphere (adjusted distance < 0), and only count each occurence once (unique)
+                    pair_arr = np.unique(pair_arr[:,1][dist_arr < 0])                                                                           # Only consider voxel-centers that lie within the free volume sphere (adjusted distance < 0), and only count each occurrence once (unique)
 
                     FFV_c += len(pair_arr); PSD_arr[np.where(d_arr < d)[0]] += len(pair_arr)                                                    # Voxel-centers w/n free volume sphere count towards the FFV and cumulatively towards the PSD
 

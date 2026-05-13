@@ -31,7 +31,7 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
  - **/tests/{xyz/gmx}/Example_\*/Example_output_files/:** contains example files generated when PrO-VAT is run as shown in run.sh
    - PSD.dat: pore size distribution (PSD, or free volume distribution, channel width distribution, etc)
    - Cumulative_PSD.dat: cumulative PSD, where the PSD is the derivative of this profile
-   - PSD_Plot.xlsx: excel plot of the cumulative PSD and PSD plus comparisons to PoreBlazer or multi-frame analyses where applicable
+   - PSD_Plot.xlsx: Excel plot of the cumulative PSD and PSD plus comparisons to PoreBlazer or multi-frame analyses where applicable
      - **NOTE**: PSDs are recalculated from the cumulative distribution with the diameters in units of nm. Results from PoreBlazer are shifted to be right-justified and the derivative is recalculated to match PrO-VAT's output.
      - **NOTE**: Some deviations between PrO-VAT and PoreBlazer are expected due to differences in the voxelization strategy and methodology. However, we observe that the shape and location of the PSD curves are in good agreement
    - FFV.dat: Connolly and Lee-Richards volume fraction (FFV, free volume fraction, water volume fraction, porosity, etc)
@@ -45,7 +45,7 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
      - Free_Volume_Spheres visualizes the free volume *spheres* of maximum radius *probe_radius* (defined in "config.yaml") which make up the probe-occupiable free volume
      - Free_Volume_Voxels visualizes the free volume *voxels* of side length *L_voxel* (defined in "config.yaml") which make up the probe-occupiable free volume
      - Free_Volume_Surface visualizes the free volume *voxels* of side length *L_voxel* (defined in "config.yaml") which defines the surface of the probe-occupiable free volume
-       - "X" particles define the Connolly surface while "Y" particles define the Lee-Richards "Surface-accessible surface
+       - "X" particles define the Connolly surface while "Y" particles define the Lee-Richards "Surface-accessible" surface
        - **NOTE:** voxels are centered on the voxel face at the surface
    - Example.ovito: OVITO visualization state showing the above. Created using [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/)
      - In the top right, you can select the different xyz files (pipelines) and turn on and off the Particles (under "Visual elements")
