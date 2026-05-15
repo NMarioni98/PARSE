@@ -9,7 +9,7 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
    - Example_AEM contains an anion exchange membrane (*p*5CNMe3 - *λ* = 10) from: https://doi.org/10.1021/acs.macromol.5c01789
      - PrO-VAT completes calculations in approx. 40 s, PoreBlazer completes calculations in approx. 5 min.
    - Example_GRF contains a Gaussian random field reconstruction of a cation exchange membrane (*p*5PhSH - *λ* = 6) from: Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
-     - PrO-VAT completes calculations in approx. 25 min., PoreBlazer fails to complete calculations within 12 hr.
+     - PrO-VAT completes calculations in approx. 25 min., PoreBlazer fails to complete calculations within 24 hr.
  - **/tests/gmx/Example_\*/:** example analyses on GROMACS gro/gro, gro/tpr, xtc/tpr, trr/tpr input for PrO-VAT
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
      - PrO-VAT completes calculations over 1 frame in approx. 40 s and over 24 frames in approx. 3.5 min., PoreBlazer completes calculations over 1 frame in approx. 5 min.
