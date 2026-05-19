@@ -1,7 +1,7 @@
 # Default MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL', 'name OW HW1 HW2'
 #     The system matrix defines the van der Waals volume, of which the free volume is analyzed
 #      - NOTE: You can probe the solvent (polar, etc) domain by defining the polymer as the system matrix, or the polymer (non-polar, etc) domain by defining the solvent as the system matrix
-#     Can overwrite when calling PrO-VAT.py using -m or --system_name
+#     Can overwrite when calling PARSE.py using -m or --system_name
 system_name: 'all'
 
 # Default MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL'
@@ -9,7 +9,7 @@ system_name: 'all'
 #     May provide 'percolated' to analyze the largest free volume domain, which is typically percolated at sufficiently high solvent contents, e.g., 'percolated' (adds clustering analysis)
 #     May provide a MDAnalysis selection string to define the solvent phase, where only the free volume clusters containing at least 1 solvent atom are analyzed (adds clustering + distance analysis - most expensive)
 #     NOTE: Defining the solvent matrix (not --solvent_name '') can be resource intensive, specifically for systems with a very large number of voxels (large simulation box length and/or small L_voxel)
-#     Can overwrite when calling PrO-VAT.py using -s or --solvent_name
+#     Can overwrite when calling PARSE.py using -s or --solvent_name
 solvent_name: ''
 
 #######################################################################
@@ -17,17 +17,17 @@ solvent_name: ''
 #######################################################################
 
 # Default start time for analysis in ps (-1 assumes the time of the first frame)
-#     Can overwrite when calling PrO-VAT.py using -b or --t_min
+#     Can overwrite when calling PARSE.py using -b or --t_min
 t_min: -1
 
 # Default end time for analysis in ps (-1 assumes the time of the last frame)
-#     Can overwrite when calling PrO-VAT.py using -e or --t_max
+#     Can overwrite when calling PARSE.py using -e or --t_max
 t_max: -1
 
 # Default number of frames to analyze (-1 assumes N_frames = N_threads, N_frames = 1 for GRO file inputs)
 #     For efficiency, N_frames should be a multiple of the number of threads, --N_threads
 #     NOTE: --N_frames 1 always uses the last frame in the trajectory (--t_max) if multiple frames are provided.
-#     Can overwrite when calling PrO-VAT.py using -n or --N_frames
+#     Can overwrite when calling PARSE.py using -n or --N_frames
 N_frames: -1
 
 ######################################################################
@@ -39,13 +39,13 @@ N_frames: -1
 #     NOTE: If more frames are available, always prioritize increasing --N_frames over --N_repeats. --N_repeats > 1 can smooth out single-frame analyses and reduce artifacts due to the cubic nature of voxels.
 #     NOTE: Extra repeats add sampling to that frame, but do not act as independent frames for the standard deviation, i.e., if --N_frames 1 --N_repeats 8, the standard deviation = 0 for all bins in PSD.
 #     NOTE: Total number of frames analyzed = N_frames * N_repeats. --N_repeats > 1 can be parallelized with --N_threads > 1 even if --N_frames 1.
-#     Can overwrite when calling PrO-VAT.py using --N_repeats
+#     Can overwrite when calling PARSE.py using --N_repeats
 N_repeats: 1
 
 # Default number of threads for parallelization across all frames (N_frames * N_repeats)
 #     If N_threads > (N_frames * N_repeats), N_threads = (N_frames * N_repeats)
 #     NOTE: Parallelization does not work across multiple compute nodes within a single python run
-#     Can overwrite when calling PrO-VAT.py using -t or --N_threads
+#     Can overwrite when calling PARSE.py using -t or --N_threads
 N_threads: 1
 
 
@@ -56,46 +56,46 @@ N_threads: 1
 
 # Default voxel side length (in Angstroms). Typically 0.5 A for atomistic simulations.
 #     NOTE: Smaller voxel side lengths increase compute time and resources significantly
-#     Can overwrite when calling PrO-VAT.py using -L or --L_voxel
+#     Can overwrite when calling PARSE.py using -L or --L_voxel
 L_voxel: 1.0
 
 # Default probe radius (in Angstroms), where probe_radius defines the smallest 'pore' in the PSD. Typically ~1.5 A for a "water" molecule probe.
 #     NOTE: Smaller probe radii increase compute time and resources significantly
-#     Can overwrite when calling PrO-VAT.py using -r or --probe_radius
+#     Can overwrite when calling PARSE.py using -r or --probe_radius
 probe_radius: 1.575
 
 # Max PSD diameter (in Angstroms), i.e., the maximum diameter in the PSD distribution
 #     NOTE: d_max must be larger than the biggest diameter pore in the system
-#     Can overwrite when calling PrO-VAT.py using --d_max
+#     Can overwrite when calling PARSE.py using --d_max
 d_max: 50
 
 # PSD bin size (in Angstroms), i.e., the step size of the PSD distribution
-#     Can overwrite when calling PrO-VAT.py using --d_step
+#     Can overwrite when calling PARSE.py using --d_step
 d_step: 0.25
 
 # Voxel distribution can be 'Uniform' (a set grid where all voxels are evenly spaced) or 'Random' (voxels are pseudo-randomly offset from their uniform center)
 #     'Random' should be used when analyzing multiple frames over a single trajectory, or if performing multiple analyses on the same frame
 #     NOTE: --Surface_area True and --Tortuosity True require --Voxel_dist 'Uniform'
-#     Can overwrite when calling PrO-VAT.py using --Voxel_dist
+#     Can overwrite when calling PARSE.py using --Voxel_dist
 Voxel_dist: 'Random'
 
 # Set --PSD_FFV True to calculate the PSD and Connolly FFV. Lee-Richards FFV is still calculated if --PSD_FFV False.
 #     NOTE: --PSD_FFV False is useful if only the Lee-Richards FFV, Lee-Richards SA (--Surface_area True) and/or Tau (--Tortuosity True) is needed.
-#     Can overwrite when calling PrO-VAT.py using --PSD_FFV
+#     Can overwrite when calling PARSE.py using --PSD_FFV
 PSD_FFV: True
 
 # Set --Surface_area True to calculate the Connolly and Lee-Richards "Surface-accessible" surface area of the system matrix
 #     --L_voxel 0.5 has been found to exhibit good agreement with Lee-Richards SA calculations made using FreeSASA (https://freesasa.github.io/python/) for atomistic MD simulations of moderately hydrated ion exchange membranes.
 #     NOTE: SA calculation requires --Voxel_dist 'Uniform' and --tol -1
 #     NOTE: Connolly SA calculation requires --PSD_FFV True
-#     Can overwrite when calling PrO-VAT.py using --Surface_area
+#     Can overwrite when calling PARSE.py using --Surface_area
 Surface_area: False
 
 # Set --Tortuosity True to calculate the 1D diffusional tortuosity of the solvent matrix using a simple Fickian diffusion algorithm
 #     Tortuosity does not account for PBCs and applies to the Lee-Richards volume
 #     NOTE: Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems
 #     NOTE: Tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1
-#     Can overwrite when calling PrO-VAT.py using --Tortuosity
+#     Can overwrite when calling PARSE.py using --Tortuosity
 Tortuosity: False
 
 # Define the print state of the analysis
@@ -104,13 +104,13 @@ Tortuosity: False
 #     --print_eff 2 to print information about the number of calculations and writes during each compute section of code, in addition to the above
 #     If N-threads > 1, prints are always associated to the last frame of the trajectory input
 #     Recommended to debug with nt = N_frames = 1
-#     Can overwrite when calling PrO-VAT.py using --print_eff
+#     Can overwrite when calling PARSE.py using --print_eff
 print_eff: 2
 
 # Set --print_xyz True to write useful xyz files for visualization in OVITO
 #     xyz files are always associated to the last frame of the trajectory input
 #     Recommend installing OVITO(-basic) version 3.7.12 (https://www.ovito.org/download_history/)
-#     Can overwrite when calling PrO-VAT.py using --print_xyz
+#     Can overwrite when calling PARSE.py using --print_xyz
 print_xyz: True
 
 
