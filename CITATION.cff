@@ -7,6 +7,5 @@ authors:
 title: "PARSE: Pore Analysis & Reconstruction of Spatial Environments"
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.YOUR_CONCEPT_DOI # Replace with your Concept DOI
-    description: "The concept DOI for all versions of PrO-VAT"
-repository-code: "https://github.com/NMarioni98/PrO-VAT"
+    value: https://doi.org/10.5281/zenodo.20314881
+repository-code: "https://github.com/NMarioni98/PARSE"
