@@ -129,7 +129,7 @@ Efficiency parameters - see YAML description for more details [default = YAML]:
      - PARSE and PoreBlazer complete calculations in approx. 1 min.
    - Example_AEM contains an anion exchange membrane (*p*5CNMe3 - *λ* = 10) from: https://doi.org/10.1021/acs.macromol.5c01789
      - PARSE completes calculations in approx. 40 s, PoreBlazer completes calculations in approx. 5 min.
-   - Example_GRF contains a Gaussian random field reconstruction of a cation exchange membrane (*p*5PhSH - *λ* = 6) from: Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
+   - Example_GRF contains a Gaussian random field reconstruction of a cation exchange membrane (*p*5PhSH - *Y* = 69, *λ* = 9) from: Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
      - PARSE completes calculations in approx. 25 min., PoreBlazer fails to complete calculations within 24 hr.
  - **/tests/gmx/Example_\*/:** example analyses on GROMACS gro/gro, gro/tpr, xtc/tpr, trr/tpr input for PARSE
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
