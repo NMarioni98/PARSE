@@ -151,8 +151,7 @@ The development of PARSE was supported by the Department of Energy (DOE)-Basic E
  url          = {https://doi.org/10.5281/zenodo.20314881},
 }
 ```
- - See below for specific PARSE releases
-   - v1.0.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20314882.svg)](https://doi.org/10.5281/zenodo.20314882)
+ - See [Zenodo](https://doi.org/10.5281/zenodo.20314881) for citations to specific PARSE versions
 
 Publications using PARSE:
  - Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
