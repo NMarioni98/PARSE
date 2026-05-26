@@ -6,8 +6,8 @@ system_name: 'all'
 
 # Default MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL'
 #     May leave blank to probe the entire free volume, e.g., '' (no solvent analysis - least expensive)
-#     May provide 'percolated' to analyze the largest free volume domain, which is typically percolated at sufficiently high solvent contents, e.g., 'percolated' (adds clustering analysis)
-#     May provide a MDAnalysis selection string to define the solvent phase, where only the free volume clusters containing at least 1 solvent atom are analyzed (adds clustering + distance analysis - most expensive)
+#     May provide 'percolated' to analyze the largest free volume domain, which is typically percolated at sufficiently high solvent contents, e.g., 'percolated' (adds clustering analysis, also see --clustering)
+#     May provide a MDAnalysis selection string to define the solvent phase, where only the free volume clusters containing at least 1 solvent atom are analyzed (adds clustering + distance analysis, also see --clustering - most expensive)
 #     NOTE: Defining the solvent matrix (not --solvent_name '') can be resource intensive, specifically for systems with a very large number of voxels (large simulation box length and/or small L_voxel)
 #     Can overwrite when calling PARSE.py using -s or --solvent_name
 solvent_name: ''
@@ -119,30 +119,37 @@ print_xyz: True
 ######################### van der Waals radii #########################
 #######################################################################
 
-# van der Waals radii - defines the volume of each atom in the system matrix
+# Method to identify atoms and their associated vdW radii using MDAnalysis
+#     --identify_atoms 'Names' compares the names read in by MDAnalysis to the names in Size_arr and Dummy_atoms
+#                             First, the entire name is compared against the name list, e.g., 'LI', then the first character of the name is compared against the name list, e.g., 'C'
+#     --identify_atoms 'Masses' compares the masses read in by MDAnalysis to the masses in Size_arr (rounded to the nearest integer, e.g., 12 u for C, 16 u for O). Dummy_atoms are assumed to have a mass of 0
+#                               NOTE: MDAnalysis guesses masses based on atomic/element names if the given topology file does not contain masses
+identify_atoms: 'Names'
+
+# van der Waals radii - defines the radii of each atom in the system matrix
 #     Default values are from Bondi (1964): https://www.knowledgedoor.com/2/elements_handbook/bondi_van_der_waals_radius.html
-#     Topology atom names are compared against the Element name in Size_arr
-#     First, the entire name is compared against the Element list, then the first character of the name is compared against the Element list
-# [Element, Radius (A)]
+#     Topology atom names (--identify_atoms 'Names') or masses (--identify_atoms 'Masses') are compared against the Element name or mass in Size_arr
+# [Element, Mass (u), Radius (A)]
 Size_arr:
- - [H,  1.20]
- - [C,  1.70]
- - [N,  1.55]
- - [O,  1.52]
- - [F,  1.47]
- - [S,  1.80]
- - [P,  1.80]
- - [LI, 1.82]
- - [NA, 2.27]
- - [K,  2.75]
- - [MG, 1.73]
- - [CL, 1.75]
- - [BR, 1.85]
- - [I,  1.98]
+ - [H,    1.008, 1.20]
+ - [C,   12.011, 1.70]
+ - [N,   14.007, 1.55]
+ - [O,   15.999, 1.52]
+ - [F,   18.998, 1.47]
+ - [S,   32.065, 1.80]
+ - [P,   30.974, 1.80]
+ - [LI,   6.941, 1.82]
+ - [NA,  22.990, 2.27]
+ - [K,   39.098, 2.75]
+ - [MG,  24.305, 1.73]
+ - [CL,  35.453, 1.75]
+ - [BR,  79.904, 1.85]
+ - [I,  126.900, 1.98]
 
 # Define dummy atom names within your system which should not be included in the system and solvent analysis
 #     Dummy atom names should be an exact match to your system topology
 #     e.g., MW for TIP4P, LP1 and LP2 for TIP5P
+#     If --identify_atoms 'Masses', then dummy atoms are assumed to have a mass of 0
 Dummy_atoms:
  - MW
  - LP1

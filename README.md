@@ -80,6 +80,8 @@ MDAnalysis selection strings:
   -s SOLVENT_NAME, --solvent_name SOLVENT_NAME
                         MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default =
                         YAML]
+  --identify_atoms {Names,Masses}
+                        Method to identify the atom and associated vdW radii [default = YAML]
 
 Important variables:
   -L L_VOXEL, --L_voxel L_VOXEL

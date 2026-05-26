@@ -45,6 +45,7 @@ python3 ../../../PARSE.py ../../config.yaml gmx md.xtc md.tpr -m 'not resname SO
 # Important considerations when running PARSE.py - in addition to the variables above, "gmx" mode takes in:
 #   --system_name:      MDAnalysis selection string defining the system matrix, e.g., ''all', 'moltype MOL', 'resname PEO', 'resname SOL LI CL'. Typically 'all' for "xyz" mode.
 #   --solvent_name:     solvent_name is either '' to probe the entire van der Waals free volume of the provided atoms, 'percolated' to probe the largest (assumed percolated) free volume cluster, or an MDAnalysis selection string to only probe free volume clusters containing solvent atoms.
+#   --identify_atoms:   method to identify atoms and their associated vdW radii - MDAnalysis 'Names' or 'Masses'. See config.yaml for more details.
 #   --L_voxel:          defines the approximate size of the voxels the system is broken down in to. Smaller voxels take exponentially longer to analyze. Typically 0.5-1.0 angstroms.
 #   --probe_radius:     defines the size of the probe, where the minimum pore size analyzed has a diameter of 2*probe_radius. Smaller values take exponentially longer to analyze. Typically 1.4-1.575 for a "water molecule" probe.
 #   --Voxel_dist:       create 'Uniform' or pseudo-"Random" voxel positions. Typically "Random", but visualizing the system using print_xyz is clearer with 'Uniform.

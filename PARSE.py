@@ -977,6 +977,8 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
                                help = "MDAnalysis selection string defining the system matrix, e.g., 'all', 'moltype MOL', 'resname PEO', 'resname SOL LI CL' [default = YAML; Typically 'all' for PoreBlazer-style xyz + dat input.]")
     xyz_selection.add_argument('-s', '--solvent_name', type = str, default = config['solvent_name'],
                                help = "MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default = YAML; Typically '' or 'percolated' for PoreBlazer-style xyz + dat input.]")
+    xyz_selection.add_argument('--identify_atoms', type = str, choices = ['Names', 'Masses'], default = config['identify_atoms'],
+                               help = "Method to identify the atom and associated vdW radii [default = YAML]")
        ##################################
        ## GROUP 4: Important variables ##
        ##################################
@@ -1053,6 +1055,8 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
                                 help = "MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL' [default = YAML]")
     traj_selection.add_argument('-s', '--solvent_name', type = str, default = config['solvent_name'],
                                 help = "MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default = YAML]") 
+    traj_selection.add_argument('--identify_atoms', type = str, choices = ['Names', 'Masses'], default = config['identify_atoms'],
+                               help = "Method to identify the atom and associated vdW radii [default = YAML]")
        ##################################
        ## GROUP 4: Important variables ##
        ##################################
@@ -1160,23 +1164,39 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
     if len(system) == 0: raise ValueError("No system atoms found")
 
     # Remove dummy atoms from the system
-    if len(Dummy_atoms) > 0 and len(system) > 0:
-        for dummy in Dummy_atoms:
-            if np.sum(system.names == dummy) > 0:
-                print(f"Removed {np.sum(system.names == dummy)} {dummy} atoms from system analysis")
-                system = system[system.names != dummy]
+    if len(Dummy_atoms) > 0:
+        if args.identify_atoms == 'Names':
+            for dummy in Dummy_atoms:
+                if np.sum(system.names == dummy) > 0:
+                    print(f"Removed {np.sum(system.names == dummy)} {dummy} atoms from system analysis")
+                    system = system[system.names != dummy]
+        elif args.identify_atoms == 'Masses':
+            if np.sum(system.masses == 0) > 0:
+                print(f"Removed {np.sum(system.masses == 0)} dummy (massless) atoms from system analysis")
+                system = system[system.masses != 0]
     
     # Create an array that tracks the radius of each system atom based on Size_array
-    sys_names = system.names; sys_radii = np.zeros((len(system)), dtype=float_type); sys_count = np.zeros((len(Size_arr)), dtype=int)
-    for i, name in enumerate(sys_names):
-        name = str(name)
-        if name in Size_arr[:,0]:
-            sys_radii[i] = float(Size_arr[np.where(Size_arr[:,0] == name)[0][0],1])
-            sys_count[np.where(Size_arr[:,0] == name)[0][0]] += 1
-        elif name[0] in Size_arr[:,0]:
-            sys_radii[i] = float(Size_arr[np.where(Size_arr[:,0] == name[0])[0][0],1])
-            sys_count[np.where(Size_arr[:,0] == name[0])[0][0]] += 1
-        else: raise ValueError(f"Missing Atom Name and Size in Size_arr: {name}")
+    sys_radii = np.zeros((len(system)), dtype=float_type); sys_count = np.zeros((len(Size_arr)), dtype=int)
+    if args.identify_atoms == 'Names':
+        sys_names = system.names
+        for i, name in enumerate(sys_names):
+            name = str(name)
+            if name in Size_arr[:,0]:
+                sys_radii[i] = float(Size_arr[np.where(Size_arr[:,0] == name)[0][0],2])
+                sys_count[np.where(Size_arr[:,0] == name)[0][0]] += 1
+            elif name[0] in Size_arr[:,0]:
+                sys_radii[i] = float(Size_arr[np.where(Size_arr[:,0] == name[0])[0][0],2])
+                sys_count[np.where(Size_arr[:,0] == name[0])[0][0]] += 1
+            elif name == 'None': raise ValueError(f"Atom name == 'None', MDAnalysis names not assigned. Try --identify_atoms 'Masses'.")
+            else: raise ValueError(f"Missing atom name and size in Size_arr: {name}")
+    elif args.identify_atoms == 'Masses':
+        sys_masses = system.masses; Mass_arr = np.round(Size_arr[:,1].astype(float))
+        for i, mass in enumerate(sys_masses):
+            mass = np.round(float(mass))
+            if mass in Mass_arr:
+                sys_radii[i] = float(Size_arr[np.where(Mass_arr == mass)[0][0],2])
+                sys_count[np.where(Mass_arr == mass)[0][0]] += 1
+            else: raise ValueError(f"Missing atom mass and size in Size_arr: {mass}")
     
     # --d_inc must be a minimum value to prevent an error in generating the free volume spheres
     if args.d_inc < np.max(sys_radii) - np.min(sys_radii):
@@ -1191,21 +1211,35 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
         print("\nSOLVENT ATOMS")
 
         # Remove dummy atoms from the solvent
-        if len(Dummy_atoms) > 0 and len(solvent) > 0:
-            for dummy in Dummy_atoms:
-                if np.sum(solvent.names == dummy) > 0:
-                    print(f"Removed {np.sum(solvent.names == dummy)} {dummy} atoms from solvent analysis")
-                    solvent = solvent[solvent.names != dummy]
+        if len(Dummy_atoms) > 0:
+            if args.identify_atoms == 'Names':
+                for dummy in Dummy_atoms:
+                    if np.sum(solvent.names == dummy) > 0:
+                        print(f"Removed {np.sum(solvent.names == dummy)} {dummy} atoms from solvent analysis")
+                        solvent = solvent[solvent.names != dummy]
+            elif args.identify_atoms == 'Masses':
+                if np.sum(solvent.masses == 0) > 0:
+                    print(f"Removed {np.sum(solvent.masses == 0)} dummy (massless) atoms from solvent analysis")
+                    solvent = solvent[solvent.masses != 0]
         
         # Create an array that tracks the radius of each system atom based on Size_array
-        sol_names = solvent.names; sol_count = np.zeros((len(Size_arr) + 1), dtype=int)
-        for name in sol_names:
-            name = str(name)
-            if name in Size_arr[:,0]:
-                sol_count[np.where(Size_arr[:,0] == name)[0][0]] += 1
-            elif name[0] in Size_arr[:,0]:
-                sol_count[np.where(Size_arr[:,0] == name[0])[0][0]] += 1
-            else: sol_count[-1] += 1
+        sol_count = np.zeros((len(Size_arr) + 1), dtype=int)
+        if args.identify_atoms == 'Names':
+            sol_names = solvent.names
+            for name in sol_names:
+                name = str(name)
+                if name in Size_arr[:,0]:
+                    sol_count[np.where(Size_arr[:,0] == name)[0][0]] += 1
+                elif name[0] in Size_arr[:,0]:
+                    sol_count[np.where(Size_arr[:,0] == name[0])[0][0]] += 1
+                else: sol_count[-1] += 1
+        elif args.identify_atoms == 'Masses':
+            sol_masses = solvent.masses
+            for i, mass in enumerate(sol_masses):
+                mass = np.round(float(mass))
+                if mass in Mass_arr:
+                    sol_count[np.where(Mass_arr == mass)[0][0]] += 1
+                else: sol_count[-1] += 1
 
         # Print out solvent atom information
         print("Element N-in-System")
