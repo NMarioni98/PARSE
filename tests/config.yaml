@@ -12,6 +12,13 @@ system_name: 'all'
 #     Can overwrite when calling PARSE.py using -s or --solvent_name
 solvent_name: ''
 
+# MDAnalysis.Universe **kwargs input
+#     Optional flags to add arguments to MDAnalysis.Universe, e.g., topology_format and format may be needed for special LAMMPS file inputs, etc
+#     Additional keywords are recommended for advanced users familiar with MDAnalysis.
+MDAnalysis_Universe_kwargs:
+ topology_format: 'None'
+ format:          'None'
+
 #######################################################################
 ### The following are IGNORED for PoreBlazer-style xyz/dat analysis ###
 #######################################################################

@@ -80,10 +80,7 @@ def export_spheres_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cel
         for i in range(len(idx_x)):
             x, y, z = vox_x[idx_x[i]], vox_y[idx_y[i]], vox_z[idx_z[i]]
             r = radii_arr[idx_x[i], idx_y[i], idx_z[i]]
-            if args.mode == 'xyz': 
-                print(f"X {x:10.5f} {y:10.5f} {z:10.5f} {r:10.5f}", file=anaout)
-            else: 
-                print(f"X {x - cell[0]/2:10.5f} {y - cell[1]/2:10.5f} {z - cell[2]/2:10.5f} {r:10.5f}", file=anaout)
+            print(f"X {x:10.5f} {y:10.5f} {z:10.5f} {r:10.5f}", file=anaout)
     print('Free volume sphere xyz file printed')
 
 def export_voxels_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cell: np.ndarray, d_arr: np.ndarray, FFV_save: np.ndarray, d_save: np.ndarray) -> None:
@@ -109,10 +106,7 @@ def export_voxels_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cell
         for i, sph in enumerate(FFV_save):
             x, y, z = vox_x[sph[0]], vox_y[sph[1]], vox_z[sph[2]]
             r = args.L_voxel/2; a = d_arr[d_save[i]]
-            if args.mode == 'xyz': 
-                print(f"X {x:10.5f} {y:10.5f} {z:10.5f} {r:10.5f} {a:10.5f}", file=anaout)
-            else: 
-                print(f"X {x - cell[0]/2:10.5f} {y - cell[1]/2:10.5f} {z - cell[2]/2:10.5f} {r:10.5f} {a:10.5f}", file=anaout)
+            print(f"X {x:10.5f} {y:10.5f} {z:10.5f} {r:10.5f} {a:10.5f}", file=anaout)
     print('Free volume voxel xyz file printed')
 
 def export_surface_xyz(args: argparse.Namespace, cell: np.ndarray, verts_c: Optional[np.ndarray], verts_lr: np.ndarray) -> None:
@@ -143,11 +137,9 @@ def export_surface_xyz(args: argparse.Namespace, cell: np.ndarray, verts_c: Opti
         print(str(len(verts_c_save) + len(verts_lr_save)), file=anaout)
         print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
         for sph in verts_c_save:
-            if args.mode == 'xyz': print(f"X {sph[0]:10.5f} {sph[1]:10.5f} {sph[2]:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
-            else: print(f"X {sph[0] - cell[0]/2:10.5f} {sph[1] - cell[1]/2:10.5f} {sph[2] - cell[2]/2:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
+            print(f"X {sph[0]:10.5f} {sph[1]:10.5f} {sph[2]:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
         for sph in verts_lr_save:
-            if args.mode == 'xyz': print(f"Y {sph[0]:10.5f} {sph[1]:10.5f} {sph[2]:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
-            else: print(f"Y {sph[0] - cell[0]/2:10.5f} {sph[1] - cell[1]/2:10.5f} {sph[2] - cell[2]/2:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
+            print(f"Y {sph[0]:10.5f} {sph[1]:10.5f} {sph[2]:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
     print('Free volume surface xyz file printed')
 
 
@@ -916,12 +908,12 @@ def float_range(min_val, max_val, min_incl, max_incl, negative_one):
 
 
 
-def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
+def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
     """
     Read in inputs from YAML file and command line using argparser.
         
     Returns:
-        Tuple[argparse.Namespace, np.ndarray, np.ndarray]: Parsed command-line arguments, array of atoms and vdW radii, and array of dummy atom names.
+        Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]: Parsed command-line arguments, array of atoms and vdW radii, array of dummy atom names, MDAnalysis Universe **kwargs input.
     """
     
     # Define parser for YAML config file
@@ -933,7 +925,7 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
         args, remaining_argv = config_parser.parse_known_args()
     except Exception as e:
         print(f'\nERROR parsing configuration: {e}')
-        print('Please provide a valid YAML config file. Example: python3 PARSE.py config.yaml gmx ...')
+        print('Please provide a valid YAML config file. Example: python3 PARSE.py config.yaml trj ...')
         sys.exit(1)
 
     # Load the YAML data
@@ -1024,7 +1016,7 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
     ## SUBPARSER 2: For trajectory files (xtc, trr, etc.) ##
     ########################################################
     ########################################################
-    traj_parser = subparsers.add_parser('gmx', help = "Process GROMACS trajectory files")
+    traj_parser = subparsers.add_parser('trj', help = "Process GROMACS trajectory files")
        ###################################
        ## GROUP 1: Required input files ##
        ###################################
@@ -1101,11 +1093,6 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
     args = parser.parse_args(remaining_argv)
 
     if args.Voxel_dist == 'Uniform' and args.N_repeats != 1:        parser.error("--N_repeats 1 if --Voxel_dist 'Uniform'")
-    # If a .gro is provided instead of .xtc or .trr, N_frames = 1. If --Voxel_dist 'Uniform', --N_threads 1.
-    if args.mode == 'gmx' and '.gro' in args.trj_file:
-        if args.N_frames == -1:                                     args.N_frames = 1
-        if args.N_frames != 1:                                      parser.error("gro file inputs require --N_frames 1")
-        if args.Voxel_dist == 'Uniform' and args.N_threads != 1:    parser.error("gro file inputs require --N_threads 1 if --Voxel_dist 'Uniform'")
     # --Voxel_dist 'Uniform' and --tol -1 are required for SA calculations
     if args.Surface_area == True:
         if args.Voxel_dist != 'Uniform':                            parser.error("SA calculation requires --Voxel_dist 'Uniform'")
@@ -1115,20 +1102,20 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray]:
         if args.Voxel_dist != 'Uniform':                            parser.error("Tortuosity calculation requires --Voxel_dist 'Uniform'")
         if args.tol != -1:                                          parser.error("Tortuosity calculation requires --tol -1")
     # When calculating the PSD from all frames (--tol -1 or --rand_frac >= 0.5), --rand_frac 1 is the most efficient
-    if args.tol == -1 or args.rand_frac >= 0.5:                     args.rand_frac = 1
-
-    # If N_threads > N_frames * N_repeats, N_threads = N_frames * N_repeats
-    if args.N_threads > args.N_frames * args.N_repeats:             args.N_threads = int(args.N_frames * args.N_repeats)
+    if args.tol == -1 or args.rand_frac >= 0.5: args.rand_frac = 1
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)
     Dummy_atoms = np.array(config['Dummy_atoms'])
+    mda_kwargs = config['MDAnalysis_Universe_kwargs']
+    for key, value in mda_kwargs.items():
+        if value == 'None': mda_kwargs[key] = None
 
-    return args, Size_arr, Dummy_atoms
+    return args, Size_arr, Dummy_atoms, mda_kwargs
 
 
 
-def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms: np.ndarray) -> None:
+def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms: np.ndarray, mda_kwargs: dict) -> None:
     """
     Loads in the trajectory and saves the necessary data to a temporary h5py .hdf5 I/O file.
     
@@ -1136,11 +1123,16 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
         args (argparse.Namespace): Parsed command-line arguments.
         Size_arr (np.ndarray): List of atoms and vdW radii.
         Dummy_atoms (np.ndarray): List of dummy atom names.
+        mda_kwargs (dict): MDAnalysis Universe **kwargs input.
     """
 
     # Load in MDAnalysis Universe
     if args.mode == 'xyz':
-        uta = mda.Universe(args.trj_file)
+        try:
+            uta = mda.Universe(args.trj_file, **mda_kwargs)
+        except Exception as e:
+            print(e)
+            sys.exit(1)
 
         # Define the simulation cell from the dat file
         cell = np.zeros(6); cell[3:] = 90.0
@@ -1150,7 +1142,13 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
         print('If the following is incorrect, check your dat file format')
         print(f'XYZ cell size (A): {cell[0]} {cell[1]} {cell[2]}\n')
     else:
-        uta = mda.Universe(args.top_file, args.trj_file)
+        try:
+            uta = mda.Universe(args.top_file, args.trj_file, **mda_kwargs)
+        except Exception as e:
+            print(e)
+            sys.exit(1)
+
+    if len(uta.trajectory) < args.N_frames: raise ValueError(f"Requested more frames than available in the trajectory - Try --N_frames {len(uta.trajectory)}")
 
     # Define the system and solvent atoms
     system = uta.select_atoms(args.system_name)
@@ -1253,8 +1251,8 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
 
     # Define the system times/frames to be calculated over
     print()
-    if args.mode == 'xyz' or '.gro' in args.trj_file:
-        frame_ids = np.zeros(1, dtype=int)                                                    # .xyz and .gro trajectories are assumed to contained only a single frame
+    if len(uta.trajectory) == 1:
+        frame_ids = np.array([-1], dtype=int)
     else:
         if args.t_min == -1:    args.t_min    = uta.trajectory[0].time
         if args.t_max == -1:    args.t_max    = uta.trajectory[-1].time
@@ -1313,7 +1311,7 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
 
 def main():
     # Read in inputs from YAML file and command line
-    args, Size_arr, Dummy_atoms = load_Args()
+    args, Size_arr, Dummy_atoms, mda_kwargs = load_Args()
 
     print('########################################')
     print('########### Input Parameters ###########')
@@ -1336,7 +1334,7 @@ def main():
     if not os.path.exists('PARSE.hdf5'):
         print('Loading trajectory data\n')
         try:
-            load_Trajectory(args, Size_arr, Dummy_atoms)
+            load_Trajectory(args, Size_arr, Dummy_atoms, mda_kwargs)
         except ValueError as e:
             print(f"ERROR - {e}")
             sys.exit(1)
@@ -1345,6 +1343,11 @@ def main():
 
     with h5py.File('PARSE.hdf5','r') as f:
         frame_ids = f['frames'][:]
+    
+    # If N_threads > N_frames * N_repeats, N_threads = N_frames * N_repeats
+    if args.N_threads > len(frame_ids):
+        print("--N_threads > args.N_frames * args.N_repeats, setting --N_threads (--N_frames * --N_repeats)")
+        args.N_threads = len(frame_ids)
 
     # Perform the analysis using multiprocessing
     print("Volume Analysis\n")

@@ -2,7 +2,7 @@
 
 All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM) Ultra 7 258V CPU and 32 GB of LPDDR5X-8533MT/s RAM
 
-## Systems
+### Tests and Examples
  - **/tests/xyz/Example_\*/:** example analyses on PoreBlazer-style xyz/dat trajectory input for PARSE
    - Example_{Cylindrical_Pore, Rectangular_Pore, 2D_Channel} contain ideal pore and channel geometries
      - PARSE and PoreBlazer complete calculations in approx. 1 min.
@@ -10,25 +10,29 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
      - PARSE completes calculations in approx. 40 s, PoreBlazer completes calculations in approx. 5 min.
    - Example_GRF contains a Gaussian random field reconstruction of a cation exchange membrane (*p*5PhSH - *Y* = 69, *λ* = 9) from: Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
      - PARSE completes calculations in approx. 25 min., PoreBlazer fails to complete calculations within 24 hr.
- - **/tests/gmx/Example_\*/:** example analyses on GROMACS gro/gro, gro/tpr, xtc/tpr, trr/tpr input for PARSE
+ - **/tests/trj/Example_\*/:** example analyses on molecular dynamics trajectory inputs for PARSE
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
+     - Example using GROMACS gro/tpr/xtc files
      - PARSE completes calculations over 1 frame in approx. 40 s and over 24 frames in approx. 3.5 min., PoreBlazer completes calculations over 1 frame in approx. 5 min.
+   - Adding Soon: Example_AEM contains an anion exchange membrane...
+     - Example using LAMMPS data/dcd file...
  - **NOTE:** It is recommended to average results over many different frames and several independent repeats for the best results. These systems just serve as simple, fast to analyze examples of using PARSE.
 
  ## Example files and folders
- - **/tests/{xyz/gmx}/Example_\*/run.sh:** bash script describing how to perform the analysis for the example systems
+ - **/tests/{xyz/trj}/Example_\*/run.sh:** bash script describing how to perform the analysis for the example systems
    - See the file for more details on running PARSE
  - xyz input files:
    - **/tests/xyz/Example_\*/\*.xyz:** xyz file that defines the atoms making up the system matrix, i.e., the solvent domain has been deleted to probe the solvent-phase PSD, etc
    - **/tests/xyz/\*/input.dat:** input file that defines the box size for PARSE
      - See the file for more details on creating and formatting the file
- - gmx input files:
-   - **/tests/gmx/Example_\*/md.gro:** GROMACS gro file defining the atom positions and limited topology information
-   - **/tests/gmx/Example_\*/md.xtc:** GROMACS xtc file defining the atom positions over 24 frames with a timestep of 2500 ps (t_start = 242500 ps, t_end = 300000 ps)
-   - **/tests/gmx/Example_\*/md.tpr:** GROMACS tpr file defining the system topology
- - **/tests/{xyz/gmx}/\*/output.txt:** an example of PARSE's output when it is run as shown in run.sh
+ - trj input files:
+   - **/tests/trj/Example_CEM/md.gro:** GROMACS gro file defining the atom positions and limited topology information
+   - **/tests/trj/Example_CEM/md.xtc:** GROMACS xtc file defining the atom positions over 24 frames with a timestep of 2500 ps (t_start = 242500 ps, t_end = 300000 ps)
+   - **/tests/trj/Example_CEM/md.tpr:** GROMACS tpr file defining the system topology
+   - **/tests/trj/Example_AEM/......:** LAMMPS data file....
+ - **/tests/{xyz/trj}/\*/output.txt:** an example of PARSE's output when it is run as shown in run.sh
    - NOTE: PARSE must be run twice. First to generate a data file, then to calculate the PSD, etc
- - **/tests/{xyz/gmx}/Example_\*/Example_output_files/:** contains example files generated when PARSE is run as shown in run.sh
+ - **/tests/{xyz/trj}/Example_\*/Example_output_files/:** contains example files generated when PARSE is run as shown in run.sh
    - PSD.dat: pore size distribution (PSD, or free volume distribution, channel width distribution, etc)
    - Cumulative_PSD.dat: cumulative PSD, where the PSD is the negative derivative of this profile
    - PSD_Plot.xlsx: Excel plot of the cumulative PSD and PSD plus comparisons to PoreBlazer or multi-frame analyses where applicable
@@ -50,4 +54,5 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
        - **NOTE:** voxels are centered on the voxel face at the surface
    - Example.ovito: OVITO visualization state showing the above. Created using [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/)
      - In the top right, you can select the different xyz files (pipelines) and turn on and off the Particles (under "Visual elements")
- - **/tests/{xyz/gmx}/Example_\*/PoreBlazer/:** contains example files generated when [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) is run with inputs comparable to PARSE's inputs in run.sh
+     - If GROMACS gro and PARSE output xyz boxes do not overlap in OVITO, uncheck "Center simulation box on coordinate origin" under the "Gromacs reader" for the gro file pipeline
+ - **/tests/{xyz/trj}/Example_\*/PoreBlazer/:** contains example files generated when [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) is run with inputs comparable to PARSE's inputs in run.sh

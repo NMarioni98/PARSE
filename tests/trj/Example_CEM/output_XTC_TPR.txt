@@ -1,0 +1,180 @@
+###################################################################################
+########## Load in the trajectory data creating a PARSE.hdf5 data file ##########
+###################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : trj
+
+    ### Files and Run Parameters ###
+    trj_file          : md.xtc
+    top_file          : md.tpr
+    t_min             : -1
+    t_max             : -1
+    N_frames          : 24
+    N_repeats         : 1
+    N_threads         : 8
+
+    ######## System/Solvent ########
+    system_name       : not resname SOL H3O
+    solvent_name      : percolated
+    identify_atoms    : Names
+
+    ########## Variables ###########
+    L_voxel           : 1.0
+    probe_radius      : 1.575
+    d_max             : 50
+    d_step            : 0.25
+    Voxel_dist        : Random
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 1
+    print_xyz         : False
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Loading trajectory data
+
+/home/nmarioni/.venvs/myPython/lib/python3.12/site-packages/MDAnalysis/coordinates/XDR.py:261: UserWarning: Reload offsets from trajectory
+ ctime or size or n_atoms did not match
+  warnings.warn(
+If the following is incorrect, there may be inconsistencies between your atom ID name in the topology and the Element name in the YAML file (see 'Size_arr' and 'Dummy_atoms' for more details)
+
+SYSTEM ATOMS
+Element N-in-System
+      H       23414
+      C       19008
+      O        3630
+      S        1210
+
+Timestep: ~2500.0 ps
+Number of frames: 24
+Number of threads: 8
+
+Trajectory loaded, terminating process. Run again to perform analysis
+
+
+
+
+##################################################################################
+############################## Run the PSD analysis ##############################
+##################################################################################
+
+########################################
+########### Input Parameters ###########
+########################################
+
+    ############# Mode #############
+    mode              : trj
+
+    ### Files and Run Parameters ###
+    trj_file          : md.xtc
+    top_file          : md.tpr
+    t_min             : -1
+    t_max             : -1
+    N_frames          : 24
+    N_repeats         : 1
+    N_threads         : 8
+
+    ######## System/Solvent ########
+    system_name       : not resname SOL H3O
+    solvent_name      : percolated
+    identify_atoms    : Names
+
+    ########## Variables ###########
+    L_voxel           : 1.0
+    probe_radius      : 1.575
+    d_max             : 50
+    d_step            : 0.25
+    Voxel_dist        : Random
+    PSD_FFV           : True
+    Surface_area      : False
+    Tortuosity        : False
+    print_eff         : 1
+    print_xyz         : False
+
+    #### Efficiency Parameters #####
+    clustering        : Neumann
+    N_calc_max        : 1e+12
+    N_write_max       : 1e+08
+    d_inc             : 2
+    N_edge_gen        : 1e+08
+    tol               : -1
+    rand_frac         : 1
+
+########################################
+########################################
+########################################
+
+Volume Analysis
+
+Frame 1/24
+Frame 2/24
+Frame 3/24
+Frame 4/24
+Frame 5/24
+Frame 6/24
+Frame 7/24
+Frame 8/24
+Frame 9/24
+Frame 10/24
+Frame 11/24
+Frame 12/24
+Frame 13/24
+Frame 14/24
+Frame 15/24
+Frame 16/24
+Frame 17/24
+Frame 18/24
+Frame 19/24
+Frame 20/24
+Frame 21/24
+Frame 22/24
+Frame 23/24
+Frame 24/24
+##### Generating Free Volume Spheres #####
+
+Number of voxels-per-cube: 778688
+Number of voxel cubes: 1
+
+Maximum pore diameter: 18.52
+Number of free volume spheres (r >= probe_radius): 164174
+Number of free volume voxels (r > 0): 469960
+Time free volume spheres: 21.14 s
+
+##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
+
+Maximum pore diameter: 18.52
+Number of spheres (r >= probe_radius) within percolated domain: 163236
+Time cluster: 0.24 s
+
+
+##### Performing PSD/FFV Analysis #####
+
+Connolly FFV: 0.364, 283548, 778688
+Lee-Richards FFV: 0.210, 163236, 778688
+
+PSD Final: 283548
+1.0 1.0 0.99434 0.97812 0.95945 0.9407 0.91993 0.89916 0.87855 0.85894 0.83743 0.8155 0.79506 0.77557 0.75236 0.73127 0.71063 0.69003 0.66962 0.6482 0.62794 0.60627 0.58267 0.5626 0.53807 0.51721 0.49509 0.47741 0.45796 0.42862 0.40668 0.38242 0.36427 0.34468 0.32199 0.30633 0.28787 0.26622 0.24956 0.23928 0.22441 0.19989 0.18375 0.16931 0.15833 0.15001 0.13804 0.12359 0.11787 0.11414 0.09511 0.08789 0.08378 0.07867 0.0758 0.07037 0.04978 0.04473 0.03451 0.033 0.02914 0.02525 0.01347 0.01147
+Time PSD/FFV: 5.98 s
+
+##### Summary of Calculation Times #####
+
+Time free volume spheres: 21.14 s
+Time cluster: 0.24 s
+Time PSD/FFV: 5.98 s

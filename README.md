@@ -4,7 +4,7 @@ Developed by: Nico Marioni, nmarioni@seas.upenn.edu
  - Developed using Python 3.12.X
    - Packages: PyYAML 6.0.3, numpy 2.3.3+, h5py 3.14.0+, MDAnalysis 2.9.0+, python-igraph 1.0.0, scikit-image 0.25.0+, porespy 3.0.4, openpnm 3.6.1
 
-PARSE calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals free volume of the defined system matrix from a GROMACS (gro/xtc/trr + tpr/gro) or PoreBlazer-style (xyz + dat) trajectory. This software was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system. The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations. This software was written based on the methods used for [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) ([Publication](https://doi.org/10.1021/acs.chemmater.0c03575)) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems.
+PARSE calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals free volume of the defined system matrix from a molecular dynamics (MD) trajectory (GROMACS gro/trr/xtc, LAMMPS data/lammpsdump/dcd, etc) or PoreBlazer-style (xyz + dat) trajectory. This software was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system. The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations. This software was written based on the methods used for [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) ([Publication](https://doi.org/10.1021/acs.chemmater.0c03575)) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems.
 
 
 
@@ -16,7 +16,7 @@ Algorithmically, the free volume is determined as follows. First, the system box
 
 ![PARSE](assets/methodology.png)
 
-**Figures C and D** depict [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/) renders (see **/test/** for more details) of the polymer matrix with the (C) voxelized Connolly volume and (D) Connolly and Lee-Richards surfaces from **/tests/gmx/Example_CEM/**. The polymer matrix is represented by the polymer atoms with their respective vdW radii, while the voxelized volume and surfaces are represented by cubes of side length --L_voxel 1.0 A. **Figure E** compares the Cumulative PSD and PSD calculated using PARSE and [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer), where PARSE analyzes the Connolly Volume in **Figure C**. To ensure a fair 1-to-1 comparison, PoreBlazer is given comparable inputs to PARSE, the distributions are shifted, and the PSD derivative is re-calculated to match PARSEs output (see **/test/gmx/Example_CEM/** for more details). Deviations between PARSE and PoreBlazer are attributed to minor differences in the voxelization algorithm and PSD binning. **Figure F** compares the PSD evaluated over a single frame with a uniform voxel distribution, the same frame analyzed 8 times with randomized voxel distributions, and the average and standard deviation of 24 evenly spaced frames (dt = 2.5 ns) with randomized voxel distributions (see --Voxel_dist, --N_repeats, and --N_frames in config.yaml for more details).
+**Figures C and D** depict [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/) renders (see **/test/** for more details) of the polymer matrix with the (C) voxelized Connolly volume and (D) Connolly and Lee-Richards surfaces from **/tests/trj/Example_CEM/**. The polymer matrix is represented by the polymer atoms with their respective vdW radii, while the voxelized volume and surfaces are represented by cubes of side length --L_voxel 1.0 A. **Figure E** compares the Cumulative PSD and PSD calculated using PARSE and [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer), where PARSE analyzes the Connolly Volume in **Figure C**. To ensure a fair 1-to-1 comparison, PoreBlazer is given comparable inputs to PARSE, the distributions are shifted, and the PSD derivative is re-calculated to match PARSEs output (see **/test/trj/Example_CEM/** for more details). Deviations between PARSE and PoreBlazer are attributed to minor differences in the voxelization algorithm and PSD binning. **Figure F** compares the PSD evaluated over a single frame with a uniform voxel distribution, the same frame analyzed 8 times with randomized voxel distributions, and the average and standard deviation of 24 evenly spaced frames (dt = 2.5 ns) with randomized voxel distributions (see --Voxel_dist, --N_repeats, and --N_frames in config.yaml for more details).
 
 ![PARSE](assets/examples.png)
 
@@ -34,11 +34,11 @@ PARSE requires the following inputs:
  - ```python3 PARSE.py {YAML} {Mode} {Trajectory} {Topology} {Optional arguments}```
    - **YAML:** "config.yaml", configuration file containing default PARSE inputs
      - ```python3 PARSE.py -h``` for more information
-   - **Mode:** "xyz" or "gmx" for PoreBlazer-style or GROMACS trajectory input, respectively
+   - **Mode:** "xyz" or "trj" for PoreBlazer-style or MD trajectory input, respectively
      - ```python3 PARSE.py {YAML} -h``` for more information
-   - **Trajectory:** xyz or xtc/trr/gro file input for "xyz" or "gmx" mode, respectively
-   - **Topology:** dat or tpr/gro file input for "xyz" or "gmx" mode, respectively. Note, gro files contain less topology information than tpr files
-     - **NOTE:** PARSE reads in data using [MDAnalysis](https://userguide.mdanalysis.org/stable/formats/index.html), and therefore can be adapted to other trajectory and topology formats (see the "load_trajectory()" function in PARSE.py), e.g., LAMMPS
+   - **Trajectory:** xyz or xtc/trr/gro/data/lammpsdump/dcd/etc file input for "xyz" or "trj" mode, respectively
+   - **Topology:** dat or tpr/gro/data/etc file input for "xyz" or "trj" mode, respectively. Note, GROMACS gro files contain less topology information than tpr files
+     - **NOTE:** PARSE reads in data using [MDAnalysis](https://userguide.mdanalysis.org/stable/formats/index.html), and therefore can be adapted to other trajectory and topology formats (see MDAnalysis_Universe_kwargs in config.yaml)
    - **Optional arguments:** additional (optional) arguments can be added to overwrite the default settings defined in {**YAML**}
      - e.g., "-r 1.4" or "--probe_radius 1.4"
      - ```python3 PARSE.py {YAML} {Mode} -h``` for more information
@@ -47,7 +47,7 @@ PARSE requires the following inputs:
 
 ### PARSE Inputs (config.yaml)
 ```
-usage: PARSE.py gmx [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME]
+usage: PARSE.py trj [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME]
                       [-L L_VOXEL] [-r PROBE_RADIUS] [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}]
                       [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}]
                       [--print_xyz {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX]
@@ -133,9 +133,12 @@ Efficiency parameters - see YAML description for more details [default = YAML]:
      - PARSE completes calculations in approx. 40 s, PoreBlazer completes calculations in approx. 5 min.
    - Example_GRF contains a Gaussian random field reconstruction of a cation exchange membrane (*p*5PhSH - *Y* = 69, *λ* = 9) from: Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
      - PARSE completes calculations in approx. 25 min., PoreBlazer fails to complete calculations within 24 hr.
- - **/tests/gmx/Example_\*/:** example analyses on GROMACS gro/gro, gro/tpr, xtc/tpr, trr/tpr input for PARSE
+ - **/tests/trj/Example_\*/:** example analyses on molecular dynamics trajectory inputs for PARSE
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
+     - Example using GROMACS gro/tpr/xtc files
      - PARSE completes calculations over 1 frame in approx. 40 s and over 24 frames in approx. 3.5 min., PoreBlazer completes calculations over 1 frame in approx. 5 min.
+   - Adding Soon: Example_AEM contains an anion exchange membrane...
+     - Example using LAMMPS data/dcd file...
  - **NOTE:** It is recommended to average results over many different frames and several independent repeats for the best results. These systems just serve as simple, fast to analyze examples of using PARSE.
 
 ## Acknowledgements
