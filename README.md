@@ -16,7 +16,7 @@ Algorithmically, the free volume is determined as follows. First, the system box
 
 ![PARSE](assets/methodology.png)
 
-**Figures C and D** depict [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/) renders (see **/test/** for more details) of the polymer matrix with the (C) voxelized Connolly volume and (D) Connolly and Lee-Richards surfaces from **/tests/trj/Example_CEM/**. The polymer matrix is represented by the polymer atoms with their respective vdW radii, while the voxelized volume and surfaces are represented by cubes of side length --L_voxel 1.0 A. **Figure E** compares the Cumulative PSD and PSD calculated using PARSE and [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer), where PARSE analyzes the Connolly Volume in **Figure C**. To ensure a fair 1-to-1 comparison, PoreBlazer is given comparable inputs to PARSE, the distributions are shifted, and the PSD derivative is re-calculated to match PARSEs output (see **/test/trj/Example_CEM/** for more details). Deviations between PARSE and PoreBlazer are attributed to minor differences in the voxelization algorithm and PSD binning. **Figure F** compares the PSD evaluated over a single frame with a uniform voxel distribution, the same frame analyzed 8 times with randomized voxel distributions, and the average and standard deviation of 24 evenly spaced frames (dt = 2.5 ns) with randomized voxel distributions (see --Voxel_dist, --N_repeats, and --N_frames in config.yaml for more details).
+**Figures C and D** depict [OVITO(-basic) version 3.7.12](https://www.ovito.org/download_history/) renders (see **/test/** for more details) of the polymer matrix with the (C) voxelized Connolly volume and (D) Connolly and Lee-Richards surfaces from **/tests/trj/Example_CEM/**. The polymer matrix is represented by the polymer atoms with their respective vdW radii, while the voxelized volume and surfaces are represented by cubes of side length --L_voxel 1.0 A. **Figure E** compares the Cumulative PSD and PSD calculated using PARSE and [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer), where PARSE analyzes the Connolly Volume in **Figure C**. To ensure a fair 1-to-1 comparison, PoreBlazer is given comparable inputs to PARSE, the Cumulateive PSD distribution is shifted to be right-justified, and the PSD derivative is re-calculated using the forward difference formula to match PARSEs output (see **/test/trj/Example_CEM/** for more details). PARSE and PoreBlazer exhibit excellent agreement. Deviations between PARSE and PoreBlazer are attributed to minor differences in the voxelization algorithm and PSD binning. **Figure F** compares the PSD evaluated over a single frame with a uniform voxel distribution (blue), the same frame analyzed 8 times with randomized voxel distributions (red), and the average and standard deviation of 24 evenly spaced frames (dt = 2.5 ns) with randomized voxel distributions (orange, shaded region depicts the standard deviation; see --Voxel_dist, --N_repeats, and --N_frames in config.yaml for more details).
 
 ![PARSE](assets/examples.png)
 
@@ -27,7 +27,7 @@ Algorithmically, the free volume is determined as follows. First, the system box
 ### Installation
  - Install Python 3.12.X
    - PARSE may work with other python versions
- - python3 -m pip install requirements.txt
+ - python3 -m pip install -r requirements.txt
 
 ### Running PARSE
 PARSE requires the following inputs:
