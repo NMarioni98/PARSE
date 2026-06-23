@@ -168,6 +168,15 @@ Dummy_atoms:
 #################### Advanced efficiency parameters ####################
 ########################################################################
 
+# Temporary h5py .hdf5 I/O file name/folder
+#     --Temp_file 'PARSE' generates PARSE.hdf5 in the current run directory
+#     When running on HPCs, it may be good practice to run in the local /tmp/ folder of the compute node, --Temp_folder '/tmp/PARSE' or equivalent
+Temp_file: 'PARSE'
+
+# Residual memory from MDAnalysis may cause memory issues for very large parallelizations
+#     Setting --Two_execs True means PARSE will exit after generating the temporary run file, therefore requiring two executions to run
+Two_execs: False
+
 # Define the clustering algorithm: 'Neumann' or 'Moore' 3D neighborhoods - this is only used if solvent_name is specified (not --solvent_name '')
 #     Neumann: Voxels are 'paired' based on face-to-face interactions, i.e., each voxel can be paired to a maximum of 6 neighboring voxels (central voxel of a 3x3x3 lattice can pair to the center voxel of each face of the lattice)
 #     Moore: Voxels are 'paired' based on face and diagonal interactions, i.e., each voxel can be paired to a maximum of 26 neighboring voxels (central voxel of a 3x3x3 lattice can pair to all other voxels in the lattice)

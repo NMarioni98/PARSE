@@ -10,9 +10,9 @@ PARSE calculates the pore size distribution (free volume distribution, channel w
 
 ## Methodology
 
-Briefly, PARSE probes the van der Waals (vdW) free volume of a defined system matrix. The probed free volume can be further refined to the largest continuous free volume cluster (assumed percolated) or only free volume clusters which contain solvent atoms. The free volume is segregated into the Connolly (probe-occupiable) and Lee-Richards (surface-accessible) volumes, where the surface of the Connolly and Lee-Richards volumes are traced by the edge and center of a probe of defined radius as it is "rolled across" the volume of the system matrix. (see **Figure A**). The Connolly volume is used to measure the PSD, Connolly FFV, and Connolly SA. The Lee-Richards volume is used to measure the Lee-Richards FFV, Lee-Richards SA, and Tau.
+Briefly, PARSE probes the van der Waals (vdW) free volume of a defined system matrix. The probed free volume can be further refined to the largest continuous free volume cluster (assumed percolated) or only free volume clusters which contain solvent atoms. The free volume is segregated into the Connolly (probe-occupiable) and Lee-Richards (surface-accessible) volumes, where the surface of the Connolly and Lee-Richards volumes are traced by the edge and center of a probe of defined radius as it is "rolled across" the volume of the system matrix. (see **Figure A**). The Connolly volume is used to measure the PSD, Connolly FFV, and Connolly SA. The Lee-Richards volume is used to measure the Lee-Richards FFV, Lee-Richards SA, and Tau. The Geometric FFV of the total and refined domain are also measured.
 
-Algorithmically, the free volume is determined as follows. First, the system box is divided into uniform voxels. The voxels may be pseudo-randomly offset from the uniform centers to reduce bias due to the cubic voxel geometry. See --Voxel_dist in config.yaml for more details. For each voxel, the largest voxel-centered free volume sphere without overlapping the system matrix vdW volume is calculated, where free volume spheres of radius *r* ≥ --probe_radius define the Connolly volume. A cluster analysis is optionally applied to only consider the largest cluster of free volume spheres, or only free volume clusters which contain solvent atoms. See --solvent_name in config.yaml for more details. To calculate the Cumulative PSD, we find the largest free volume sphere that contains each voxel center that lies outside the system matrix (see **Figure B**, where the blue circle is the largest sphere centered on the blue voxel, and the red circle is the largest sphere that contains the blue voxel). The Cumulative PSD is defined as the probability that a random voxel center within the free volume resides within a free volume sphere of diameter *d* or smaller. From this definition, the PSD is defined as the negative derivative of the Cumulative PSD with respect to *d*. The FFV is calculated as the fraction of total voxels in the Connolly and Lee-Richards volumes. The SA is calculated using a scikit-image [surface mesh](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.mesh_surface_area) determined by a simple [marching cubes](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.marching_cubes) algorithm applied to the Connolly and Lee-Richards volumes. The tortuosity is calculated using [PoreSpy](https://porespy.org/examples/simulations/reference/tortuosity_fd.html) on the Lee-Richards volume.
+Algorithmically, the free volume is determined as follows. First, the system box is divided into uniform voxels. The voxels may be pseudo-randomly offset from the uniform centers to reduce bias due to the cubic voxel geometry. See --Voxel_dist in config.yaml for more details. For each voxel, the largest voxel-centered free volume sphere without overlapping the system matrix vdW volume is calculated, where free volume spheres of radius *r* ≥ --probe_radius define the Connolly volume. A cluster analysis is optionally applied to only consider the largest cluster of free volume spheres, or only free volume clusters which contain solvent atoms. See --solvent_name in config.yaml for more details. To calculate the Cumulative PSD, we find the largest free volume sphere that contains each voxel center that lies outside the system matrix (see **Figure B**, where the blue circle is the largest sphere centered on the blue voxel, and the red circle is the largest sphere that contains the blue voxel). The Cumulative PSD is defined as the probability that a random voxel center within the free volume resides within a free volume sphere of diameter *d* or smaller. From this definition, the PSD is defined as the negative derivative of the Cumulative PSD with respect to *d*. The FFV is calculated as the fraction of total voxels in the Connolly, Lee-Richards, and Geometric volumes. The SA is calculated using a scikit-image [surface mesh](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.mesh_surface_area) determined by a simple [marching cubes](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.marching_cubes) algorithm applied to the Connolly and Lee-Richards volumes. The tortuosity is calculated using [PoreSpy](https://porespy.org/examples/simulations/reference/tortuosity_fd.html) on the Lee-Richards volume.
 
 ![PARSE](assets/methodology.png)
 
@@ -42,15 +42,13 @@ PARSE requires the following inputs:
    - **Optional arguments:** additional (optional) arguments can be added to overwrite the default settings defined in {**YAML**}
      - e.g., "-r 1.4" or "--probe_radius 1.4"
      - ```python3 PARSE.py {YAML} {Mode} -h``` for more information
- - **NOTE:** PARSE must be run twice: First to generate a PARSE.hdf5 run file, second to perform the analysis.
-   - If PARSE successfully runs the second time, it will delete the PARSE.hdf5 file. However, make sure to delete this file and rebuild it if you change the inputs for PARSE (yaml file or arguments) in between analysis attempts.
 
 ### PARSE Inputs (config.yaml)
 ```
 usage: PARSE.py trj [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME] [--identify_atoms {Names,Masses}] [-L L_VOXEL] [-r PROBE_RADIUS]
                     [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}] [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}]
-                    [--print_xyz {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX] [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL]
-                    [--rand_frac RAND_FRAC]
+                    [--print_xyz {True,False}] [--Temp_file TEMP_FILE] [--Two_execs {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX] [--d_inc D_INC]
+                    [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
                     trj_file top_file
 
 options:
@@ -102,6 +100,9 @@ Terminal printing and xyz generation:
                         xyz visualization flag [default = YAML; Locked to True or False]
 
 Efficiency parameters - see YAML description for more details [default = YAML]:
+  --Temp_file TEMP_FILE
+                        Temporary h5py .hdf5 I/O file name
+  --Two_execs {True,False}
   --clustering {Neumann,Moore}
   --N_calc_max N_CALC_MAX
   --N_write_max N_WRITE_MAX

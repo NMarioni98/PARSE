@@ -749,7 +749,7 @@ def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
     # Sleep command to offset processes (limit spikes in memory usage) - no delay if N_threads = 1
     time.sleep(frame_idx%args.N_threads)
 
-    with h5py.File('PARSE.hdf5','r') as f:
+    with h5py.File(args.Temp_file + '.hdf5','r') as f:
         frame_ids = f['frames'][:]; frame = frame_ids[frame_idx]
         sys = f['system'][frame]                                                                                                                # Position of all system atoms
         sys_radii = f['sys_radii'][:]                                                                                                           # van der Waals radii of all system atoms
@@ -1026,6 +1026,9 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
        ## GROUP 6: Efficiency parameters ##
        ####################################
     efficiency = xyz_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
+    efficiency.add_argument('--Temp_file', type = str, default = config['Temp_file'],
+                            help = "Temporary h5py .hdf5 I/O file name")
+    efficiency.add_argument('--Two_execs', type = string2bool, choices = [True, False], default = config['Two_execs'],)
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
     efficiency.add_argument('--N_calc_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_calc_max'],)
     efficiency.add_argument('--N_write_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_write_max'],)
@@ -1104,6 +1107,9 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
        ## GROUP 6: Efficiency parameters ##
        ####################################
     efficiency = traj_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
+    efficiency.add_argument('--Temp_file', type = str, default = config['Temp_file'],
+                            help = "Temporary h5py .hdf5 I/O file name")
+    efficiency.add_argument('--Two_execs', type = string2bool, choices = [True, False], default = config['Two_execs'],)
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
     efficiency.add_argument('--N_calc_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_calc_max'],)
     efficiency.add_argument('--N_write_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_write_max'],)
@@ -1325,7 +1331,7 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
     print(f"Number of threads: {args.N_threads}")
 
     # Save necessary information to a temporary .hdf5 file for later use in the calculation
-    with h5py.File('PARSE.hdf5','w') as f:
+    with h5py.File(args.Temp_file + '.hdf5','w') as f:
         f.create_dataset("system", data=r_system, dtype=float_type)
         f.create_dataset("sys_radii", data = sys_radii, dtype=float_type)
         f.create_dataset("solvent", data=r_solvent, dtype=float_type)
@@ -1356,19 +1362,20 @@ def main():
     print(  '########################################')
     print(  '########################################\n')
 
-    # Load in the trajectory file, save necessary data into h5py .hdf5 I/O file, and exit the code to purge the memory before multiprocessing
-    # Must run the script a second time to perform the analysis
-    if not os.path.exists('PARSE.hdf5'):
+    # Load in the trajectory file, save necessary data into h5py .hdf5 I/O file
+    if not os.path.exists(args.Temp_file + '.hdf5'):
         print('Loading trajectory data\n')
         try:
             load_Trajectory(args, Size_arr, Dummy_atoms, mda_kwargs)
         except ValueError as e:
             print(f"ERROR - {e}")
             sys.exit(1)
-        print('\nTrajectory loaded, terminating process. Run again to perform analysis')
-        sys.exit(0)
+        
+        if args.Two_execs:
+            print('\nTrajectory loaded, terminating process. Run again to perform analysis')
+            sys.exit(0)
 
-    with h5py.File('PARSE.hdf5','r') as f:
+    with h5py.File(args.Temp_file + '.hdf5','r') as f:
         frame_ids = f['frames'][:]
     
     if args.probe_radius < args.L_voxel and args.print_xyz == True:
@@ -1459,7 +1466,7 @@ def main():
             print(f"2.0 {tortuosity[4]:10.5f} {tortuosity[5]:10.5f}", file=anaout)
 
     # Deletes the temporary .hdf5 file
-    os.remove('PARSE.hdf5')
+    os.remove(args.Temp_file + '.hdf5')
 
 if __name__ == "__main__":
     try:
