@@ -47,12 +47,11 @@ PARSE requires the following inputs:
 
 ### PARSE Inputs (config.yaml)
 ```
-usage: PARSE.py trj [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME]
-                      [-L L_VOXEL] [-r PROBE_RADIUS] [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}]
-                      [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}]
-                      [--print_xyz {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX]
-                      [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
-                      trj_file top_file
+usage: PARSE.py trj [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME] [--identify_atoms {Names,Masses}] [-L L_VOXEL] [-r PROBE_RADIUS]
+                    [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}] [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}]
+                    [--print_xyz {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX] [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL]
+                    [--rand_frac RAND_FRAC]
+                    trj_file top_file
 
 options:
   -h, --help            show this help message and exit
@@ -75,11 +74,9 @@ Frame selection and threads:
 
 MDAnalysis selection strings:
   -m SYSTEM_NAME, --system_name SYSTEM_NAME
-                        MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL'
-                        [default = YAML]
+                        MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL' [default = YAML]
   -s SOLVENT_NAME, --solvent_name SOLVENT_NAME
-                        MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default =
-                        YAML]
+                        MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default = YAML]
   --identify_atoms {Names,Masses}
                         Method to identify the atom and associated vdW radii [default = YAML]
 
@@ -95,11 +92,9 @@ Important variables:
   --PSD_FFV {True,False}
                         Pore size distribution and free volume fraction calculation setting [default = YAML; Locked to True or False]
   --Surface_area {True,False}
-                        Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or
-                        False]
+                        Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
   --Tortuosity {True,False}
-                        Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or
-                        False]
+                        Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
 
 Terminal printing and xyz generation:
   --print_eff {0,1,2}   Level of printing [default = YAML; Locked to 0, 1, or 2]

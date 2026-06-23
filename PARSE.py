@@ -125,9 +125,10 @@ def export_surface_xyz(args: argparse.Namespace, cell: np.ndarray, verts_c: Opti
         for sph in verts_c:
             if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2): continue
             verts_c_save.append(sph)
-    for sph in verts_lr:
-        if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2): continue
-        verts_lr_save.append(sph)
+    if verts_lr is not None:
+        for sph in verts_lr:
+            if np.any(sph < 0 - args.L_voxel/2) or np.any(sph > cell[:3] + args.L_voxel/2): continue
+            verts_lr_save.append(sph)
 
     # Write .xyz file containing each free volume voxel which makes up the Connolly and Lee-Richards surfaces
     # Voxels are centered on the surface of the free voxel volume
@@ -222,7 +223,7 @@ def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str,
     # In the niche case where all system atoms have the same vdW radius, this is not an issue
     skip_dinc_check = (np.max(sys_radii) - np.min(sys_radii) == 0)
 
-    radii_arr = np.zeros((l_x,l_y,l_z), dtype=float_type)                                                                                       # radii_arr tracks free volume sphere indices (position in array = position in voxelized system) and radius (value at that position), where we are interested in spheres of radius r >= probe_radius. All probes of r > 0 are saved for later use.
+    radii_arr = np.zeros((l_x,l_y,l_z), dtype=float_type) - 1                                                                                   # radii_arr tracks free volume sphere indices (position in array = position in voxelized system) and radius (value at that position), where we are interested in spheres of radius r >= probe_radius. All probes of r > 0 are saved for later use.
 
     # Divide the voxelized system into voxel cubes for efficient analysis
     N_cube = np.min([                                                                                                                           # To improve efficiency, voxels are looped over in cubes of N_cube voxel-centers
@@ -309,7 +310,7 @@ def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str,
         time_Spheres = time.perf_counter() - time_Spheres
         print(f"\nMaximum pore diameter: {max_diameter:.2f}")
         print(f"Number of free volume spheres (r >= probe_radius): {len(radii_arr[radii_arr >= args.probe_radius])}")
-        print(f"Number of free volume voxels (r > 0): {len(radii_arr[radii_arr != 0])}")
+        print(f"Number of free volume voxels (r > 0): {len(radii_arr[radii_arr != -1])}")
         print(f"Time free volume spheres: {time_Spheres:.2f} s")
 
     return radii_arr, max_diameter, time_Spheres
@@ -449,10 +450,11 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
     if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_Cluster = time.perf_counter() - time_Cluster
         print(f"\nMaximum pore diameter: {max_diameter:.2f}")
+        N_spheres = len(radii_arr[radii_arr > args.probe_radius]) if args.probe_radius == 0 else len(radii_arr[radii_arr >= args.probe_radius])
         if args.solvent_name == 'percolated':
-            print(f"Number of spheres (r >= probe_radius) within percolated domain: {len(radii_arr[radii_arr >= args.probe_radius])}")
+            print(f"Number of spheres (r >= probe_radius) within percolated domain: {N_spheres}")
         else:
-            print(f"Number of spheres (r >= probe_radius) within solvent domain: {len(radii_arr[radii_arr >= args.probe_radius])}")
+            print(f"Number of spheres (r >= probe_radius) within solvent domain: {N_spheres}")
         print(f"Time cluster: {time_Cluster:.2f} s\n")
 
     return radii_arr, max_diameter, time_Cluster
@@ -480,7 +482,9 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
     l_x, l_y, l_z = voxel_data['l_x'], voxel_data['l_y'], voxel_data['l_z']
     indexed_type = voxel_data['indexed_type']
     
-    d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step),0,0); PSD_arr = np.zeros_like(d_arr, dtype=int)     # d_arr is the histogram of free volume sphere sizes; PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
+    d_arr = np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step)                                                               # d_arr is the histogram of free volume sphere sizes
+    if args.probe_radius > 0: d_arr = np.insert(d_arr,0,0)
+    PSD_arr = np.zeros_like(d_arr, dtype=int)                                                                                                   # PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
     FFV_c = 0; FFV_lr = 0; FFV_total = 0                                                                                                        # Track number of voxels within the Connolly and Lee-Richards free volume against the total number to get FFV
     PSD_probes = np.indices((l_x, l_y, l_z), dtype=indexed_type).reshape(3, -1).T                                                               # Indices of all
     FFV_save = np.array([[],[],[]], dtype=indexed_type).T; d_save = np.array([], dtype=indexed_type)                                            # Save voxel-centers within the free volume for surface area calculations, and the size of the largest free volume sphere containing each voxel-center for printing in Free_Volume_Voxels.xyz
@@ -514,8 +518,8 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
             PSD_probes = np.delete(PSD_probes, Rand_idx, axis=0)
             
         FFV_total += N_rand
-        FFV_lr += np.sum(radii_arr[PSD_temp[:,0],PSD_temp[:,1],PSD_temp[:,2]] >= args.probe_radius)                                                 # The Lee-Richards volume is already known from the voxel-centered free volume spheres of radius r >= probe_radius
-        PSD_temp = PSD_temp[radii_arr[PSD_temp[:,0], PSD_temp[:,1], PSD_temp[:,2]] != 0]                                                            # Remove voxels within the system domain from the PSD/FFV analysis
+        FFV_lr += np.sum(radii_arr[PSD_temp[:,0],PSD_temp[:,1],PSD_temp[:,2]] > args.probe_radius) if args.probe_radius == 0 else np.sum(radii_arr[PSD_temp[:,0],PSD_temp[:,1],PSD_temp[:,2]] >= args.probe_radius)                                           # The Lee-Richards volume is already known from the voxel-centered free volume spheres of radius r >= probe_radius
+        PSD_temp = PSD_temp[radii_arr[PSD_temp[:,0], PSD_temp[:,1], PSD_temp[:,2]] != -1]                                                           # Remove voxels within the system domain from the PSD/FFV analysis
 
         # For efficiency, we measure the distance between free volume spheres and the voxel-centers starting with the largest d_arr bin and moving down
         for d in np.round(np.arange(args.d_max, 0, -args.d_step), decimals = 5):
@@ -615,36 +619,50 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
     ############### Connolly Surface Area ################
     ######################################################
     if args.PSD_FFV:
-        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                              # Create voxel lattice where free volume voxel-centers = True
+        try:
+            SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                              # Create voxel lattice where free volume voxel-centers = True
 
-        # Create a simple mesh surface around the free volume and calculate the surface area
-        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calculations
+            # Create a simple mesh surface around the free volume and calculate the surface area
+            SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
+            spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calculations
 
-        verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
-        SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
+            verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
+            SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
+        except Exception as e:
+            print(f"Suspected ski-image marching cubes algorithm failure: {e}")
+            if "Surface level must be" in str(e):
+                print("    Connolly SA is likely 0 or is too small. Consider decreasing --probe_radius and/or --L_voxel.")
+            print('    Setting Connolly SA to -1')
+            SA_c = -1; verts_c = None
     else:
         SA_c = -1; verts_c = None
 
     ######################################################
     ### Lee-Richards "Surface Accessible" Surface Area ###
     ######################################################
-    # Surface defined by the *center* of the free volume *spheres* - i.e., surface-accessible free volume
-    idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
-    SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                          # Create voxel lattice where free volume sphere-centers = True
+    try:
+        # Surface defined by the *center* of the free volume *spheres* - i.e., surface-accessible free volume
+        idx_x, idx_y, idx_z = np.where(radii_arr > args.probe_radius) if args.probe_radius == 0 else np.where(radii_arr >= args.probe_radius)
+        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                          # Create voxel lattice where free volume sphere-centers = True
 
-    # Create a simple mesh surface around the free volume and calculate the surface area
-    SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                       # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-    spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                       # Define voxel size to dimensionalize surface area calculations
+        # Create a simple mesh surface around the free volume and calculate the surface area
+        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                       # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
+        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                       # Define voxel size to dimensionalize surface area calculations
 
-    verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                   # Marching cubes algorithm to create a surface mesh
-    SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                       # Calculate the surface area of the free volume
+        verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                   # Marching cubes algorithm to create a surface mesh
+        SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                       # Calculate the surface area of the free volume
 
-    # Normalize surface area to the true volume to account for padding
-    volume = (l_x * L_voxel_x) * (l_y * L_voxel_y) * (l_z * L_voxel_z)
-    padded_volume = ((l_x + 2) * L_voxel_x) * ((l_y + 2) * L_voxel_y) * ((l_z + 2) * L_voxel_z)
-    if args.PSD_FFV: SA_c *= (volume / padded_volume)
-    SA_lr *= (volume / padded_volume)
+        # Normalize surface area to the true volume to account for padding
+        volume = (l_x * L_voxel_x) * (l_y * L_voxel_y) * (l_z * L_voxel_z)
+        padded_volume = ((l_x + 2) * L_voxel_x) * ((l_y + 2) * L_voxel_y) * ((l_z + 2) * L_voxel_z)
+        if args.PSD_FFV: SA_c *= (volume / padded_volume)
+        SA_lr *= (volume / padded_volume)
+    except Exception as e:
+        print(f"Suspected ski-image marching cubes algorithm failure: {e}")
+        if "Surface level must be" in str(e):
+            print("    Lee-Richards SA is likely 0 or is too small. Consider decreasing --probe_radius and/or --L_voxel.")
+        print('    Setting Lee-Richards SA to -1')
+        SA_lr = -1; verts_lr = None
 
     if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_SA = time.perf_counter() - time_SA
@@ -679,7 +697,7 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], l
     else: time_tau = 0.0
 
     # Diffusive volume is defined by *probe-center* occupiable volume, i.e., the Lee-Richards volume
-    idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
+    idx_x, idx_y, idx_z = np.where(radii_arr > args.probe_radius) if args.probe_radius == 0 else np.where(radii_arr >= args.probe_radius)
     tortuosity_arr = np.zeros((l_x, l_y, l_z), dtype=bool); tortuosity_arr[idx_x, idx_y, idx_z] = True                                          # Create voxel lattice where free volume sphere-centers = True
 
     try:                                                                                                                                        # Attempt tortuosity analysis across x, y, and z directions
@@ -728,7 +746,6 @@ def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
     """
 
     # Sleep command to offset processes (limit spikes in memory usage) - no delay if N_threads = 1
-    rng = np.random.default_rng()
     time.sleep(frame_idx%args.N_threads)
 
     with h5py.File('PARSE.hdf5','r') as f:
@@ -779,9 +796,13 @@ def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
         if args.print_xyz and last_frame:
             export_voxels_xyz(args, voxel_data, cell, d_arr, FFV_save, d_save)
     else:
-        d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step), 0, 0); PSD_arr = np.zeros_like(d_arr, dtype=int) - 1
+        d_arr = np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step)
+        if args.probe_radius > 0: d_arr = np.insert(d_arr, 0, 0)
+        PSD_arr = np.zeros_like(d_arr, dtype=int) - 1
 
-        FFV_c = -len(radii_arr.ravel()); FFV_lr = len(radii_arr[radii_arr >= args.probe_radius]); FFV_total = len(radii_arr.ravel())            # The Lee-Richards volume is already known from the voxel-centered free volume spheres of radius r >= probe_radius
+        FFV_c = -len(radii_arr.ravel())
+        FFV_lr = len(radii_arr[radii_arr > args.probe_radius]) if args.probe_radius == 0 else len(radii_arr[radii_arr >= args.probe_radius])     # The Lee-Richards volume is already known from the voxel-centered free volume spheres of radius r >= probe_radius
+        FFV_total = len(radii_arr.ravel())
         FFV_data = np.array([FFV_c, FFV_lr, FFV_total], dtype=int)
 
         FFV_save, time_PSD = None, 0
@@ -1055,7 +1076,7 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
     vars = traj_parser.add_argument_group('Important variables')
     vars.add_argument('-L', '--L_voxel', type = float_range(0.0, np.inf, False, False, False), default = config['L_voxel'],
                       help = "Voxel side length (A) [default = YAML]")
-    vars.add_argument('-r', '--probe_radius', type = float_range(0.0, np.inf, False, False, False), default = config['probe_radius'],
+    vars.add_argument('-r', '--probe_radius', type = float_range(0.0, np.inf, True, False, False), default = config['probe_radius'],
                       help = "Probe radius (A) [default = YAML]")
     vars.add_argument('--d_max', type = float_range(0.0, np.inf, False, False, False), default = config['d_max'],
                       help = "Max PSD diameter (A) [default = YAML]")
@@ -1099,10 +1120,14 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
         if args.tol != -1:                                          parser.error("SA calculation requires --tol -1")
     # --Voxel_dist 'Uniform' and --tol -1 are required for Tau calculations
     if args.Tortuosity == True:
-        if args.Voxel_dist != 'Uniform':                            parser.error("Tortuosity calculation requires --Voxel_dist 'Uniform'")
-        if args.tol != -1:                                          parser.error("Tortuosity calculation requires --tol -1")
+        if args.Voxel_dist != 'Uniform':                            parser.error("Tau calculation requires --Voxel_dist 'Uniform'")
+        if args.tol != -1:                                          parser.error("Tau calculation requires --tol -1")
     # When calculating the PSD from all frames (--tol -1 or --rand_frac >= 0.5), --rand_frac 1 is the most efficient
     if args.tol == -1 or args.rand_frac >= 0.5: args.rand_frac = 1
+    # If --probe_radius < --L_voxel, the voxelized representation of the free volume is significantly misrepresentative, leading to large errors in SA and Tau
+    if args.probe_radius < args.L_voxel:
+        if args.Surface_area == True:                               parser.error("SA calculation requires --probe_radius > --L_voxel to ensure accurate calculation")
+        if args.Tortuosity == True:                                 parser.error("Tau calculation requires --probe_radius > --L_voxel to ensure accurate calculation")
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)
@@ -1344,9 +1369,11 @@ def main():
     with h5py.File('PARSE.hdf5','r') as f:
         frame_ids = f['frames'][:]
     
+    if args.probe_radius < args.L_voxel and args.print_xyz == True:
+        print("NOTE: Produced XYZ files (--print_xyz True) may exhibit significant overlap between free volume voxels and the system volume when --probe_radius < --L_voxel\n")
     # If N_threads > N_frames * N_repeats, N_threads = N_frames * N_repeats
     if args.N_threads > len(frame_ids):
-        print("--N_threads > args.N_frames * args.N_repeats, setting --N_threads (--N_frames * --N_repeats)")
+        print("NOTE: --N_threads > (--N_frames * --N_repeats), setting --N_threads (--N_frames * --N_repeats)\n")
         args.N_threads = len(frame_ids)
 
     # Perform the analysis using multiprocessing
@@ -1366,7 +1393,8 @@ def main():
     
     # Write .dat files
     if args.PSD_FFV:
-        d_arr = np.insert(np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step),0,0)
+        d_arr = np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step)
+        if args.probe_radius > 0: d_arr = np.insert(d_arr,0,0)
         PSD_arr = np.array([out['PSD_arr'] for out in out_arr])
 
         # Account for N_repeats
