@@ -76,7 +76,7 @@ def export_spheres_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cel
     idx_x, idx_y, idx_z = np.where(radii_arr >= args.probe_radius)
     with open('Free_Volume_Spheres.xyz', 'w') as anaout:
         print(str(len(idx_x)), file=anaout)
-        print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
+        print(f'Lattice="{cell[0]:.5f} 0.0 0.0 0.0 {cell[1]:.5f} 0.0 0.0 0.0 {cell[2]:.5f}" Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
         for i in range(len(idx_x)):
             x, y, z = vox_x[idx_x[i]], vox_y[idx_y[i]], vox_z[idx_z[i]]
             r = radii_arr[idx_x[i], idx_y[i], idx_z[i]]
@@ -102,7 +102,7 @@ def export_voxels_xyz(args: argparse.Namespace, voxel_data: Dict[str, Any], cell
     #   Radius = L_voxel/2, Alpha = Diameter (largest diameter of that bin of d_arr) of the largest free volume sphere which contains the center of this voxel.
     with open('Free_Volume_Voxels.xyz', 'w') as anaout:
         print(str(len(FFV_save)), file=anaout)
-        print('Properties=species:S:1:pos:R:3:Radius:R:1:Alpha:R:1', file=anaout)
+        print(f'Lattice="{cell[0]:.5f} 0.0 0.0 0.0 {cell[1]:.5f} 0.0 0.0 0.0 {cell[2]:.5f}" Properties=species:S:1:pos:R:3:Radius:R:1:Alpha:R:1', file=anaout)
         for i, sph in enumerate(FFV_save):
             x, y, z = vox_x[sph[0]], vox_y[sph[1]], vox_z[sph[2]]
             r = args.L_voxel/2; a = d_arr[d_save[i]]
@@ -136,7 +136,7 @@ def export_surface_xyz(args: argparse.Namespace, cell: np.ndarray, verts_c: Opti
     #   Radius = L_voxel/2
     with open('Free_Volume_Surface.xyz', 'w') as anaout:
         print(str(len(verts_c_save) + len(verts_lr_save)), file=anaout)
-        print('Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
+        print(f'Lattice="{cell[0]:.5f} 0.0 0.0 0.0 {cell[1]:.5f} 0.0 0.0 0.0 {cell[2]:.5f}" Properties=species:S:1:pos:R:3:Radius:R:1', file=anaout)
         for sph in verts_c_save:
             print(f"X {sph[0]:10.5f} {sph[1]:10.5f} {sph[2]:10.5f} {args.L_voxel/2:10.5f}", file=anaout)
         for sph in verts_lr_save:
@@ -407,7 +407,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
         if args.solvent_name == 'percolated':
             if i == 0:
                 # Remove all free volume voxels not within the largest cluster, i.e., id(i == 0)
-                radii_arr[(membership != id) & (radii_arr >= args.probe_radius)] = args.probe_radius/2                                          # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
+                radii_arr[(membership != id) & (radii_arr >= args.probe_radius)] = 0                                                            # Set radii = 0 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
                 break
         # Only analyze free volume sphere (radius r >= probe_radius) clusters which contain solvent
         else:
@@ -416,7 +416,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
             # Clusters containing 1 free volume sphere are assumed to NOT contain solvent
             #  - Significantly reduces compute time
             if len(clust) == 1:
-                radii_arr[np.isin(membership, cluster_ids[i:]) & (radii_arr >= args.probe_radius)] = args.probe_radius/2                        # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
+                radii_arr[np.isin(membership, cluster_ids[i:]) & (radii_arr >= args.probe_radius)] = 0                                          # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
                 break
 
             # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_max distance calculations
@@ -441,7 +441,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
             if len(pair_arr) != 0: continue
 
             # All other clusters are removed from the free volume sphere analysis.
-            radii_arr[clust] = args.probe_radius/2  
+            radii_arr[clust] = 0
 
     radii_arr = radii_arr.reshape((l_x, l_y, l_z))
     max_diameter = 2*np.max(radii_arr)
@@ -481,7 +481,8 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
     vox_x, vox_y, vox_z = voxel_data['vox_x'], voxel_data['vox_y'], voxel_data['vox_z']
     l_x, l_y, l_z = voxel_data['l_x'], voxel_data['l_y'], voxel_data['l_z']
     indexed_type = voxel_data['indexed_type']
-    
+    print(len(radii_arr[radii_arr != -1]) / len(radii_arr.ravel()))
+    print(len(radii_arr[radii_arr > 0]) / len(radii_arr.ravel()))
     d_arr = np.arange(2*args.probe_radius, args.d_max + args.d_step, args.d_step)                                                               # d_arr is the histogram of free volume sphere sizes
     if args.probe_radius > 0: d_arr = np.insert(d_arr,0,0)
     PSD_arr = np.zeros_like(d_arr, dtype=int)                                                                                                   # PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
@@ -705,13 +706,14 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], l
         sim_y = ps.simulations.tortuosity_fd(tortuosity_arr, axis=1); tortuosity_y = sim_y.tortuosity
         sim_z = ps.simulations.tortuosity_fd(tortuosity_arr, axis=2); tortuosity_z = sim_z.tortuosity
     except Exception as e:
+        print(f"Error from PoreSpy: {e}")
         if "No pores remain" in str(e):                                                                                                         # If no percolating cluster found across any axis, return -1 for failed analysis
             if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
-                print("Warning: Void space does not percolate along at least one axis. Setting tortuosity to -1.")
+                print("    Void space does not percolate along at least one axis. Setting tortuosity to -1.")
             tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
         elif "Solver failed to converge" in str(e):                                                                                             # If solver failed to converge across any axis, return -1 for failed analysis
             if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
-                print("Error: Solver failed to converge along at least one axis. Setting tortuosity to -1.")
+                print("    Solver failed to converge along at least one axis. Setting tortuosity to -1.")
             tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
         else: raise e
 
