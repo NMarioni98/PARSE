@@ -1346,7 +1346,7 @@ def main():
         elif 'trj_file' in key:    print('\n    ### Files and Run Parameters ###')
         elif 'system_name' in key: print('\n    ######## System/Solvent ########')
         elif 'L_voxel' in key:     print('\n    ########## Variables ###########')
-        elif 'clustering' in key:  print('\n    #### Efficiency Parameters #####')
+        elif 'Temp_file' in key:  print('\n    #### Efficiency Parameters #####')
 
         if '_calc' in key or '_write' in key or 'target_' in key or '_gen' in key: print(f"    {key:18}: {value:.0e}")
         else:                                                                      print(f"    {key:18}: {value}")

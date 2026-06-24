@@ -30,10 +30,10 @@
     Tortuosity        : True
     print_eff         : 2
     print_xyz         : True
-    Temp_file         : PARSE
-    Two_execs         : False
 
     #### Efficiency Parameters #####
+    Temp_file         : PARSE
+    Two_execs         : False
     clustering        : Neumann
     N_calc_max        : 1e+12
     N_write_max       : 1e+08
