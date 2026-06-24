@@ -714,7 +714,7 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], l
             if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
                 print("    Solver failed to converge along at least one axis. Setting tortuosity to -1.")
             tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
-        else: raise e
+        else: raise
 
     tortuosity = np.mean([tortuosity_x, tortuosity_y, tortuosity_z])                                                                            # Average tortuosity across all 3 dimensions
 
@@ -943,13 +943,7 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
     config_parser = argparse.ArgumentParser(add_help=False)
     config_parser.add_argument('yaml_file', type = readable_file)
 
-    # Add helpful error message if YAML file is not provided
-    try:
-        args, remaining_argv = config_parser.parse_known_args()
-    except Exception as e:
-        print(f'\nERROR parsing configuration: {e}')
-        print('Please provide a valid YAML config file. Example: python3 PARSE.py config.yaml trj ...')
-        sys.exit(1)
+    args, remaining_argv = config_parser.parse_known_args()
 
     # Load the YAML data
     with open(args.yaml_file, 'r') as f:
@@ -1163,9 +1157,8 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
     if args.mode == 'xyz':
         try:
             uta = mda.Universe(args.trj_file, **mda_kwargs)
-        except Exception as e:
-            print(e)
-            sys.exit(1)
+        except:
+            raise
 
         # Define the simulation cell from the dat file
         cell = np.zeros(6); cell[3:] = 90.0
@@ -1177,9 +1170,8 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
     else:
         try:
             uta = mda.Universe(args.top_file, args.trj_file, **mda_kwargs)
-        except Exception as e:
-            print(e)
-            sys.exit(1)
+        except:
+            raise
 
     if len(uta.trajectory) < args.N_frames: raise ValueError(f"Requested more frames than available in the trajectory - Try --N_frames {len(uta.trajectory)}")
 
@@ -1362,14 +1354,17 @@ def main():
     print(  '########################################')
     print(  '########################################\n')
 
+    if not args.Two_execs:
+        if os.path.exists(args.Temp_file + '.hdf5'):
+            os.remove(args.Temp_file + '.hdf5')
+
     # Load in the trajectory file, save necessary data into h5py .hdf5 I/O file
     if not os.path.exists(args.Temp_file + '.hdf5'):
         print('Loading trajectory data\n')
         try:
             load_Trajectory(args, Size_arr, Dummy_atoms, mda_kwargs)
-        except ValueError as e:
-            print(f"ERROR - {e}")
-            sys.exit(1)
+        except:
+            raise
         
         if args.Two_execs:
             print('\nTrajectory loaded, terminating process. Run again to perform analysis')
@@ -1396,9 +1391,8 @@ def main():
             func = functools.partial(volume_analysis, args)
             with mp.Pool(processes=args.N_threads) as pool:
                 out_arr = pool.map(func, range(len(frame_ids)))
-    except ValueError as e:
-        print(f"ERROR - {e}")
-        sys.exit(1)
+    except:
+        raise
     
     # Write .dat files
     if args.PSD_FFV:
@@ -1407,7 +1401,7 @@ def main():
         PSD_arr = np.array([out['PSD_arr'] for out in out_arr])
 
         # Account for N_repeats
-        if args.N_repeats > 1: PSD_arr = np.sum(PSD_arr.reshape(args.N_frames, args.N_repeats, -1), axis=1)
+        if args.N_repeats > 1: PSD_arr = np.sum(PSD_arr.reshape(args.N_frames, args.N_repeats, PSD_arr.shape[1]), axis=1)
 
         PSD_arr = np.divide(PSD_arr.T, PSD_arr[:,0], dtype=float).T
 
@@ -1431,7 +1425,7 @@ def main():
 
     FFV = np.array([out['FFV'] for out in out_arr])
     # Account for N_repeats
-    if args.N_repeats > 1: FFV = np.sum(FFV.reshape(args.N_frames, args.N_repeats, -1), axis=1)
+    if args.N_repeats > 1: FFV = np.sum(FFV.reshape(args.N_frames, args.N_repeats, FFV.shape[1]), axis=1)
     FFV_c = FFV[:,0] / FFV[:,4]; FFV_lr = FFV[:,1] / FFV[:,4]; FFV_g = FFV[:,2] / FFV[:,4]; FFV_gs = FFV[:,3] / FFV[:,4]
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
     FFV = np.array([np.mean(FFV_c), np.std(FFV_c), np.mean(FFV_lr), np.std(FFV_lr), np.mean(FFV_g), np.std(FFV_g), np.mean(FFV_gs), np.std(FFV_gs)])

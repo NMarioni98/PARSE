@@ -8,27 +8,15 @@
 ########## GRO-GRO ##########
 #############################
 # Analyze a single frame using a GROMACS GRO file
-# Load in the trajectory data creating a PARSE.hdf5 data file
-python3 ../../../PARSE.py ../../config.yaml trj md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --Voxel_dist 'Uniform' --Surface_area True --Tortuosity True
-
-# Run the PSD analysis
 python3 ../../../PARSE.py ../../config.yaml trj md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --Voxel_dist 'Uniform' --Surface_area True --Tortuosity True
 
 # Analyze a single frame 8 times in parallel with a 'Random' voxel distribution
-# Analyze a single frame using a GROMACS GRO file
-# Load in the trajectory data creating a PARSE.hdf5 data file
-python3 ../../../PARSE.py ../../config.yaml trj md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --N_repeats 8 --N_threads 8 --print_eff 1 --print_xyz False
-# Run the PSD analysis
 python3 ../../../PARSE.py ../../config.yaml trj md.gro md.gro -m 'not resname SOL H3O' -s 'percolated' --N_repeats 8 --N_threads 8 --print_eff 1 --print_xyz False
 
 #############################
 ########## XTC-TPR ##########
 #############################
 # Analyze 24 frames over 8 parallel threads using a GROMACS XTC + TPR file
-# Load in the trajectory data creating a PARSE.hdf5 data file
-python3 ../../../PARSE.py ../../config.yaml trj md.xtc md.tpr -m 'not resname SOL H3O' -s 'percolated' --N_frames 24 --N_threads 8 --print_eff 1 --print_xyz False
-
-# Run the PSD analysis
 python3 ../../../PARSE.py ../../config.yaml trj md.xtc md.tpr -m 'not resname SOL H3O' -s 'percolated' --N_frames 24 --N_threads 8 --print_eff 1 --print_xyz False
 
 # polymer_matrix (probes water domain): -m 'not resname SOL H3O'
