@@ -1,300 +1,309 @@
-########################################
-########### Input Parameters ###########
-########################################
+######################################################################
+########################## Input Parameters ##########################
+######################################################################
 
-    ############# Mode #############
-    mode              : xyz
+            #################### Mode ####################
+            mode           : xyz
 
-    ### Files and Run Parameters ###
-    trj_file          : nonpolar_matrix.xyz
-    top_file          : input.dat
-    N_frames          : 1
-    N_repeats         : 1
-    N_threads         : 1
+            ########## Files and Run Parameters ##########
+            trj_file       : nonpolar_matrix.xyz
+            top_file       : input.dat
+            N_frames       : 1
+            N_repeats      : 1
+            N_threads      : 1
 
-    ######## System/Solvent ########
-    system_name       : all
-    solvent_name      : percolated
-    identify_atoms    : Names
+            ############### System/Solvent ###############
+            system_name    : all
+            solvent_name   : percolated
+            identify_atoms : Names
 
-    ########## Variables ###########
-    L_voxel           : 1.0
-    probe_radius      : 1.575
-    d_max             : 50
-    d_step            : 0.25
-    Voxel_dist        : Uniform
-    PSD_FFV           : True
-    Surface_area      : False
-    Tortuosity        : False
-    print_eff         : 2
-    print_xyz         : True
+            ################# Variables ##################
+            L_voxel        : 1.0
+            probe_radius   : 1.575
+            d_max          : 50
+            d_step         : 0.25
+            Voxel_dist     : Uniform
+            PSD_FFV        : True
+            Surface_area   : False
+            Tortuosity     : False
+            print_eff      : 2
+            print_xyz      : False
 
-    #### Efficiency Parameters #####
-    Temp_file         : PARSE
-    Two_execs         : False
-    clustering        : Neumann
-    N_calc_max        : 1e+12
-    N_write_max       : 1e+08
-    d_inc             : 2
-    N_edge_gen        : 1e+08
-    tol               : -1
-    rand_frac         : 1
+            ########### Efficiency Parameters ############
+            Temp_file      : PARSE
+            Two_execs      : False
+            clustering     : Neumann
+            N_calc_max     : 1e+12
+            N_write_max    : 1e+08
+            d_inc          : 2
+            N_edge_gen     : 1e+08
+            tol            : -1
+            rand_frac      : 1
 
-########################################
-########################################
-########################################
+######################################################################
+######################################################################
+######################################################################
 
+Temporary file already exists, deleting temporary file, PARSE.hdf5
 Loading trajectory data
 
 If the following is incorrect, check your dat file format
 XYZ cell size (A): 384.0 384.0 384.0
 
-If the following is incorrect, there may be inconsistencies between your atom ID name in the topology and the Element name in the YAML file (see 'Size_arr' and 'Dummy_atoms' for more details)
+If the following is incorrect, there may be inconsistencies between the
+atom ID name/mass in the topology and the Element name/mass in the YAML file.
+See --identify_atoms, Size_arr, and Dummy_atoms for more details.
 
 SYSTEM ATOMS
 Element N-in-System
       C     1273793
 
-Number of frames: 1
+Number of frames: 1, analyzing final frame in nonpolar_matrix.xyz
 Number of threads: 1
-Volume Analysis
+
+Performing Volume Analysis
 
 Frame 1/1
-##### Generating Free Volume Spheres #####
 
-Number of voxels-per-cube: 2097152
-Number of voxel cubes: 27
+######################################################################
+################### Generating Free Volume Spheres ###################
+######################################################################
+
+Number of voxel cubes:            27
+Number of voxels-per-cube:   2097152
 
 Voxel block: [0 0 0]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 4.9e+10 9.6e+05
-Distance, calculations, writes: 8.0 1.3e+10 4.6e+05
-Distance, calculations, writes: 10.0 1.1e+09 7.4e+04
-Distance, calculations, writes: 12.0 6.6e+06 9.5e+02
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 4.9e+10 9.6e+05
+Distance, calculations, writes:   8.0 1.3e+10 4.6e+05
+Distance, calculations, writes:  10.0 1.1e+09 7.4e+04
+Distance, calculations, writes:  12.0 6.6e+06 9.5e+02
 
 Voxel block: [0 0 1]
-Distance, calculations, writes: 2.0 3.0e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.7e+10 1.0e+06
-Distance, calculations, writes: 8.0 1.7e+10 5.5e+05
-Distance, calculations, writes: 10.0 1.9e+09 1.1e+05
-Distance, calculations, writes: 12.0 1.7e+07 1.9e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.7e+10 1.0e+06
+Distance, calculations, writes:   8.0 1.7e+10 5.5e+05
+Distance, calculations, writes:  10.0 1.9e+09 1.1e+05
+Distance, calculations, writes:  12.0 1.7e+07 1.9e+03
 
 Voxel block: [0 0 2]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.5e+10 1.0e+06
-Distance, calculations, writes: 8.0 1.6e+10 5.3e+05
-Distance, calculations, writes: 10.0 1.8e+09 1.0e+05
-Distance, calculations, writes: 12.0 3.1e+07 3.7e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.5e+10 1.0e+06
+Distance, calculations, writes:   8.0 1.6e+10 5.3e+05
+Distance, calculations, writes:  10.0 1.8e+09 1.0e+05
+Distance, calculations, writes:  12.0 3.1e+07 3.7e+03
 
 Voxel block: [0 1 0]
-Distance, calculations, writes: 2.0 3.1e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 4.9e+10 9.3e+05
-Distance, calculations, writes: 8.0 1.4e+10 4.5e+05
-Distance, calculations, writes: 10.0 1.3e+09 7.3e+04
-Distance, calculations, writes: 12.0 3.3e+07 2.3e+03
+Distance, calculations, writes:   2.0 3.1e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 4.9e+10 9.3e+05
+Distance, calculations, writes:   8.0 1.4e+10 4.5e+05
+Distance, calculations, writes:  10.0 1.3e+09 7.3e+04
+Distance, calculations, writes:  12.0 3.3e+07 2.3e+03
 
 Voxel block: [0 1 1]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.7e+10 1.0e+06
-Distance, calculations, writes: 8.0 1.8e+10 5.7e+05
-Distance, calculations, writes: 10.0 1.9e+09 1.2e+05
-Distance, calculations, writes: 12.0 5.3e+06 6.8e+02
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.7e+10 1.0e+06
+Distance, calculations, writes:   8.0 1.8e+10 5.7e+05
+Distance, calculations, writes:  10.0 1.9e+09 1.2e+05
+Distance, calculations, writes:  12.0 5.3e+06 6.8e+02
 
 Voxel block: [0 1 2]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.2e+10 9.8e+05
-Distance, calculations, writes: 8.0 1.4e+10 4.9e+05
-Distance, calculations, writes: 10.0 1.0e+09 6.8e+04
-Distance, calculations, writes: 12.0 3.8e+06 5.6e+02
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.2e+10 9.8e+05
+Distance, calculations, writes:   8.0 1.4e+10 4.9e+05
+Distance, calculations, writes:  10.0 1.0e+09 6.8e+04
+Distance, calculations, writes:  12.0 3.8e+06 5.6e+02
 
 Voxel block: [0 2 0]
-Distance, calculations, writes: 2.0 3.1e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.1e+10 9.3e+05
-Distance, calculations, writes: 8.0 1.4e+10 4.7e+05
-Distance, calculations, writes: 10.0 1.5e+09 8.5e+04
-Distance, calculations, writes: 12.0 2.1e+07 2.3e+03
+Distance, calculations, writes:   2.0 3.1e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.1e+10 9.3e+05
+Distance, calculations, writes:   8.0 1.4e+10 4.7e+05
+Distance, calculations, writes:  10.0 1.5e+09 8.5e+04
+Distance, calculations, writes:  12.0 2.1e+07 2.3e+03
 
 Voxel block: [0 2 1]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.6e+10 1.0e+06
-Distance, calculations, writes: 8.0 1.7e+10 5.5e+05
-Distance, calculations, writes: 10.0 1.9e+09 1.1e+05
-Distance, calculations, writes: 12.0 1.8e+07 2.4e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.6e+10 1.0e+06
+Distance, calculations, writes:   8.0 1.7e+10 5.5e+05
+Distance, calculations, writes:  10.0 1.9e+09 1.1e+05
+Distance, calculations, writes:  12.0 1.8e+07 2.4e+03
 
 Voxel block: [0 2 2]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.4e+10 1.0e+06
-Distance, calculations, writes: 8.0 1.4e+10 5.0e+05
-Distance, calculations, writes: 10.0 1.0e+09 7.1e+04
-Distance, calculations, writes: 12.0 2.6e+06 4.5e+02
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.4e+10 1.0e+06
+Distance, calculations, writes:   8.0 1.4e+10 5.0e+05
+Distance, calculations, writes:  10.0 1.0e+09 7.1e+04
+Distance, calculations, writes:  12.0 2.6e+06 4.5e+02
 
 Voxel block: [1 0 0]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.2e+10 9.9e+05
-Distance, calculations, writes: 8.0 1.4e+10 4.8e+05
-Distance, calculations, writes: 10.0 1.3e+09 8.4e+04
-Distance, calculations, writes: 12.0 5.3e+06 6.9e+02
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.2e+10 9.9e+05
+Distance, calculations, writes:   8.0 1.4e+10 4.8e+05
+Distance, calculations, writes:  10.0 1.3e+09 8.4e+04
+Distance, calculations, writes:  12.0 5.3e+06 6.9e+02
 
 Voxel block: [1 0 1]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.4e+10 9.9e+05
-Distance, calculations, writes: 8.0 1.6e+10 5.1e+05
-Distance, calculations, writes: 10.0 2.0e+09 1.0e+05
-Distance, calculations, writes: 12.0 1.0e+08 6.9e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.4e+10 9.9e+05
+Distance, calculations, writes:   8.0 1.6e+10 5.1e+05
+Distance, calculations, writes:  10.0 2.0e+09 1.0e+05
+Distance, calculations, writes:  12.0 1.0e+08 6.9e+03
 
 Voxel block: [1 0 2]
-Distance, calculations, writes: 2.0 2.9e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.3e+10 9.9e+05
-Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
-Distance, calculations, writes: 10.0 1.6e+09 9.6e+04
-Distance, calculations, writes: 12.0 1.3e+07 1.6e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.3e+10 9.9e+05
+Distance, calculations, writes:   8.0 1.5e+10 5.1e+05
+Distance, calculations, writes:  10.0 1.6e+09 9.6e+04
+Distance, calculations, writes:  12.0 1.3e+07 1.6e+03
 
 Voxel block: [1 1 0]
-Distance, calculations, writes: 2.0 3.1e+11 1.7e+06
-Distance, calculations, writes: 4.0 1.3e+11 2.7e+06
-Distance, calculations, writes: 6.0 4.2e+10 8.6e+05
-Distance, calculations, writes: 8.0 1.0e+10 3.9e+05
-Distance, calculations, writes: 10.0 7.3e+08 5.2e+04
-Distance, calculations, writes: 12.0 1.8e+05 2.4e+01
+Distance, calculations, writes:   2.0 3.1e+11 1.7e+06
+Distance, calculations, writes:   4.0 1.3e+11 2.7e+06
+Distance, calculations, writes:   6.0 4.2e+10 8.6e+05
+Distance, calculations, writes:   8.0 1.0e+10 3.9e+05
+Distance, calculations, writes:  10.0 7.3e+08 5.2e+04
+Distance, calculations, writes:  12.0 1.8e+05 2.4e+01
 
 Voxel block: [1 1 1]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.5e+11 2.6e+06
-Distance, calculations, writes: 6.0 6.0e+10 1.1e+06
-Distance, calculations, writes: 8.0 1.8e+10 5.9e+05
-Distance, calculations, writes: 10.0 2.1e+09 1.2e+05
-Distance, calculations, writes: 12.0 3.4e+07 3.4e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.5e+11 2.6e+06
+Distance, calculations, writes:   6.0 6.0e+10 1.1e+06
+Distance, calculations, writes:   8.0 1.8e+10 5.9e+05
+Distance, calculations, writes:  10.0 2.1e+09 1.2e+05
+Distance, calculations, writes:  12.0 3.4e+07 3.4e+03
 
 Voxel block: [1 1 2]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.5e+10 1.0e+06
-Distance, calculations, writes: 8.0 1.7e+10 5.4e+05
-Distance, calculations, writes: 10.0 2.0e+09 1.2e+05
-Distance, calculations, writes: 12.0 5.2e+07 4.2e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.5e+10 1.0e+06
+Distance, calculations, writes:   8.0 1.7e+10 5.4e+05
+Distance, calculations, writes:  10.0 2.0e+09 1.2e+05
+Distance, calculations, writes:  12.0 5.2e+07 4.2e+03
 
 Voxel block: [1 2 0]
-Distance, calculations, writes: 2.0 3.1e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.0e+10 9.2e+05
-Distance, calculations, writes: 8.0 1.4e+10 4.6e+05
-Distance, calculations, writes: 10.0 1.3e+09 7.9e+04
-Distance, calculations, writes: 12.0 5.3e+06 7.4e+02
+Distance, calculations, writes:   2.0 3.1e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.0e+10 9.2e+05
+Distance, calculations, writes:   8.0 1.4e+10 4.6e+05
+Distance, calculations, writes:  10.0 1.3e+09 7.9e+04
+Distance, calculations, writes:  12.0 5.3e+06 7.4e+02
 
 Voxel block: [1 2 1]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.2e+10 9.5e+05
-Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
-Distance, calculations, writes: 10.0 1.4e+09 8.8e+04
-Distance, calculations, writes: 12.0 5.1e+06 6.5e+02
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.2e+10 9.5e+05
+Distance, calculations, writes:   8.0 1.5e+10 5.1e+05
+Distance, calculations, writes:  10.0 1.4e+09 8.8e+04
+Distance, calculations, writes:  12.0 5.1e+06 6.5e+02
 
 Voxel block: [1 2 2]
-Distance, calculations, writes: 2.0 2.9e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.3e+11 2.6e+06
-Distance, calculations, writes: 6.0 4.7e+10 9.2e+05
-Distance, calculations, writes: 8.0 1.3e+10 4.4e+05
-Distance, calculations, writes: 10.0 1.4e+09 8.0e+04
-Distance, calculations, writes: 12.0 1.8e+07 2.4e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.3e+11 2.6e+06
+Distance, calculations, writes:   6.0 4.7e+10 9.2e+05
+Distance, calculations, writes:   8.0 1.3e+10 4.4e+05
+Distance, calculations, writes:  10.0 1.4e+09 8.0e+04
+Distance, calculations, writes:  12.0 1.8e+07 2.4e+03
 
 Voxel block: [2 0 0]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.3e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.0e+10 9.6e+05
-Distance, calculations, writes: 8.0 1.4e+10 4.8e+05
-Distance, calculations, writes: 10.0 1.4e+09 8.2e+04
-Distance, calculations, writes: 12.0 3.7e+07 2.2e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.3e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.0e+10 9.6e+05
+Distance, calculations, writes:   8.0 1.4e+10 4.8e+05
+Distance, calculations, writes:  10.0 1.4e+09 8.2e+04
+Distance, calculations, writes:  12.0 3.7e+07 2.2e+03
 
 Voxel block: [2 0 1]
-Distance, calculations, writes: 2.0 2.9e+11 1.4e+06
-Distance, calculations, writes: 4.0 1.5e+11 2.4e+06
-Distance, calculations, writes: 6.0 6.3e+10 1.1e+06
-Distance, calculations, writes: 8.0 2.1e+10 6.3e+05
-Distance, calculations, writes: 10.0 2.7e+09 1.5e+05
-Distance, calculations, writes: 12.0 4.2e+07 4.4e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.4e+06
+Distance, calculations, writes:   4.0 1.5e+11 2.4e+06
+Distance, calculations, writes:   6.0 6.3e+10 1.1e+06
+Distance, calculations, writes:   8.0 2.1e+10 6.3e+05
+Distance, calculations, writes:  10.0 2.7e+09 1.5e+05
+Distance, calculations, writes:  12.0 4.2e+07 4.4e+03
 
 Voxel block: [2 0 2]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.3e+11 2.5e+06
-Distance, calculations, writes: 6.0 4.9e+10 9.3e+05
-Distance, calculations, writes: 8.0 1.4e+10 4.6e+05
-Distance, calculations, writes: 10.0 1.6e+09 8.8e+04
-Distance, calculations, writes: 12.0 5.8e+07 3.9e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.3e+11 2.5e+06
+Distance, calculations, writes:   6.0 4.9e+10 9.3e+05
+Distance, calculations, writes:   8.0 1.4e+10 4.6e+05
+Distance, calculations, writes:  10.0 1.6e+09 8.8e+04
+Distance, calculations, writes:  12.0 5.8e+07 3.9e+03
 
 Voxel block: [2 1 0]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.3e+10 9.8e+05
-Distance, calculations, writes: 8.0 1.5e+10 5.0e+05
-Distance, calculations, writes: 10.0 1.4e+09 8.5e+04
-Distance, calculations, writes: 12.0 2.6e+07 2.4e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.3e+10 9.8e+05
+Distance, calculations, writes:   8.0 1.5e+10 5.0e+05
+Distance, calculations, writes:  10.0 1.4e+09 8.5e+04
+Distance, calculations, writes:  12.0 2.6e+07 2.4e+03
 
 Voxel block: [2 1 1]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 5.3e+10 9.9e+05
-Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
-Distance, calculations, writes: 10.0 1.5e+09 8.9e+04
-Distance, calculations, writes: 12.0 2.5e+07 1.9e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 5.3e+10 9.9e+05
+Distance, calculations, writes:   8.0 1.5e+10 5.1e+05
+Distance, calculations, writes:  10.0 1.5e+09 8.9e+04
+Distance, calculations, writes:  12.0 2.5e+07 1.9e+03
 
 Voxel block: [2 1 2]
-Distance, calculations, writes: 2.0 2.9e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.4e+10 9.8e+05
-Distance, calculations, writes: 8.0 1.5e+10 5.1e+05
-Distance, calculations, writes: 10.0 1.6e+09 1.0e+05
-Distance, calculations, writes: 12.0 2.7e+07 2.8e+03
+Distance, calculations, writes:   2.0 2.9e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.4e+10 9.8e+05
+Distance, calculations, writes:   8.0 1.5e+10 5.1e+05
+Distance, calculations, writes:  10.0 1.6e+09 1.0e+05
+Distance, calculations, writes:  12.0 2.7e+07 2.8e+03
 
 Voxel block: [2 2 0]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.3e+11 2.5e+06
-Distance, calculations, writes: 6.0 4.8e+10 9.3e+05
-Distance, calculations, writes: 8.0 1.2e+10 4.4e+05
-Distance, calculations, writes: 10.0 1.1e+09 6.9e+04
-Distance, calculations, writes: 12.0 1.6e+07 1.3e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.3e+11 2.5e+06
+Distance, calculations, writes:   6.0 4.8e+10 9.3e+05
+Distance, calculations, writes:   8.0 1.2e+10 4.4e+05
+Distance, calculations, writes:  10.0 1.1e+09 6.9e+04
+Distance, calculations, writes:  12.0 1.6e+07 1.3e+03
 
 Voxel block: [2 2 1]
-Distance, calculations, writes: 2.0 3.0e+11 1.6e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.6e+06
-Distance, calculations, writes: 6.0 4.8e+10 9.3e+05
-Distance, calculations, writes: 8.0 1.3e+10 4.4e+05
-Distance, calculations, writes: 10.0 1.4e+09 7.6e+04
-Distance, calculations, writes: 12.0 2.7e+07 2.5e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.6e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.6e+06
+Distance, calculations, writes:   6.0 4.8e+10 9.3e+05
+Distance, calculations, writes:   8.0 1.3e+10 4.4e+05
+Distance, calculations, writes:  10.0 1.4e+09 7.6e+04
+Distance, calculations, writes:  12.0 2.7e+07 2.5e+03
 
 Voxel block: [2 2 2]
-Distance, calculations, writes: 2.0 3.0e+11 1.5e+06
-Distance, calculations, writes: 4.0 1.4e+11 2.5e+06
-Distance, calculations, writes: 6.0 5.3e+10 9.7e+05
-Distance, calculations, writes: 8.0 1.5e+10 5.0e+05
-Distance, calculations, writes: 10.0 1.5e+09 9.1e+04
-Distance, calculations, writes: 12.0 2.5e+07 2.8e+03
+Distance, calculations, writes:   2.0 3.0e+11 1.5e+06
+Distance, calculations, writes:   4.0 1.4e+11 2.5e+06
+Distance, calculations, writes:   6.0 5.3e+10 9.7e+05
+Distance, calculations, writes:   8.0 1.5e+10 5.0e+05
+Distance, calculations, writes:  10.0 1.5e+09 9.1e+04
+Distance, calculations, writes:  12.0 2.5e+07 2.8e+03
 
-Maximum pore diameter: 20.39
-Number of free volume spheres (r >= probe_radius): 12576806
-Number of free volume voxels (r > 0): 33102902
-Time free volume spheres: 358.58 s
+Maximum pore diameter:    20.39
+Number of free volume spheres (r >= probe_radius):  12576806
+Number of free volume voxels (r > 0):               33102902
+Time free volume spheres: 344.94 s
 
+######################################################################
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
+######################################################################
 
 Maximum pore diameter: 20.39
-Number of spheres (r >= probe_radius) within percolated domain: 12565791
-Time cluster: 25.60 s
+Number of spheres (r >= probe_radius) within percolated domain:  12565791
+Time cluster:          24.10 s
 
-Free volume sphere xyz file printed
-
-##### Performing PSD/FFV Analysis #####
+######################################################################
+##################### Performing PSD/FFV Analysis ####################
+######################################################################
 
 PSD Cycle:     1/1
 
@@ -616,16 +625,19 @@ Calculations, writes: 1.0e+12 8.7e+04
 Calculations, writes: 1.0e+12 8.8e+04
 Calculations, writes: 1.0e+12 8.7e+04
 Calculations, writes: 4.7e+11 4.2e+04
-Connolly FFV: 0.362, 20341068, 56181887
-Lee-Richards FFV: 0.224, 12565791, 56181887
 
-PSD Final: 20341068
-1.0 1.0 0.99702 0.99152 0.98205 0.9774 0.97133 0.96794 0.95489 0.94357 0.93021 0.92273 0.91669 0.91056 0.89666 0.88382 0.87181 0.85997 0.85045 0.83949 0.81962 0.80657 0.79744 0.78082 0.76088 0.74102 0.72103 0.69673 0.67691 0.6599 0.64127 0.61598 0.59314 0.56612 0.53497 0.50964 0.48089 0.45129 0.4214 0.3921 0.36514 0.33654 0.30671 0.27916 0.24903 0.22253 0.19755 0.17302 0.15216 0.12917 0.11064 0.09195 0.07723 0.06375 0.05347 0.0423 0.0326 0.02465 0.0199 0.01482 0.0113 0.0078 0.00573 0.00454 0.00366 0.00306 0.00283 0.00182 0.00105 0.00064 0.00022 
-Time PSD/FFV: 837.67 s
-Free volume voxel xyz file printed
+Number of voxels in PSD analysis:                            20341068
+Connolly FFV, Connolly voxels, total voxels:         0.362,  20341068,  56181887
+Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.224,  12565791,  56181887
+Time PSD/FFV: 811.52 s
 
-##### Summary of Calculation Times #####
+######################################################################
+#################### Summary of Calculation Times ####################
+######################################################################
 
-Time free volume spheres: 358.58 s
-Time cluster: 25.60 s
-Time PSD/FFV: 837.67 s
+Time free volume spheres: 344.94 s
+Time cluster:             24.10 s
+Time PSD/FFV:             811.52 s
+
+Analysis complete, deleting tempoary file, PARSE.hdf5
+
