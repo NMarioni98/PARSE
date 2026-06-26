@@ -6,3 +6,4 @@ python-igraph
 PyYAML
 scikit-image
 openpnm
+pypardiso
