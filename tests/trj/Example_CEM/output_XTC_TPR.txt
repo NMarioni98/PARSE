@@ -73,64 +73,21 @@ Performing Volume Analysis
 Frame 1/24
 Frame 9/24
 Frame 17/24
-Frame 2/24
-Frame 10/24
-Frame 18/24
-Frame 6/24
-Frame 15/24
-Frame 23/24
 Frame 3/24
 Frame 11/24
-Frame 19/24
+Frame 18/24
 Frame 4/24
 Frame 12/24
 Frame 20/24
+Frame 2/24
+Frame 10/24
+Frame 19/24
+Frame 6/24
+Frame 14/24
+Frame 22/24
 Frame 5/24
 Frame 13/24
 Frame 21/24
-Frame 8/24
-Frame 14/24
-Frame 22/24
-Frame 7/24
-Frame 16/24
-Frame 24/24
-
-######################################################################
-################### Generating Free Volume Spheres ###################
-######################################################################
-
-Number of voxel cubes:             1
-Number of voxels-per-cube:    778688
-
-Maximum pore diameter:    18.55
-Number of free volume spheres (r >= probe_radius):    164538
-Number of free volume voxels (r > 0):                 471482
-Time free volume spheres: 20.95 s
-
-######################################################################
-##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
-######################################################################
-
-Maximum pore diameter: 18.55
-Number of spheres (r >= probe_radius) within percolated domain:    163684
-Time cluster:          0.23 s
-
-######################################################################
-##################### Performing PSD/FFV Analysis ####################
-######################################################################
-
-Number of voxels in PSD analysis:                              285862
-Connolly FFV, Connolly voxels, total voxels:         0.367,    285862,    778688
-Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.210,    163684,    778688
-Time PSD/FFV: 5.72 s
-
-######################################################################
-#################### Summary of Calculation Times ####################
-######################################################################
-
-Time free volume spheres: 20.95 s
-Time cluster:              0.23 s
-Time PSD/FFV:              5.72 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

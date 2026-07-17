@@ -80,7 +80,7 @@ Distance, calculations, writes:   4.0 1.1e+07 3.2e+06
 Maximum pore diameter:    2.92
 Number of free volume spheres (r >= probe_radius):     10571
 Number of free volume voxels (r > 0):                  10571
-Time free volume spheres: 2.82 s
+Time free volume spheres: 2.96 s
 
 Free volume sphere xyz file printed
 
@@ -93,7 +93,7 @@ PSD Cycle:     1/1
 Number of voxels in PSD analysis:                               10571
 Connolly FFV, Connolly voxels, total voxels:         0.355,     10571,     29791
 Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.355,     10571,     29791
-Time PSD/FFV: 0.72 s
+Time PSD/FFV: 0.74 s
 
 Free volume voxel xyz file printed
 
@@ -101,8 +101,8 @@ Free volume voxel xyz file printed
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres:  2.82 s
-Time PSD/FFV:              0.72 s
+Time free volume spheres:  2.96 s
+Time PSD/FFV:              0.74 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

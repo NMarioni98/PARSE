@@ -528,7 +528,7 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
         PSD_temp = PSD_temp[radii_arr[PSD_temp[:,0], PSD_temp[:,1], PSD_temp[:,2]] != -1]                                                           # Remove voxels within the system domain from the PSD/FFV analysis
 
         # For efficiency, we measure the distance between free volume spheres and the voxel-centers starting with the largest d_arr bin and moving down
-        for d in np.round(np.arange(args.d_max, 0, -args.d_step), decimals = 5):
+        for d in reversed(d_arr):
             if d - args.d_step > max_diameter: continue
             if (d < 2*args.probe_radius) or (len(PSD_temp) == 0): break
 
@@ -565,7 +565,7 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
                     FFV_c += len(pair_arr); PSD_arr[np.where(d_arr < d)[0]] += len(pair_arr)                                                    # Voxel-centers w/n free volume sphere count towards the FFV and cumulatively towards the PSD
 
                     FFV_save = np.append(FFV_save, PSD_temp[pair_arr], axis=0)                                                                  # Save free volume voxel-centers for printing
-                    d_save = np.append(d_save, np.zeros((len(pair_arr)), dtype=int) + int(d/args.d_step))
+                    d_save = np.append(d_save, np.zeros((len(pair_arr)), dtype=int) + (np.where(d_arr < d)[0][-1] + 1))
 
                     PSD_temp = np.delete(PSD_temp, pair_arr, axis=0)                                                                            # No longer consider voxel-centers that are found within a free volume sphere in future loops (prevent double-counting)
             if increase_max: N_calc_max_temp = min(args.N_calc_max, 10*N_calc_max_temp)

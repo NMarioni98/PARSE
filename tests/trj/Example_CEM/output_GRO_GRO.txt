@@ -85,7 +85,7 @@ Distance, calculations, writes:  14.0 9.5e+06 1.3e+04
 Maximum pore diameter:    20.41
 Number of free volume spheres (r >= probe_radius):    167694
 Number of free volume voxels (r > 0):                 471175
-Time free volume spheres: 20.00 s
+Time free volume spheres: 19.72 s
 
 ######################################################################
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
@@ -93,7 +93,7 @@ Time free volume spheres: 20.00 s
 
 Maximum pore diameter: 20.41
 Number of spheres (r >= probe_radius) within percolated domain:    166521
-Time cluster:          0.20 s
+Time cluster:          0.22 s
 
 Free volume sphere xyz file printed
 
@@ -106,7 +106,7 @@ PSD Cycle:     1/1
 Number of voxels in PSD analysis:                              290358
 Connolly FFV, Connolly voxels, total voxels:         0.373,    290358,    778688
 Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.214,    166521,    778688
-Time PSD/FFV: 6.10 s
+Time PSD/FFV: 6.00 s
 
 Free volume voxel xyz file printed
 
@@ -126,17 +126,17 @@ Free volume surface xyz file printed
 
 Directional Tortuosity:  X-6.40 Y-4.37 Z-4.45
 Average Tortuosity:   5.07
-Time Tortuosity:      3.94 s
+Time Tortuosity:      3.87 s
 
 ######################################################################
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres: 20.00 s
-Time cluster:              0.20 s
-Time PSD/FFV:              6.10 s
+Time free volume spheres: 19.72 s
+Time cluster:              0.22 s
+Time PSD/FFV:              6.00 s
 Time SA:                   0.11 s
-Time Tortuosity:           3.94 s
+Time Tortuosity:           3.87 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

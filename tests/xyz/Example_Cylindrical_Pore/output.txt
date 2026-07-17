@@ -84,7 +84,7 @@ Distance, calculations, writes:   4.0 1.9e+06 9.2e+05
 Maximum pore diameter:    2.89
 Number of free volume spheres (r >= probe_radius):      3627
 Number of free volume voxels (r > 0):                   4056
-Time free volume spheres: 4.08 s
+Time free volume spheres: 4.11 s
 
 Free volume sphere xyz file printed
 
@@ -105,7 +105,7 @@ Free volume voxel xyz file printed
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres:  4.08 s
+Time free volume spheres:  4.11 s
 Time PSD/FFV:              0.02 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
