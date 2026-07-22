@@ -14,8 +14,9 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
      - Example using GROMACS gro/tpr/xtc files
      - PARSE completes calculations over 1 frame in approx. 40 s and over 24 frames in approx. 3.5 min., PoreBlazer completes calculations over 1 frame in approx. 5 min.
-   - Adding Soon: Example_AEM contains an anion exchange membrane...
-     - Example using LAMMPS data/dcd file...
+   - Example_AEM contains an anion exchange membrane (*p*5CNMe3-Cl, *λ* = 4) from Presson, W.; Schwindt, N.; Frischknecht, A.L.; Winey, K.I. et al. *In Preparation* **2026**
+     - Example using LAMMPS data/lammpsdump files
+     - PARSE completes calculations over 1 frame in approx. 20 s and over 23 frames in approx. 1 min.
  - **NOTE:** It is recommended to average results over many different frames and several independent repeats for the best results. These systems just serve as simple, fast to analyze examples of using PARSE.
 
  ## Example files and folders

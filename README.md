@@ -45,10 +45,10 @@ PARSE requires the following inputs:
 
 ### PARSE Inputs (config.yaml)
 ```
-usage: PARSE.py trj [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME] [--identify_atoms {Names,Masses}] [-L L_VOXEL] [-r PROBE_RADIUS]
-                    [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}] [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}]
-                    [--print_xyz {True,False}] [--Temp_file TEMP_FILE] [--Two_execs {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX] [--d_inc D_INC]
-                    [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
+usage: PARSE.py trj [-h] [--indexing_method {Time,Index}] [-b T_MIN] [-e T_MAX] [-bi START_IDX] [-ei END_IDX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME]
+                    [--identify_atoms {Names,Masses}] [-L L_VOXEL] [-r PROBE_RADIUS] [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}] [--PSD_FFV {True,False}] [--Surface_area {True,False}]
+                    [--Tortuosity {True,False}] [--Temp_file TEMP_FILE] [--print_eff {0,1,2}] [--print_xyz {True,False}] [--Two_execs {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX]
+                    [--N_write_max N_WRITE_MAX] [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
                     trj_file top_file
 
 options:
@@ -59,9 +59,15 @@ Required input files:
   top_file              Path to tpr/gro file
 
 Frame selection and threads:
+  --indexing_method {Time,Index}
+                        Method to index the frames to be analyzed [default = YAML]
   -b T_MIN, --t_min T_MIN
                         Start time (ps) [default = YAML]
   -e T_MAX, --t_max T_MAX
+                        End time (ps) [default = YAML]
+  -bi START_IDX, --start_idx START_IDX
+                        Start time (ps) [default = YAML]
+  -ei END_IDX, --end_idx END_IDX
                         End time (ps) [default = YAML]
   -n N_FRAMES, --N_frames N_FRAMES
                         Number of frames to analyze [default = YAML]
@@ -93,6 +99,8 @@ Important variables:
                         Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
   --Tortuosity {True,False}
                         Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
+  --Temp_file TEMP_FILE
+                        Temporary h5py .hdf5 I/O file name
 
 Terminal printing and xyz generation:
   --print_eff {0,1,2}   Level of printing [default = YAML; Locked to 0, 1, or 2]
@@ -100,8 +108,6 @@ Terminal printing and xyz generation:
                         xyz visualization flag [default = YAML; Locked to True or False]
 
 Efficiency parameters - see YAML description for more details [default = YAML]:
-  --Temp_file TEMP_FILE
-                        Temporary h5py .hdf5 I/O file name
   --Two_execs {True,False}
   --clustering {Neumann,Moore}
   --N_calc_max N_CALC_MAX
@@ -133,8 +139,9 @@ Efficiency parameters - see YAML description for more details [default = YAML]:
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
      - Example using GROMACS gro/tpr/xtc files
      - PARSE completes calculations over 1 frame in approx. 40 s and over 24 frames in approx. 3.5 min., PoreBlazer completes calculations over 1 frame in approx. 5 min.
-   - Adding Soon: Example_AEM contains an anion exchange membrane...
-     - Example using LAMMPS data/dcd file...
+   - Example_AEM contains an anion exchange membrane (*p*5CNMe3-Cl, *λ* = 4) from Presson, W.; Schwindt, N.; Frischknecht, A.L.; Winey, K.I. et al. *In Preparation* **2026**
+     - Example using LAMMPS data/lammpsdump files
+     - PARSE completes calculations over 1 frame in approx. 20 s and over 23 frames in approx. 1 min.
  - **NOTE:** It is recommended to average results over many different frames and several independent repeats for the best results. These systems just serve as simple, fast to analyze examples of using PARSE.
 
 ## Acknowledgements

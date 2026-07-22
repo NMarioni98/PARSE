@@ -300,9 +300,9 @@ def generate_free_volume_spheres(args: argparse.Namespace, voxel_data: Dict[str,
                                     radii_arr[coords[0],coords[1],coords[2]] = r_min
                                 else: remove_sph = True
 
-                                if skip_dinc_check or remove_sph: sphere_remove.append(sph_save)                                                 # Analysis complete, remove from future distance calculations
+                                if skip_dinc_check or remove_sph: sphere_remove.append(sph_save)                                                # Analysis complete, remove from future distance calculations
                                 index = i; sph_save = sph
-                    if len(sphere_remove) > 0: sphere_temp = np.delete(sphere_temp, np.array(sphere_remove), axis=0)                             # Remove evaluated voxel-centers
+                    if len(sphere_remove) > 0: sphere_temp = np.delete(sphere_temp, np.array(sphere_remove), axis=0)                            # Remove evaluated voxel-centers
 
     max_diameter = 2 * np.max(radii_arr)
 
@@ -420,7 +420,7 @@ def perform_clustering_analysis(args: argparse.Namespace, voxel_data: Dict[str, 
             # Clusters containing 1 free volume sphere are assumed to NOT contain solvent
             #  - Significantly reduces compute time
             if len(clust) == 1:
-                radii_arr[np.isin(membership, cluster_ids[i:]) & (radii_arr >= args.probe_radius)] = 0                                          # Set radii = probe_radius/2 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
+                radii_arr[np.isin(membership, cluster_ids[i:]) & (radii_arr >= args.probe_radius)] = 0                                          # Set radii = 0 so that these voxels are treated as free volume VOXELS and not free volume SPHERES going forward
                 break
 
             # For efficiency, we limit the number of free volume spheres per loop to a total of N_calc_max distance calculations
@@ -626,14 +626,14 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
     ######################################################
     if args.PSD_FFV:
         try:
-            SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                              # Create voxel lattice where free volume voxel-centers = True
+            SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                          # Create voxel lattice where free volume voxel-centers = True
 
             # Create a simple mesh surface around the free volume and calculate the surface area
-            SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-            spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calculations
+            SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                               # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
+            spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                               # Define voxel size to dimensionalize surface area calculations
 
-            verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                 # Marching cubes algorithm to create a surface mesh
-            SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                      # Calculate the surface area of the free volume
+            verts_c, faces_c, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                             # Marching cubes algorithm to create a surface mesh
+            SA_c = measure.mesh_surface_area(verts_c, faces_c)                                                                                  # Calculate the surface area of the free volume
         except Exception as e:
             print(f"Suspected ski-image marching cubes algorithm failure: {e}")
             if "Surface level must be" in str(e):
@@ -649,14 +649,14 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
     try:
         # Surface defined by the *center* of the free volume *spheres* - i.e., surface-accessible free volume
         idx_x, idx_y, idx_z = np.where(radii_arr > args.probe_radius) if args.probe_radius == 0 else np.where(radii_arr >= args.probe_radius)
-        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                          # Create voxel lattice where free volume sphere-centers = True
+        SA_arr = np.zeros((l_x, l_y, l_z), dtype=bool); SA_arr[idx_x, idx_y, idx_z] = True                                                      # Create voxel lattice where free volume sphere-centers = True
 
         # Create a simple mesh surface around the free volume and calculate the surface area
-        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                       # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
-        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                       # Define voxel size to dimensionalize surface area calculations
+        SA_arr = np.pad(SA_arr, pad_width = 1, mode = 'wrap')                                                                                   # Add 1 layer of wrapped coordinates around the array to properly account for periodic boundaries
+        spacing = np.array([L_voxel_x, L_voxel_y, L_voxel_z])                                                                                   # Define voxel size to dimensionalize surface area calculations
 
-        verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                                   # Marching cubes algorithm to create a surface mesh
-        SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                       # Calculate the surface area of the free volume
+        verts_lr, faces_lr, _, _ = measure.marching_cubes(SA_arr, level = 0.5, spacing = spacing)                                               # Marching cubes algorithm to create a surface mesh
+        SA_lr = measure.mesh_surface_area(verts_lr, faces_lr)                                                                                   # Calculate the surface area of the free volume
 
         # Normalize surface area to the true volume to account for padding
         volume = (l_x * L_voxel_x) * (l_y * L_voxel_y) * (l_z * L_voxel_z)
@@ -810,8 +810,8 @@ def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
         PSD_arr = np.zeros_like(d_arr, dtype=int) - 1
 
         FFV_c = -len(radii_arr.ravel())
-        FFV_lr = len(radii_arr[radii_arr > args.probe_radius]) if args.probe_radius == 0 else len(radii_arr[radii_arr >= args.probe_radius])     # The Lee-Richards volume is already known from the voxel-centered free volume spheres of radius r >= probe_radius
-        FFV_g = len(radii_arr[radii_arr != -1]); FFV_gs = len(radii_arr[radii_arr > 0])                                                          # The geometric volumes are similarly known
+        FFV_lr = len(radii_arr[radii_arr > args.probe_radius]) if args.probe_radius == 0 else len(radii_arr[radii_arr >= args.probe_radius])    # The Lee-Richards volume is already known from the voxel-centered free volume spheres of radius r >= probe_radius
+        FFV_g = len(radii_arr[radii_arr != -1]); FFV_gs = len(radii_arr[radii_arr > 0])                                                         # The geometric volumes are similarly known
         FFV_total = len(radii_arr.ravel())
         FFV_data = np.array([FFV_c, FFV_lr, FFV_g, FFV_gs, FFV_total], dtype=int)
 
