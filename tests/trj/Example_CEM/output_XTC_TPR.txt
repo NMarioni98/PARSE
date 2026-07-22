@@ -8,6 +8,7 @@
             ########## Files and Run Parameters ##########
             trj_file       : md.xtc
             top_file       : md.tpr
+            indexing_method: Time
             t_min          : -1
             t_max          : -1
             N_frames       : 24
@@ -28,11 +29,11 @@
             PSD_FFV        : True
             Surface_area   : False
             Tortuosity     : False
+            Temp_file      : PARSE
             print_eff      : 1
             print_xyz      : False
 
             ########### Efficiency Parameters ############
-            Temp_file      : PARSE
             Two_execs      : False
             clustering     : Neumann
             N_calc_max     : 1e+12
@@ -73,21 +74,24 @@ Performing Volume Analysis
 Frame 1/24
 Frame 9/24
 Frame 17/24
+Frame 2/24
+Frame 10/24
+Frame 18/24
 Frame 3/24
 Frame 11/24
-Frame 18/24
+Frame 19/24
 Frame 4/24
 Frame 12/24
 Frame 20/24
-Frame 2/24
-Frame 10/24
-Frame 19/24
-Frame 6/24
-Frame 14/24
-Frame 22/24
 Frame 5/24
 Frame 13/24
 Frame 21/24
+Frame 6/24
+Frame 14/24
+Frame 22/24
+Frame 7/24
+Frame 15/24
+Frame 23/24
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

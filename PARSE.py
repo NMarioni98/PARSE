@@ -529,6 +529,7 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
 
         # For efficiency, we measure the distance between free volume spheres and the voxel-centers starting with the largest d_arr bin and moving down
         for d in reversed(d_arr):
+            d = np.round(d, decimals=5)
             if d - args.d_step > max_diameter: continue
             if (d < 2*args.probe_radius) or (len(PSD_temp) == 0): break
 
@@ -1017,6 +1018,8 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
                       help = "Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
     vars.add_argument('--Tortuosity', type = string2bool, choices = [True, False], default = config['Tortuosity'],
                       help = "Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
+    vars.add_argument('--Temp_file', type = str, default = config['Temp_file'],
+                      help = "Temporary h5py .hdf5 I/O file name")
        ###################################################
        ## GROUP 5: Terminal printing and xyz generation ##
        ###################################################
@@ -1029,8 +1032,6 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
        ## GROUP 6: Efficiency parameters ##
        ####################################
     efficiency = xyz_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
-    efficiency.add_argument('--Temp_file', type = str, default = config['Temp_file'],
-                            help = "Temporary h5py .hdf5 I/O file name")
     efficiency.add_argument('--Two_execs', type = string2bool, choices = [True, False], default = config['Two_execs'],)
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
     efficiency.add_argument('--N_calc_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_calc_max'],)
@@ -1058,9 +1059,15 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
        ## GROUP 2: Frame selection and threads ##
        ##########################################
     traj_frames = traj_parser.add_argument_group('Frame selection and threads')
+    traj_frames.add_argument('--indexing_method', type = str, choices = ['Time', 'Index'], default = config['indexing_method'],
+                               help = "Method to index the frames to be analyzed [default = YAML]")
     traj_frames.add_argument('-b', '--t_min', type = float_range(0.0, np.inf, True, False, True), default = config['t_min'],
                              help = "Start time (ps) [default = YAML]")
     traj_frames.add_argument('-e', '--t_max', type = float_range(0.0, np.inf, True, False, True), default = config['t_max'],
+                             help = "End time (ps) [default = YAML]")
+    traj_frames.add_argument('-bi', '--start_idx', type = float_range(0.0, np.inf, True, False, True), default = config['start_idx'],
+                             help = "Start time (ps) [default = YAML]")
+    traj_frames.add_argument('-ei', '--end_idx', type = float_range(0.0, np.inf, True, False, True), default = config['end_idx'],
                              help = "End time (ps) [default = YAML]")
     traj_frames.add_argument('-n', '--N_frames', type = int_range(0.0, np.inf, False, False, True), default = config['N_frames'],
                              help = "Number of frames to analyze [default = YAML]")
@@ -1098,6 +1105,8 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
                       help = "Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
     vars.add_argument('--Tortuosity', type = string2bool, choices = [True, False], default = config['Tortuosity'],
                       help = "Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]")
+    vars.add_argument('--Temp_file', type = str, default = config['Temp_file'],
+                      help = "Temporary h5py .hdf5 I/O file name")
        ###################################################
        ## GROUP 5: Terminal printing and xyz generation ##
        ###################################################
@@ -1110,8 +1119,6 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
        ## GROUP 6: Efficiency parameters ##
        ####################################
     efficiency = traj_parser.add_argument_group('Efficiency parameters - see YAML description for more details [default = YAML]')
-    efficiency.add_argument('--Temp_file', type = str, default = config['Temp_file'],
-                            help = "Temporary h5py .hdf5 I/O file name")
     efficiency.add_argument('--Two_execs', type = string2bool, choices = [True, False], default = config['Two_execs'],)
     efficiency.add_argument('--clustering', type = str, choices = ['Neumann', 'Moore'], default = config['clustering'],)
     efficiency.add_argument('--N_calc_max', type = float_range(0.0, np.inf, False, False, False), default = config['N_calc_max'],)
@@ -1124,6 +1131,7 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
     # Define args
     args = parser.parse_args(remaining_argv)
 
+    # --N_repeats > 1 serves no benefit if --Voxel_dist 'Uniform'
     if args.Voxel_dist == 'Uniform' and args.N_repeats != 1:        parser.error("--N_repeats 1 if --Voxel_dist 'Uniform'")
     # --Voxel_dist 'Uniform' and --tol -1 are required for SA calculations
     if args.Surface_area == True:
@@ -1139,6 +1147,13 @@ def load_Args() -> Tuple[argparse.Namespace, np.ndarray, np.ndarray, dict]:
     if args.probe_radius < args.L_voxel:
         if args.Surface_area == True:                               parser.error("SA calculation requires --probe_radius > --L_voxel to ensure accurate calculation")
         if args.Tortuosity == True:                                 parser.error("Tau calculation requires --probe_radius > --L_voxel to ensure accurate calculation")
+
+    # Set indexing parameters not in use to None
+    if args.mode == 'trj':
+        if args.indexing_method == 'Time':
+            args.start_idx = None; args.end_idx = None
+        elif args.indexing_method == 'Index':
+            args.t_min = None; args.t_max = None        
 
     # Define data arrays from YAML
     Size_arr = np.array(config['Size_arr'], dtype=object)
@@ -1176,7 +1191,7 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
             cell[:3] += np.array(lines.split(), dtype=float)
         print('If the following is incorrect, check your dat file format')
         print(f'XYZ cell size (A): {cell[0]} {cell[1]} {cell[2]}\n')
-    else:
+    elif args.mode == 'trj':
         try:
             uta = mda.Universe(args.top_file, args.trj_file, **mda_kwargs)
         except:
@@ -1297,25 +1312,41 @@ def load_Trajectory(args: argparse.Namespace, Size_arr: np.ndarray, Dummy_atoms:
         if args.t_max == -1:
             args.t_max = uta.trajectory[-1].time
             print(f"NOTE: --t_max -1, setting --t_max = last frame in {args.trj_file}, {args.t_max} ps\n")
+        if args.start_idx == -1:
+            args.start_idx = 0
+            print(f"NOTE: --start_idx -1, setting --start_idx = first frame in {args.trj_file}, Frame {args.start_idx}\n")
+        if args.end_idx == -1:
+            args.end_idx = len(uta.trajectory) - 1
+            print(f"NOTE: --end_idx -1, setting --end_idx = last frame in {args.trj_file}, Frame {args.end_idx}\n")
         if args.N_frames == -1:
             args.N_frames = args.N_threads
             print(f"NOTE: --N_frames -1, setting --N_frames = --N_threads, {args.N_frames}\n")
 
-        dt = np.round((uta.trajectory[1].time - uta.trajectory[0].time),3)
+        if args.indexing_method == 'Time':
+            dt = np.round((uta.trajectory[1].time - uta.trajectory[0].time),3)
 
-        start_idx = int((args.t_min - uta.trajectory[0].time) / dt)
-        end_idx = int((args.t_max - uta.trajectory[0].time) / dt)
+            start_idx = int((args.t_min - uta.trajectory[0].time) / dt)
+            end_idx = int((args.t_max - uta.trajectory[0].time) / dt)
+        elif args.indexing_method == 'Index':
+            start_idx = args.start_idx
+            end_idx = args.end_idx
         available_frames = end_idx - start_idx + 1
 
-        if available_frames < args.N_frames: raise ValueError(f"Not enough frames within the time range provided: {args.t_min}-{args.t_max} ps = {available_frames} frames")
+        if available_frames < args.N_frames:
+            if args.indexing_method == 'Time': raise ValueError(f"Not enough frames within the time range provided: {args.t_min}-{args.t_max} ps = {available_frames} frames")
+            elif args.indexing_method == 'Index': raise ValueError(f"Not enough frames within the range provided: Frames {args.start_idx}-{args.end_idx} = {available_frames} frames")
 
-        print(f"Timerange: {args.t_min}-{args.t_max} ps")
+        if args.indexing_method == 'Time': print(f"Timerange: {args.t_min}-{args.t_max} ps")
+        elif args.indexing_method == 'Index': print(f"Framerange: {args.start_idx}-{args.end_idx}")
+
         if args.N_frames == 1:                                                                  # If only analyzing one frame, analyze the final frame
             frame_ids = np.array([end_idx], dtype=int)
-            print(f"Number of frames: {len(frame_ids)}, analyzing final frame at {args.t_max} ps")
+            if args.indexing_method == 'Time': print(f"Number of frames: {len(frame_ids)}, analyzing final frame at {args.t_max} ps")
+            elif args.indexing_method == 'Index': print(f"Number of frames: {len(frame_ids)}, analyzing final frame, {args.end_idx}")
         else:
             frame_ids = np.linspace(start_idx, end_idx, args.N_frames, dtype=int)
-            print(f"Timestep between analyzed frames: ~{dt*(frame_ids[1] - frame_ids[0])} ps")
+            if args.indexing_method == 'Time': print(f"Timestep between analyzed frames: ~{dt*(frame_ids[1] - frame_ids[0])} ps")
+            elif args.indexing_method == 'Index': print(f"Framestep between analyzed frames: ~{frame_ids[1] - frame_ids[0]}")
             print(f"Number of frames: {len(frame_ids)}")
 
     # Load in the necessary data: "system" atom positions, "solvent" atom positions, cell dimensions
@@ -1362,11 +1393,13 @@ def main():
     print('########################## Input Parameters ##########################')
     print('######################################################################\n')
     for key, value in vars(args).items():
-        if 'mode' in key:          print(  '            #################### Mode ####################')
+        if ('t_min' in key or 't_max' in key or 'start_idx' in key or 'end_idx' in key) and value == None: continue
+
+        if   'mode' in key:        print(  '            #################### Mode ####################')
         elif 'trj_file' in key:    print('\n            ########## Files and Run Parameters ##########')
         elif 'system_name' in key: print('\n            ############### System/Solvent ###############')
         elif 'L_voxel' in key:     print('\n            ################# Variables ##################')
-        elif 'Temp_file' in key:   print('\n            ########### Efficiency Parameters ############')
+        elif 'Two_execs' in key:   print('\n            ########### Efficiency Parameters ############')
 
         if '_calc' in key or '_write' in key or 'target_' in key or '_gen' in key: print(f"            {key:15}: {value:.0e}")
         else:                                                                      print(f"            {key:15}: {value}")
@@ -1374,10 +1407,9 @@ def main():
     print(  '######################################################################')
     print(  '######################################################################\n')
 
-    if not args.Two_execs:
-        if os.path.exists(args.Temp_file + '.hdf5'):
-            print(f'Temporary file already exists, deleting temporary file, {args.Temp_file}.hdf5')
-            os.remove(args.Temp_file + '.hdf5')
+    if not args.Two_execs and os.path.exists(args.Temp_file + '.hdf5'):
+        print(f'Temporary file already exists, deleting temporary file, {args.Temp_file}.hdf5')
+        os.remove(args.Temp_file + '.hdf5')
 
     # Load in the trajectory file, save necessary data into h5py .hdf5 I/O file
     if not os.path.exists(args.Temp_file + '.hdf5'):

@@ -13,6 +13,12 @@ python3 ../../../PARSE.py ../../config.yaml trj lammps.data lammps.data -m 'not 
 # Analyze a single frame 8 times in parallel with a 'Random' voxel distribution
 python3 ../../../PARSE.py ../../config.yaml trj lammps.data lammps.data -m 'not type 3 7 9' --identify_atoms 'Masses' --N_repeats 8 --N_threads 8 --print_eff 1 --print_xyz False
 
+#############################################
+########## LAMMPS Data-LAMMPS Dump ##########
+#############################################
+# Analyze 24 frames over 8 parallel threads using a GROMACS XTC + TPR file
+python3 ../../../PARSE.py ../../config.yaml trj md.lammpsdump lammps.data -m 'not type 3 7 9' --identify_atoms 'Masses' --indexing_method 'Index' --N_frames 23 --N_threads 8 --print_eff 1 --print_xyz False
+
 # For a LAMMPS input, PARSE.py can take more inputs, enabling parallelization over many frames
 # PARSE.py takes the following inputs
 #    python3 {PATH}/PARSE.py {Path}/{YAML config file} trj {PATH}/{input .XTC/.TRR/.GRO file} {PATH}/{input .TPR/.GRO file}
@@ -32,8 +38,11 @@ python3 ../../../PARSE.py ../../config.yaml trj lammps.data lammps.data -m 'not 
 #   --d_max and d_step: defines the binning for the PSD. It may be useful to change d_step to achieve smoother profiles. Typically 50.0 and 0.25-0.50, respectively.
 #   --print_eff:        defines how much information is printing while PARSE.py is running. Typically 1, but 2 is useful for troubleshooting memory errors or significant slowdowns in compute time.
 #   --print_xyz:        defines whether PARSE.py generates xyz files to visualize the probe-occupiable volume that is analyzed. Typically False to conserve hard drive space (these xyz can get large for small L_voxel or large simulation boxes).
+#   --indexing_method:  method to index trajectory frames: 'Time' follows GROMACS conventions of setting a beginning and end time (--t_min and --t_max), 'Index' instead sets a starting and ending frame index where the first frame of a trajectory is index 0 (--start_idx and --end_idx)
 #   --t_min:            start time for analysis in ps (-1 assumes the time of the first frame).
 #   --t_max:            end time for analysis in ps (-1 assumes the time of the last frame).
+#   --start_idx:        start frame index for analysis (-1 assumes the first frame of the trajectory file, i.e., frame 0).
+#   --end_idx:          end frame index for analysis (-1 assumes the last frame of the trajectory file).
 #   --N_frames:         number of frames to analyze. For efficiency, this should be a multiple of N_threads.
 #   --N_repeats:        Number of times to analyze each frame. Typically 1.
 #   --N_threads:        number of threads.

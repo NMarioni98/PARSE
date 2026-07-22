@@ -8,6 +8,7 @@
             ########## Files and Run Parameters ##########
             trj_file       : md.gro
             top_file       : md.gro
+            indexing_method: Time
             t_min          : -1
             t_max          : -1
             N_frames       : -1
@@ -28,11 +29,11 @@
             PSD_FFV        : True
             Surface_area   : True
             Tortuosity     : True
+            Temp_file      : PARSE
             print_eff      : 2
             print_xyz      : True
 
             ########### Efficiency Parameters ############
-            Temp_file      : PARSE
             Two_execs      : False
             clustering     : Neumann
             N_calc_max     : 1e+12
@@ -85,7 +86,7 @@ Distance, calculations, writes:  14.0 9.5e+06 1.3e+04
 Maximum pore diameter:    20.41
 Number of free volume spheres (r >= probe_radius):    167694
 Number of free volume voxels (r > 0):                 471175
-Time free volume spheres: 19.72 s
+Time free volume spheres: 20.36 s
 
 ######################################################################
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
@@ -106,7 +107,7 @@ PSD Cycle:     1/1
 Number of voxels in PSD analysis:                              290358
 Connolly FFV, Connolly voxels, total voxels:         0.373,    290358,    778688
 Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.214,    166521,    778688
-Time PSD/FFV: 6.00 s
+Time PSD/FFV: 6.30 s
 
 Free volume voxel xyz file printed
 
@@ -116,7 +117,7 @@ Free volume voxel xyz file printed
 
 Connolly SA (A^2):     94857.33
 Lee-Richards SA (A^2): 88143.13
-Time SA:                   0.11 s
+Time SA:                   0.12 s
 
 Free volume surface xyz file printed
 
@@ -126,17 +127,17 @@ Free volume surface xyz file printed
 
 Directional Tortuosity:  X-6.40 Y-4.37 Z-4.45
 Average Tortuosity:   5.07
-Time Tortuosity:      3.87 s
+Time Tortuosity:      4.18 s
 
 ######################################################################
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres: 19.72 s
+Time free volume spheres: 20.36 s
 Time cluster:              0.22 s
-Time PSD/FFV:              6.00 s
-Time SA:                   0.11 s
-Time Tortuosity:           3.87 s
+Time PSD/FFV:              6.30 s
+Time SA:                   0.12 s
+Time Tortuosity:           4.18 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

@@ -26,11 +26,11 @@
             PSD_FFV        : True
             Surface_area   : False
             Tortuosity     : False
+            Temp_file      : PARSE
             print_eff      : 2
             print_xyz      : False
 
             ########### Efficiency Parameters ############
-            Temp_file      : PARSE
             Two_execs      : False
             clustering     : Neumann
             N_calc_max     : 1e+12
@@ -290,7 +290,7 @@ Distance, calculations, writes:  12.0 2.5e+07 2.8e+03
 Maximum pore diameter:    20.39
 Number of free volume spheres (r >= probe_radius):  12576806
 Number of free volume voxels (r > 0):               33102902
-Time free volume spheres: 358.52 s
+Time free volume spheres: 356.42 s
 
 ######################################################################
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
@@ -298,7 +298,7 @@ Time free volume spheres: 358.52 s
 
 Maximum pore diameter: 20.39
 Number of spheres (r >= probe_radius) within percolated domain:  12565791
-Time cluster:          27.26 s
+Time cluster:          26.24 s
 
 ######################################################################
 ##################### Performing PSD/FFV Analysis ####################
@@ -624,15 +624,15 @@ Calculations, writes: 6.0e+11 5.1e+04
 Number of voxels in PSD analysis:                            20341068
 Connolly FFV, Connolly voxels, total voxels:         0.362,  20341068,  56181887
 Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.224,  12565791,  56181887
-Time PSD/FFV: 838.32 s
+Time PSD/FFV: 830.32 s
 
 ######################################################################
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres: 358.52 s
-Time cluster:             27.26 s
-Time PSD/FFV:             838.32 s
+Time free volume spheres: 356.42 s
+Time cluster:             26.24 s
+Time PSD/FFV:             830.32 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

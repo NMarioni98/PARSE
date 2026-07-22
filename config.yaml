@@ -23,13 +23,30 @@ MDAnalysis_Universe_kwargs:
 ### The following are IGNORED for PoreBlazer-style xyz/dat analysis ###
 #######################################################################
 
-# Default start time for analysis in ps (-1 assumes the time of the first frame)
+# Method to index the frames to be analyzed. 'Time' follows GROMACS conventions. 'Index' may be preferred for non-constant timesteps.
+#     'Time': Evenly space frames between --t_min and --t_max based on the time associated to each frame from start_time to end_time in the trajectory file
+#     'Index': Evenly spaces frames between --start_idx and --end_idx based on the array index from 0 to N_frames in the trajectory file
+indexing_method: 'Time'
+
+# Default start time for analysis in ps (-1 assumes the time of the first frame of the trajectory)
+#     NOTE: Only used if --indexing_method 'Time'
 #     Can overwrite when calling PARSE.py using -b or --t_min
 t_min: -1
 
-# Default end time for analysis in ps (-1 assumes the time of the last frame)
+# Default end time for analysis in ps (-1 assumes the time of the last frame of the trajectory)
+#     NOTE: Only used if --indexing_method 'Time'
 #     Can overwrite when calling PARSE.py using -e or --t_max
 t_max: -1
+
+# Default start index for analysis (-1 assumes frame 0)
+#     NOTE: Only used if --indexing_method 'Index'
+#     Can overwrite when calling PARSE.py using -bi or --start_idx
+start_idx: -1
+
+# Default end index for analysis (-1 assumes last frame of the trajectory)
+#     NOTE: Only used if --indexing_method 'Index'
+#     Can overwrite when calling PARSE.py using -ei or --end_idx
+end_idx: -1
 
 # Default number of frames to analyze (-1 assumes N_frames = N_threads, N_frames = 1 for GRO file inputs)
 #     For efficiency, N_frames should be a multiple of the number of threads, --N_threads
@@ -120,6 +137,11 @@ print_eff: 2
 #     Can overwrite when calling PARSE.py using --print_xyz
 print_xyz: True
 
+# Temporary h5py .hdf5 I/O file name/folder
+#     --Temp_file 'PARSE' generates PARSE.hdf5 in the current run directory
+#     When running on HPCs, it may be good practice to run in the local /tmp/ folder of the compute node, --Temp_folder '/tmp/PARSE' or equivalent
+Temp_file: 'PARSE'
+
 
 
 #######################################################################
@@ -167,11 +189,6 @@ Dummy_atoms:
 ########################################################################
 #################### Advanced efficiency parameters ####################
 ########################################################################
-
-# Temporary h5py .hdf5 I/O file name/folder
-#     --Temp_file 'PARSE' generates PARSE.hdf5 in the current run directory
-#     When running on HPCs, it may be good practice to run in the local /tmp/ folder of the compute node, --Temp_folder '/tmp/PARSE' or equivalent
-Temp_file: 'PARSE'
 
 # Residual memory from MDAnalysis may cause memory issues for very large parallelizations
 #     Setting --Two_execs True means PARSE will exit after generating the temporary run file, therefore requiring two executions to run

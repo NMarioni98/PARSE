@@ -26,11 +26,11 @@
             PSD_FFV        : True
             Surface_area   : True
             Tortuosity     : True
+            Temp_file      : PARSE
             print_eff      : 2
             print_xyz      : True
 
             ########### Efficiency Parameters ############
-            Temp_file      : PARSE
             Two_execs      : False
             clustering     : Neumann
             N_calc_max     : 1e+12
@@ -82,7 +82,7 @@ Distance, calculations, writes:   8.0 6.4e+08 1.2e+06
 Maximum pore diameter:    9.48
 Number of free volume spheres (r >= probe_radius):    148070
 Number of free volume voxels (r > 0):                 602471
-Time free volume spheres: 21.80 s
+Time free volume spheres: 22.01 s
 
 Free volume sphere xyz file printed
 
@@ -95,7 +95,7 @@ PSD Cycle:     1/1
 Number of voxels in PSD analysis:                              439169
 Connolly FFV, Connolly voxels, total voxels:         0.496,    439169,    884736
 Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.167,    148070,    884736
-Time PSD/FFV: 2.68 s
+Time PSD/FFV: 2.69 s
 
 Free volume voxel xyz file printed
 
@@ -105,7 +105,7 @@ Free volume voxel xyz file printed
 
 Connolly SA (A^2):     231017.45
 Lee-Richards SA (A^2): 195550.00
-Time SA:                   0.29 s
+Time SA:                   0.30 s
 
 Free volume surface xyz file printed
 
@@ -115,16 +115,16 @@ Free volume surface xyz file printed
 
 Directional Tortuosity:  X-6.70 Y-7.17 Z-7.42
 Average Tortuosity:   7.10
-Time Tortuosity:      7.10 s
+Time Tortuosity:      7.17 s
 
 ######################################################################
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres: 21.80 s
-Time PSD/FFV:              2.68 s
-Time SA:                   0.29 s
-Time Tortuosity:           7.10 s
+Time free volume spheres: 22.01 s
+Time PSD/FFV:              2.69 s
+Time SA:                   0.30 s
+Time Tortuosity:           7.17 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

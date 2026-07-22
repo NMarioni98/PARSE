@@ -1,0 +1,130 @@
+######################################################################
+########################## Input Parameters ##########################
+######################################################################
+
+            #################### Mode ####################
+            mode           : trj
+
+            ########## Files and Run Parameters ##########
+            trj_file       : lammps.data
+            top_file       : lammps.data
+            t_min          : -1
+            t_max          : -1
+            N_frames       : -1
+            N_repeats      : 1
+            N_threads      : 1
+
+            ############### System/Solvent ###############
+            system_name    : not type 3 7 9
+            solvent_name   : 
+            identify_atoms : Masses
+
+            ################# Variables ##################
+            L_voxel        : 1.0
+            probe_radius   : 1.575
+            d_max          : 50
+            d_step         : 0.25
+            Voxel_dist     : Uniform
+            PSD_FFV        : True
+            Surface_area   : True
+            Tortuosity     : True
+            print_eff      : 2
+            print_xyz      : True
+
+            ########### Efficiency Parameters ############
+            Temp_file      : PARSE
+            Two_execs      : False
+            clustering     : Neumann
+            N_calc_max     : 1e+12
+            N_write_max    : 1e+08
+            d_inc          : 2
+            N_edge_gen     : 1e+08
+            tol            : -1
+            rand_frac      : 1
+
+######################################################################
+######################################################################
+######################################################################
+
+Loading trajectory data
+
+If the following is incorrect, there may be inconsistencies between the
+atom ID name/mass in the topology and the Element name/mass in the YAML file.
+See --identify_atoms, Size_arr, and Dummy_atoms for more details.
+
+SYSTEM ATOMS
+Element N-in-System
+      H       30132
+      C       13392
+      N        1488
+
+Number of frames: 1, analyzing final frame in lammps.data
+Number of threads: 1
+
+Performing Volume Analysis
+
+Frame 1/1
+
+######################################################################
+################### Generating Free Volume Spheres ###################
+######################################################################
+
+Number of voxel cubes:             1
+Number of voxels-per-cube:    571787
+
+Voxel block: [0 0 0]
+Distance, calculations, writes:   2.0 2.6e+10 1.5e+06
+Distance, calculations, writes:   4.0 1.5e+10 5.7e+06
+Distance, calculations, writes:   6.0 6.5e+09 9.5e+06
+Distance, calculations, writes:   8.0 3.2e+06 1.1e+04
+
+Maximum pore diameter:    6.77
+Number of free volume spheres (r >= probe_radius):     22282
+Number of free volume voxels (r > 0):                 329739
+Time free volume spheres: 13.93 s
+
+Free volume sphere xyz file printed
+
+######################################################################
+##################### Performing PSD/FFV Analysis ####################
+######################################################################
+
+PSD Cycle:     1/1
+
+Number of voxels in PSD analysis:                              142943
+Connolly FFV, Connolly voxels, total voxels:         0.250,    142943,    571787
+Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.039,     22282,    571787
+Time PSD/FFV: 0.76 s
+
+Free volume voxel xyz file printed
+
+######################################################################
+####################### Performing SA Analysis #######################
+######################################################################
+
+Connolly SA (A^2):     139979.96
+Lee-Richards SA (A^2): 50231.89
+Time SA:                   0.12 s
+
+Free volume surface xyz file printed
+
+######################################################################
+################### Performing Tortuosity Analysis ###################
+######################################################################
+
+Error from PoreSpy: No pores remain after trimming floating pores
+    Void space does not percolate along at least one axis. Setting tortuosity to -1.
+No 1D percolated clusters found, tortuosity not measured.
+Time Tortuosity:      0.22 s
+
+######################################################################
+#################### Summary of Calculation Times ####################
+######################################################################
+
+Time free volume spheres: 13.93 s
+Time PSD/FFV:              0.76 s
+Time SA:                   0.12 s
+Time Tortuosity:           0.22 s
+
+Analysis complete, deleting tempoary file, PARSE.hdf5
+
