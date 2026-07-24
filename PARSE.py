@@ -489,7 +489,7 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
     if args.probe_radius > 0: d_arr = np.insert(d_arr,0,0)
     PSD_arr = np.zeros_like(d_arr, dtype=int)                                                                                                   # PSD_arr tracks the number of instances of voxels contained within free volume spheres of size at least d
     FFV_c = 0; FFV_lr = 0; FFV_total = 0                                                                                                        # Track number of voxels within the Connolly and Lee-Richards free volume against the total number to get FFV
-    FFV_g = len(radii_arr[radii_arr != -1]); FFV_gs = len(radii_arr[radii_arr > 0])                                                             # FFV_g is used to track the geometric free volume (--probe_radius 0); FFV_gs tracks the geometric free volume of the defined solvent domain (--solvent_name != '')
+    FFV_g = len(radii_arr[radii_arr != -1])                                                                                                     # FFV_g is used to track the geometric free volume (--probe_radius 0)
     PSD_probes = np.indices((l_x, l_y, l_z), dtype=indexed_type).reshape(3, -1).T                                                               # Indices of all
     FFV_save = np.array([[],[],[]], dtype=indexed_type).T; d_save = np.array([], dtype=indexed_type)                                            # Save voxel-centers within the free volume for surface area calculations, and the size of the largest free volume sphere containing each voxel-center for printing in Free_Volume_Voxels.xyz
 
@@ -590,7 +590,7 @@ def calculate_psd_ffv(args: argparse.Namespace, voxel_data: Dict[str, Any], last
         print(f"Lee-Richards FFV, Lee_Richards voxels, total voxels: {FFV_lr/FFV_total:0.3f}, {FFV_lr:9d}, {FFV_total:9d}")
         print(f"Time PSD/FFV: {time_PSD:.2f} s")
 
-    return d_arr, PSD_arr, np.array([FFV_c, FFV_lr, FFV_g, FFV_gs, FFV_total], dtype=int), FFV_save, d_save, time_PSD
+    return d_arr, PSD_arr, np.array([FFV_c, FFV_lr, FFV_g, FFV_total], dtype=int), FFV_save, d_save, time_PSD
 
 
 
@@ -811,9 +811,9 @@ def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
 
         FFV_c = -len(radii_arr.ravel())
         FFV_lr = len(radii_arr[radii_arr > args.probe_radius]) if args.probe_radius == 0 else len(radii_arr[radii_arr >= args.probe_radius])    # The Lee-Richards volume is already known from the voxel-centered free volume spheres of radius r >= probe_radius
-        FFV_g = len(radii_arr[radii_arr != -1]); FFV_gs = len(radii_arr[radii_arr > 0])                                                         # The geometric volumes are similarly known
+        FFV_g = len(radii_arr[radii_arr != -1])                                                                                                 # The geometric volume is similarly known
         FFV_total = len(radii_arr.ravel())
-        FFV_data = np.array([FFV_c, FFV_lr, FFV_g, FFV_gs, FFV_total], dtype=int)
+        FFV_data = np.array([FFV_c, FFV_lr, FFV_g, FFV_total], dtype=int)
 
         FFV_save, time_PSD = None, 0
         if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
@@ -1479,15 +1479,14 @@ def main():
     FFV = np.array([out['FFV'] for out in out_arr])
     # Account for N_repeats
     if args.N_repeats > 1: FFV = np.sum(FFV.reshape(args.N_frames, args.N_repeats, FFV.shape[1]), axis=1)
-    FFV_c = FFV[:,0] / FFV[:,4]; FFV_lr = FFV[:,1] / FFV[:,4]; FFV_g = FFV[:,2] / FFV[:,4]; FFV_gs = FFV[:,3] / FFV[:,4]
+    FFV_c = FFV[:,0] / FFV[:,3]; FFV_lr = FFV[:,1] / FFV[:,3]; FFV_g = FFV[:,2] / FFV[:,3]
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
-    FFV = np.array([np.mean(FFV_c), np.std(FFV_c), np.mean(FFV_lr), np.std(FFV_lr), np.mean(FFV_g), np.std(FFV_g), np.mean(FFV_gs), np.std(FFV_gs)])
+    FFV = np.array([np.mean(FFV_c), np.std(FFV_c), np.mean(FFV_lr), np.std(FFV_lr), np.mean(FFV_g), np.std(FFV_g)])
     with open('FFV.dat', 'w') as anaout:
-        print("# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards, 2.0 = Geometric Total, 3.0 = Geometric Solvent", file=anaout)
+        print("# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards, 2.0 = Geometric", file=anaout)
         print(f"0.0 {FFV[0]:10.5f} {FFV[1]:10.5f}", file=anaout)
         print(f"1.0 {FFV[2]:10.5f} {FFV[3]:10.5f}", file=anaout)
         print(f"2.0 {FFV[4]:10.5f} {FFV[5]:10.5f}", file=anaout)
-        print(f"3.0 {FFV[6]:10.5f} {FFV[7]:10.5f}", file=anaout)
 
     if args.Surface_area:
         SA = np.array([out['SA'] for out in out_arr]); SA_c = SA[:,0]; SA_lr = SA[:,1]

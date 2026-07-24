@@ -1,5 +1,4 @@
-# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards, 2.0 = Geometric Total, 3.0 = Geometric Solvent
+# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards, 2.0 = Geometric
 0.0    0.36597    0.00168
 1.0    0.21011    0.00107
 2.0    0.60551    0.00064
-3.0    0.60426    0.00062

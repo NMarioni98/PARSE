@@ -39,7 +39,7 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
    - PSD_Plot.xlsx: Excel plot of the cumulative PSD and PSD plus comparisons to PoreBlazer or multi-frame analyses where applicable
      - **NOTE**: PSDs are recalculated from the cumulative distribution with the diameters in units of nm. Results from PoreBlazer are shifted to be right-justified and the derivative is recalculated to match PARSE's output.
      - **NOTE**: Some deviations between PARSE and PoreBlazer are expected due to differences in the voxelization strategy and methodology. However, we observe that the shape and location of the PSD curves are in good agreement
-   - FFV.dat: Connolly and Lee-Richards volume fraction (FFV, free volume fraction, water volume fraction, porosity, etc)
+   - FFV.dat: Connolly, Lee-Richards, and Geometric volume fraction (FFV, free volume fraction, water volume fraction, porosity, etc)
    - SA.dat: a simple marching-cubes mesh surface area calculation ([scikit-image](https://scikit-image.org/)) of the Connolly and Lee-Richards pore surface
      - **NOTE:** The SA calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Surface_area" in config.yaml)
    - Tau.dat: 1D diffusional tortuosity of the percolated domain in the X, Y, and Z direction using a simple Fickian diffusion algorithm ([PoreSpy](https://porespy.org/))
