@@ -55,7 +55,10 @@ ps.settings.loglevel = 'ERROR'
 float_type = np.float64
 
 # ensure numpy correctly handles data types
-np._set_promotion_state("weak")
+try: np._set_promotion_state("weak")
+except:
+    if int(np.__version__.split('.')[0]) < 2: print('Check NumPy version, there are known/potential issues with Numpy < 2.0.0')
+    else: pass
 
 ######################################################################
 ######################## XYZ File Functions ##########################
