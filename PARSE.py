@@ -54,6 +54,9 @@ ps.settings.loglevel = 'ERROR'
 # If memory is an issue, use np.float32 - may introduce some error due to lack of precision
 float_type = np.float64
 
+# ensure numpy correctly handles data types
+np._set_promotion_state("weak")
+
 ######################################################################
 ######################## XYZ File Functions ##########################
 ######################################################################
