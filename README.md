@@ -2,7 +2,7 @@
 
 Developed by: Nico Marioni, nmarioni@seas.upenn.edu
  - Developed using Python 3.12.X
-   - Packages: PyYAML 6.0.3, numpy 2.3.3+, h5py 3.14.0+, MDAnalysis 2.9.0+, python-igraph 1.0.0, scikit-image 0.25.0+, porespy 3.0.4, openpnm 3.6.1, pypardiso 0.4.7
+   - Packages: PyYAML 6.0.3, numpy 2.1.3, h5py 3.15.1, MDAnalysis 2.10.0, python-igraph 1.0.0, scikit-image 0.25.2, porespy 3.0.4, openpnm 3.6.1
 
 Pore Analysis & Reconstruction of Spatial Environments (PARSE) calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals free volume of the defined system matrix from a molecular dynamics (MD) trajectory (GROMACS gro/trr/xtc, LAMMPS data/lammpsdump/dcd, etc) or PoreBlazer-style (xyz + dat) trajectory. This software was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system. The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations. This software was written based on the methods used for [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) ([Publication](https://doi.org/10.1021/acs.chemmater.0c03575)) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems.
 

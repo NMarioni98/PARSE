@@ -1,8 +1,8 @@
 h5py
 mdanalysis>=2.7.0
-numpy>=2.3.0
-porespy>=3.0.0
-python-igraph
+numpy>=1.24.0
+porespy>=2.4.1
+python-igraph>=1.0.0
 PyYAML
 scikit-image
 openpnm
