@@ -166,6 +166,6 @@ Publications using PARSE:
    - Presson, W.; Schwindt, N.; Frischknecht, A.L.; Winey, K.I. et al. *In Preparation* **2026**
    - Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
  - Atomistic MD simulations of polymeric gas separation membranes
-   - Zhang, Z.; Mukherjee, K.; Alshammasi, M.S.; Naji, H.H.; Hashim, M.G.; Aithan, Z.A.; Badra, J.A.; Marioni, N.; Liu, J.; Hayek, A.M.; Ganesan, V. *In Preparation* **2026**.
+   - Zhang, Z.; Mukherjee, K.; Alshammasi, M.S.; Marioni, N.; Naji, H.H.; Hashim, M.G.; Aithan, Z.A.; Badra, J.A.; Marioni, N.; Liu, J.; Hayek, A.; Ganesan, V. *In Preparation* **2026**.
 
 We thank [MDAnalysis](https://www.mdanalysis.org/) for simulation trajectory reading and analysis tools, [igraph](https://igraph.org/) for graphing/cluster analysis tools, [scikit-image](https://scikit-image.org/) for surface area analysis tools, and [PoreSpy](https://porespy.org/)/[OpenPNM](https://openpnm.org/) for tortuosity analysis tools.
