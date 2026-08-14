@@ -4,15 +4,15 @@ Developed by: Nico Marioni, nmarioni@seas.upenn.edu
  - Developed using Python 3.12.X
    - Packages: PyYAML 6.0.3, numpy 2.1.3, h5py 3.15.1, MDAnalysis 2.10.0, python-igraph 1.0.0, scikit-image 0.25.2, porespy 3.0.4, openpnm 3.6.1
 
-PARSE calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals free volume of the defined system matrix from a molecular dynamics (MD) trajectory (GROMACS gro/trr/xtc, LAMMPS data/lammpsdump/dcd, etc) or PoreBlazer-style (xyz + dat) trajectory. This software was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system. The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations. This software was written based on the methods used for [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) ([Publication](https://doi.org/10.1021/acs.chemmater.0c03575)) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems.
+Pore Analysis & Reconstruction of Spatial Environments (PARSE) calculates the pore size distribution (free volume distribution, channel width distribution, etc) of the van der Waals free volume of the defined system matrix from a molecular dynamics (MD) trajectory (GROMACS gro/trr/xtc, LAMMPS data/lammpsdump/dcd, etc) or PoreBlazer-style (xyz + dat) trajectory. This software was specifically designed to find the distribution of water-rich pores within a hydrated polymer system, but can be generalized to any atomic or coarse-grained system. The output includes the Cumulative Pore Size Distribution (Cumulative PSD), Pore Size Distribution (PSD), and Free Volume Fraction (Fractional Free Volume, FFV), with optional Surface Area (SA), Tortuosity (Tau), and xyz visualizations. This software was written based on the methods used for [PoreBlazer v4.0](https://github.com/SarkisovGitHub/PoreBlazer) ([Publication](https://doi.org/10.1021/acs.chemmater.0c03575)) and is optimized for parallelized calculations over many system frames, or analysis of large (30+ nm box length) systems.
 
 
 
 ## Methodology
 
-Briefly, PARSE probes the van der Waals (vdW) free volume of a defined system matrix. The probed free volume can be further refined to the largest continuous free volume cluster (assumed percolated) or only free volume clusters which contain solvent atoms. The free volume is segregated into the Connolly (probe-occupiable) and Lee-Richards (surface-accessible) volumes, where the surface of the Connolly and Lee-Richards volumes are traced by the edge and center of a probe of defined radius as it is "rolled across" the volume of the system matrix. (see **Figure A**). The Connolly volume is used to measure the PSD, Connolly FFV, and Connolly SA. The Lee-Richards volume is used to measure the Lee-Richards FFV, Lee-Richards SA, and Tau.
+Briefly, PARSE probes the van der Waals (vdW) free volume of a defined system matrix. The probed free volume can be further refined to the largest continuous free volume cluster (assumed percolated) or only free volume clusters which contain solvent atoms. The free volume is segregated into the Connolly (probe-occupiable) and Lee-Richards (surface-accessible) volumes, where the surface of the Connolly and Lee-Richards volumes are traced by the edge and center of a probe of defined radius as it is "rolled across" the volume of the system matrix. (see **Figure A**). The Connolly volume is used to measure the PSD, Connolly FFV, and Connolly SA. The Lee-Richards volume is used to measure the Lee-Richards FFV, Lee-Richards SA, and Tau. The Geometric FFV of the total domain is also measured.
 
-Algorithmically, the free volume is determined as follows. First, the system box is divided into uniform voxels. The voxels may be pseudo-randomly offset from the uniform centers to reduce bias due to the cubic voxel geometry. See --Voxel_dist in config.yaml for more details. For each voxel, the largest voxel-centered free volume sphere without overlapping the system matrix vdW volume is calculated, where free volume spheres of radius *r* ≥ --probe_radius define the Connolly volume. A cluster analysis is optionally applied to only consider the largest cluster of free volume spheres, or only free volume clusters which contain solvent atoms. See --solvent_name in config.yaml for more details. To calculate the Cumulative PSD, we find the largest free volume sphere that contains each voxel center that lies outside the system matrix (see **Figure B**, where the blue circle is the largest sphere centered on the blue voxel, and the red circle is the largest sphere that contains the blue voxel). The Cumulative PSD is defined as the probability that a random voxel center within the free volume resides within a free volume sphere of diameter *d* or smaller. From this definition, the PSD is defined as the negative derivative of the Cumulative PSD with respect to *d*. The FFV is calculated as the fraction of total voxels in the Connolly and Lee-Richards volumes. The SA is calculated using a scikit-image [surface mesh](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.mesh_surface_area) determined by a simple [marching cubes](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.marching_cubes) algorithm applied to the Connolly and Lee-Richards volumes. The tortuosity is calculated using [PoreSpy](https://porespy.org/examples/simulations/reference/tortuosity_fd.html) on the Lee-Richards volume.
+Algorithmically, the free volume is determined as follows. First, the system box is divided into uniform voxels. The voxels may be pseudo-randomly offset from the uniform centers to reduce bias due to the cubic voxel geometry. See --Voxel_dist in config.yaml for more details. For each voxel, the largest voxel-centered free volume sphere without overlapping the system matrix vdW volume is calculated, where free volume spheres of radius *r* ≥ --probe_radius define the Connolly volume. A cluster analysis is optionally applied to only consider the largest cluster of free volume spheres, or only free volume clusters which contain solvent atoms. See --solvent_name in config.yaml for more details. To calculate the Cumulative PSD, we find the largest free volume sphere that contains each voxel center that lies outside the system matrix (see **Figure B**, where the blue circle is the largest sphere centered on the blue voxel, and the red circle is the largest sphere that contains the blue voxel). The Cumulative PSD is defined as the probability that a random voxel center within the free volume resides within a free volume sphere of diameter *d* or smaller. From this definition, the PSD is defined as the negative derivative of the Cumulative PSD with respect to *d*. The FFV is calculated as the fraction of total voxels in the Connolly, Lee-Richards, and Geometric volumes. The SA is calculated using a scikit-image [surface mesh](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.mesh_surface_area) determined by a simple [marching cubes](https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.marching_cubes) algorithm applied to the Connolly and Lee-Richards volumes. The tortuosity is calculated using [PoreSpy](https://porespy.org/examples/simulations/reference/tortuosity_fd.html) on the Lee-Richards volume.
 
 ![PARSE](assets/methodology.png)
 
@@ -42,17 +42,14 @@ PARSE requires the following inputs:
    - **Optional arguments:** additional (optional) arguments can be added to overwrite the default settings defined in {**YAML**}
      - e.g., "-r 1.4" or "--probe_radius 1.4"
      - ```python3 PARSE.py {YAML} {Mode} -h``` for more information
- - **NOTE:** PARSE must be run twice: First to generate a PARSE.hdf5 run file, second to perform the analysis.
-   - If PARSE successfully runs the second time, it will delete the PARSE.hdf5 file. However, make sure to delete this file and rebuild it if you change the inputs for PARSE (yaml file or arguments) in between analysis attempts.
 
 ### PARSE Inputs (config.yaml)
 ```
-usage: PARSE.py trj [-h] [-b T_MIN] [-e T_MAX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME]
-                      [-L L_VOXEL] [-r PROBE_RADIUS] [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}]
-                      [--PSD_FFV {True,False}] [--Surface_area {True,False}] [--Tortuosity {True,False}] [--print_eff {0,1,2}]
-                      [--print_xyz {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX] [--N_write_max N_WRITE_MAX]
-                      [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
-                      trj_file top_file
+usage: PARSE.py trj [-h] [--indexing_method {Time,Index}] [-b T_MIN] [-e T_MAX] [-bi START_IDX] [-ei END_IDX] [-n N_FRAMES] [--N_repeats N_REPEATS] [-t N_THREADS] [-m SYSTEM_NAME] [-s SOLVENT_NAME]
+                    [--identify_atoms {Names,Masses}] [-L L_VOXEL] [-r PROBE_RADIUS] [--d_max D_MAX] [--d_step D_STEP] [--Voxel_dist {Uniform,Random}] [--PSD_FFV {True,False}] [--Surface_area {True,False}]
+                    [--Tortuosity {True,False}] [--Temp_file TEMP_FILE] [--print_eff {0,1,2}] [--print_xyz {True,False}] [--Two_execs {True,False}] [--clustering {Neumann,Moore}] [--N_calc_max N_CALC_MAX]
+                    [--N_write_max N_WRITE_MAX] [--d_inc D_INC] [--N_edge_gen N_EDGE_GEN] [--tol TOL] [--rand_frac RAND_FRAC]
+                    trj_file top_file
 
 options:
   -h, --help            show this help message and exit
@@ -62,9 +59,15 @@ Required input files:
   top_file              Path to tpr/gro file
 
 Frame selection and threads:
+  --indexing_method {Time,Index}
+                        Method to index the frames to be analyzed [default = YAML]
   -b T_MIN, --t_min T_MIN
                         Start time (ps) [default = YAML]
   -e T_MAX, --t_max T_MAX
+                        End time (ps) [default = YAML]
+  -bi START_IDX, --start_idx START_IDX
+                        Start time (ps) [default = YAML]
+  -ei END_IDX, --end_idx END_IDX
                         End time (ps) [default = YAML]
   -n N_FRAMES, --N_frames N_FRAMES
                         Number of frames to analyze [default = YAML]
@@ -75,11 +78,9 @@ Frame selection and threads:
 
 MDAnalysis selection strings:
   -m SYSTEM_NAME, --system_name SYSTEM_NAME
-                        MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL'
-                        [default = YAML]
+                        MDAnalysis selection string defining the system matrix, e.g., 'moltype MOL', 'resname PEO', 'resname SOL LI CL' [default = YAML]
   -s SOLVENT_NAME, --solvent_name SOLVENT_NAME
-                        MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default =
-                        YAML]
+                        MDAnalysis selection string defining the solvent matrix, e.g., '', 'percolated', 'resname SOL LI CL' [default = YAML]
   --identify_atoms {Names,Masses}
                         Method to identify the atom and associated vdW radii [default = YAML]
 
@@ -95,11 +96,11 @@ Important variables:
   --PSD_FFV {True,False}
                         Pore size distribution and free volume fraction calculation setting [default = YAML; Locked to True or False]
   --Surface_area {True,False}
-                        Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or
-                        False]
+                        Surface area calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
   --Tortuosity {True,False}
-                        Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or
-                        False]
+                        Tortuosity calculation setting; Requires --Voxel_dist 'Uniform' and --tol -1 [default = YAML; Locked to True or False]
+  --Temp_file TEMP_FILE
+                        Temporary h5py .hdf5 I/O file name
 
 Terminal printing and xyz generation:
   --print_eff {0,1,2}   Level of printing [default = YAML; Locked to 0, 1, or 2]
@@ -107,6 +108,7 @@ Terminal printing and xyz generation:
                         xyz visualization flag [default = YAML; Locked to True or False]
 
 Efficiency parameters - see YAML description for more details [default = YAML]:
+  --Two_execs {True,False}
   --clustering {Neumann,Moore}
   --N_calc_max N_CALC_MAX
   --N_write_max N_WRITE_MAX
@@ -137,8 +139,9 @@ Efficiency parameters - see YAML description for more details [default = YAML]:
    - Example_CEM contains a cation exchange membrane (*p*5PhSH - *Y* = 70, *λ* = 9) from: https://doi.org/10.1021/jacsau.5c00218
      - Example using GROMACS gro/tpr/xtc files
      - PARSE completes calculations over 1 frame in approx. 40 s and over 24 frames in approx. 3.5 min., PoreBlazer completes calculations over 1 frame in approx. 5 min.
-   - Adding Soon: Example_AEM contains an anion exchange membrane...
-     - Example using LAMMPS data/dcd file...
+   - Example_AEM contains an anion exchange membrane (*p*5CNMe3-Cl, *λ* = 4) from Presson, W.; Schwindt, N.; Frischknecht, A.L.; Winey, K.I. et al. *In Preparation* **2026**
+     - Example using LAMMPS data/lammpsdump files
+     - PARSE completes calculations over 1 frame in approx. 20 s and over 23 frames in approx. 1 min.
  - **NOTE:** It is recommended to average results over many different frames and several independent repeats for the best results. These systems just serve as simple, fast to analyze examples of using PARSE.
 
 ## Acknowledgements
@@ -159,6 +162,10 @@ The development of PARSE was supported by the Department of Energy (DOE)-Basic E
  - See [Zenodo](https://doi.org/10.5281/zenodo.20314881) for citations to specific PARSE versions
 
 Publications using PARSE:
- - Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
+ - Atomistic MD simulations and GRF reconstructions of hydrated polymer membranes
+   - Presson, W.; Schwindt, N.; Frischknecht, A.L.; Winey, K.I. et al. *In Preparation* **2026**
+   - Wang, L.; Kronenberger, S.; Marioni, N.; Frischknecht, A.L.; Jayaraman, A.; Winey, K.I. *In Preparation* **2026**.
+ - Atomistic MD simulations of polymeric gas separation membranes
+   - Zhang, Z.; Mukherjee, K.; Alshammasi, M.S.; Marioni, N.; Naji, H.H.; Hashim, M.G.; Aithan, Z.A.; Badra, J.A.; Marioni, N.; Liu, J.; Hayek, A.; Ganesan, V. *In Preparation* **2026**.
 
 We thank [MDAnalysis](https://www.mdanalysis.org/) for simulation trajectory reading and analysis tools, [igraph](https://igraph.org/) for graphing/cluster analysis tools, [scikit-image](https://scikit-image.org/) for surface area analysis tools, and [PoreSpy](https://porespy.org/)/[OpenPNM](https://openpnm.org/) for tortuosity analysis tools.

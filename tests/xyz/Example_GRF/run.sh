@@ -4,11 +4,7 @@
 ########## Running PARSE using an xyz + dat file (PoreBlazer-style input) ##########
 ######################################################################################
 
-# Load in the trajectory data creating a PARSE.hdf5 data file
-python3 ../../../PARSE.py ../../config.yaml xyz nonpolar_matrix.xyz input.dat --Voxel_dist 'Uniform' -s 'percolated'
-
-# Run the PSD analysis
-python3 ../../../PARSE.py ../../config.yaml xyz nonpolar_matrix.xyz input.dat --Voxel_dist 'Uniform' -s 'percolated'
+python3 ../../../PARSE.py ../../config.yaml xyz nonpolar_matrix.xyz input.dat --Voxel_dist 'Uniform' -s 'percolated' --print_xyz False
 
 # For a xyz file input, PARSE.py relies on less input variables - several inputs are "Locked"
 # PARSE.py takes the following inputs

@@ -1,0 +1,127 @@
+######################################################################
+########################## Input Parameters ##########################
+######################################################################
+
+            #################### Mode ####################
+            mode           : trj
+
+            ########## Files and Run Parameters ##########
+            trj_file       : md.lammpsdump
+            top_file       : lammps.data
+            indexing_method: Index
+            start_idx      : -1
+            end_idx        : -1
+            N_frames       : 23
+            N_repeats      : 1
+            N_threads      : 8
+
+            ############### System/Solvent ###############
+            system_name    : not type 3 7 9
+            solvent_name   :
+            identify_atoms : Masses
+
+            ################# Variables ##################
+            L_voxel        : 1.0
+            probe_radius   : 1.575
+            d_max          : 50
+            d_step         : 0.25
+            Voxel_dist     : Random
+            PSD_FFV        : True
+            Surface_area   : False
+            Tortuosity     : False
+            Temp_file      : PARSE
+            print_eff      : 1
+            print_xyz      : False
+
+            ########### Efficiency Parameters ############
+            Two_execs      : False
+            clustering     : Neumann
+            N_calc_max     : 1e+12
+            N_write_max    : 1e+08
+            d_inc          : 2
+            N_edge_gen     : 1e+08
+            tol            : -1
+            rand_frac      : 1
+
+######################################################################
+######################################################################
+######################################################################
+
+Loading trajectory data
+
+/home/nmarioni/.venvs/myPython/lib/python3.12/site-packages/MDAnalysis/coordinates/LAMMPS.py:749: UserWarning: Reader has no dt information, set to 1.0 ps
+  ts.data["time"] = step_num * ts.dt
+If the following is incorrect, there may be inconsistencies between the
+atom ID name/mass in the topology and the Element name/mass in the YAML file.
+See --identify_atoms, Size_arr, and Dummy_atoms for more details.
+
+SYSTEM ATOMS
+Element N-in-System
+      H       30132
+      C       13392
+      N        1488
+
+NOTE: --start_idx -1, setting --start_idx = first frame in md.lammpsdump, Frame 0
+
+NOTE: --end_idx -1, setting --end_idx = last frame in md.lammpsdump, Frame 22
+
+Framerange: 0-22
+Framestep between analyzed frames: ~1
+Number of frames: 23
+Number of threads: 8
+
+Performing Volume Analysis
+
+Frame 1/23
+Frame 2/23
+Frame 3/23
+Frame 4/23
+Frame 5/23
+Frame 6/23
+Frame 7/23
+Frame 8/23
+Frame 9/23
+Frame 10/23
+Frame 11/23
+Frame 12/23
+Frame 13/23
+Frame 14/23
+Frame 15/23
+Frame 16/23
+Frame 17/23
+Frame 18/23
+Frame 19/23
+Frame 20/23
+Frame 21/23
+Frame 22/23
+Frame 23/23
+
+######################################################################
+################### Generating Free Volume Spheres ###################
+######################################################################
+
+Number of voxel cubes:             1
+Number of voxels-per-cube:    571787
+
+Maximum pore diameter:    5.82
+Number of free volume spheres (r >= probe_radius):     11306
+Number of free volume voxels (r > 0):                 285319
+Time free volume spheres: 13.39 s
+
+######################################################################
+##################### Performing PSD/FFV Analysis ####################
+######################################################################
+
+Number of voxels in PSD analysis:                               75429
+Connolly FFV, Connolly voxels, total voxels:         0.132,     75429,    571787
+Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.020,     11306,    571787
+Time PSD/FFV: 0.48 s
+
+######################################################################
+#################### Summary of Calculation Times ####################
+######################################################################
+
+Time free volume spheres: 13.39 s
+Time PSD/FFV:              0.48 s
+
+Analysis complete, deleting tempoary file, PARSE.hdf5

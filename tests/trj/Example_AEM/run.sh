@@ -1,0 +1,55 @@
+#!/bin/bash
+
+###############################################################################
+################### Running PARSE using LAMMPS trajectories ###################
+###############################################################################
+
+#############################################
+########## LAMMPS Data-LAMMPS Data ##########
+#############################################
+# Analyze a single frame using a GROMACS GRO file
+python3 ../../../PARSE.py ../../config.yaml trj lammps.data lammps.data -m 'not type 3 7 9' --identify_atoms 'Masses' --Voxel_dist 'Uniform' --Surface_area True --Tortuosity True
+
+# Analyze a single frame 8 times in parallel with a 'Random' voxel distribution
+python3 ../../../PARSE.py ../../config.yaml trj lammps.data lammps.data -m 'not type 3 7 9' --identify_atoms 'Masses' --N_repeats 8 --N_threads 8 --print_eff 1 --print_xyz False
+
+#############################################
+########## LAMMPS Data-LAMMPS Dump ##########
+#############################################
+# Analyze 24 frames over 8 parallel threads using a GROMACS XTC + TPR file
+python3 ../../../PARSE.py ../../config.yaml trj md.lammpsdump lammps.data -m 'not type 3 7 9' --identify_atoms 'Masses' --indexing_method 'Index' --N_frames 23 --N_threads 8 --print_eff 1 --print_xyz False
+
+# For a LAMMPS input, PARSE.py can take more inputs, enabling parallelization over many frames
+# PARSE.py takes the following inputs
+#    python3 {PATH}/PARSE.py {Path}/{YAML config file} trj {PATH}/{input .XTC/.TRR/.GRO file} {PATH}/{input .TPR/.GRO file}
+#     - "-m 'not type 3 7 9'", "--Voxel_dist 'Uniform', '--Surface_area True', and "--Tortuosity True" overwrite the "system_name" "Voxel_dist", "Surface_area", and "Tortuosity" variables in the yaml config file, respectively
+#       - Alternatively, you can edit the included yaml file, or make a copy of the yaml file, edit it, and point PARSE.py to the new file
+
+# Important considerations when running PARSE.py - in addition to the variables above, "trj" mode takes in:
+#   --system_name:      MDAnalysis selection string defining the system matrix, e.g., ''all', 'moltype MOL', 'resname PEO', 'resname SOL LI CL'. Typically 'all' for "xyz" mode.
+#   --solvent_name:     solvent_name is either '' to probe the entire van der Waals free volume of the provided atoms, 'percolated' to probe the largest (assumed percolated) free volume cluster, or an MDAnalysis selection string to only probe free volume clusters containing solvent atoms.
+#   --identify_atoms:   method to identify atoms and their associated vdW radii - MDAnalysis 'Names' or 'Masses'. See config.yaml for more details.
+#   --L_voxel:          defines the approximate size of the voxels the system is broken down in to. Smaller voxels take exponentially longer to analyze. Typically 0.5-1.0 angstroms.
+#   --probe_radius:     defines the size of the probe, where the minimum pore size analyzed has a diameter of 2*probe_radius. Smaller values take exponentially longer to analyze. Typically 1.4-1.575 for a "water molecule" probe.
+#   --Voxel_dist:       create 'Uniform' or pseudo-"Random" voxel positions. Typically "Random", but visualizing the system using print_xyz is clearer with 'Uniform.
+#   --PSD_FFV:          calculate the PSD and Connolly FFV of the solvent matrix.
+#   --Surface_area:     calculate the Connolly (--PSD_FFV True) and Lee-Richards surface area of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1.
+#   --Tortuosity:       calculate the 1D diffusional tortuosity of the solvent matrix. Requires --Voxel_dist 'Uniform' and --tol -1. Memory intensive on large systems or small --L_voxel.
+#   --d_max and d_step: defines the binning for the PSD. It may be useful to change d_step to achieve smoother profiles. Typically 50.0 and 0.25-0.50, respectively.
+#   --print_eff:        defines how much information is printing while PARSE.py is running. Typically 1, but 2 is useful for troubleshooting memory errors or significant slowdowns in compute time.
+#   --print_xyz:        defines whether PARSE.py generates xyz files to visualize the probe-occupiable volume that is analyzed. Typically False to conserve hard drive space (these xyz can get large for small L_voxel or large simulation boxes).
+#   --indexing_method:  method to index trajectory frames: 'Time' follows GROMACS conventions of setting a beginning and end time (--t_min and --t_max), 'Index' instead sets a starting and ending frame index where the first frame of a trajectory is index 0 (--start_idx and --end_idx)
+#   --t_min:            start time for analysis in ps (-1 assumes the time of the first frame).
+#   --t_max:            end time for analysis in ps (-1 assumes the time of the last frame).
+#   --start_idx:        start frame index for analysis (-1 assumes the first frame of the trajectory file, i.e., frame 0).
+#   --end_idx:          end frame index for analysis (-1 assumes the last frame of the trajectory file).
+#   --N_frames:         number of frames to analyze. For efficiency, this should be a multiple of N_threads.
+#   --N_repeats:        Number of times to analyze each frame. Typically 1.
+#   --N_threads:        number of threads.
+#   - NOTE: If more frames are available, always prioritize increasing --N_frames over --N_repeats. --N_repeats > 1 can smooth out single-frame analyses and reduce artifacts due to the cubic nature of voxels.
+#   - NOTE: for a gro file input, t_min and t_max are not used, and N_frames = 1.
+
+# - Large systems or small --L_voxel can run very slow. Setting tol > 0 can significantly speed up the calculation without losing significant accuracy.
+#   --tol:            set the tolerance for measuring the PSD. --tol -1 means that all voxels are analyzed. tol > 0 means that the PSD calculation will end early when the largest error in the PSD is less than that value. Typically -1.
+#   --rand_frac:      Fraction of voxels to analyze each cycle during PSD and FFV calculation. rand_frac defaults to a value of 1 if --tol -1 or --rand_frac >= 0.5. Typically 0.01.
+#                     If tol > 0, then 2*rand_frac*N_voxels are analyzed at a minimum for PSD and FFV, e.g., --rand_frac 0.01 means that a minimum of 2% of all voxels (2 cycles) are analyzed

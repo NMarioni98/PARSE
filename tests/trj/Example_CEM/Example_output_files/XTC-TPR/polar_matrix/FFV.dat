@@ -1,3 +1,4 @@
-# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards
-0.0    0.49447    0.00108
-1.0    0.33815    0.00104
+# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards, 2.0 = Geometric
+0.0    0.49478    0.00116
+1.0    0.33827    0.00104
+2.0    0.69462    0.00057
