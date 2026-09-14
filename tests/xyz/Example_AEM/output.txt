@@ -82,7 +82,7 @@ Distance, calculations, writes:   8.0 6.4e+08 1.2e+06
 Maximum pore diameter:    9.48
 Number of free volume spheres (r >= probe_radius):    148070
 Number of free volume voxels (r > 0):                 602471
-Time free volume spheres: 22.01 s
+Time free volume spheres: 22.29 s
 
 Free volume sphere xyz file printed
 
@@ -95,7 +95,7 @@ PSD Cycle:     1/1
 Number of voxels in PSD analysis:                              439169
 Connolly FFV, Connolly voxels, total voxels:         0.496,    439169,    884736
 Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.167,    148070,    884736
-Time PSD/FFV: 2.69 s
+Time PSD/FFV: 2.84 s
 
 Free volume voxel xyz file printed
 
@@ -105,7 +105,7 @@ Free volume voxel xyz file printed
 
 Connolly SA (A^2):     231017.45
 Lee-Richards SA (A^2): 195550.00
-Time SA:                   0.30 s
+Time SA:                   0.35 s
 
 Free volume surface xyz file printed
 
@@ -113,18 +113,20 @@ Free volume surface xyz file printed
 ################### Performing Tortuosity Analysis ###################
 ######################################################################
 
-Directional Tortuosity:  X-6.70 Y-7.17 Z-7.42
-Average Tortuosity:   7.10
-Time Tortuosity:      7.17 s
+Average Connolly Tortuosity:       2.07
+Directional Connolly Tortuosity:      X-2.05 Y-2.09 Z-2.07
+Average Lee-Richards Tortuosity:   7.10
+Directional Lee-Richards Tortuosity:  X-6.70 Y-7.17 Z-7.42
+Time Tortuosity:     14.84 s
 
 ######################################################################
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres: 22.01 s
-Time PSD/FFV:              2.69 s
-Time SA:                   0.30 s
-Time Tortuosity:           7.17 s
+Time free volume spheres: 22.29 s
+Time PSD/FFV:              2.84 s
+Time SA:                   0.35 s
+Time Tortuosity:          14.84 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 

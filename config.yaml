@@ -116,9 +116,10 @@ PSD_FFV: True
 Surface_area: False
 
 # Set --Tortuosity True to calculate the 1D diffusional tortuosity of the solvent matrix using a simple Fickian diffusion algorithm
-#     Tortuosity does not account for PBCs and applies to the Lee-Richards volume
+#     Tortuosity does not account for PBCs and applies to the Connolly and Lee-Richards volume
 #     NOTE: Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems
 #     NOTE: Tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1
+#     NOTE: Connolly SA calculation requires --PSD_FFV True
 #     Can overwrite when calling PARSE.py using --Tortuosity
 Tortuosity: False
 

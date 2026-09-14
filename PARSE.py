@@ -678,7 +678,8 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
 
     if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_SA = time.perf_counter() - time_SA
-        print(f"Connolly SA (A^2):     {SA_c:8.2f}")
+        if not args.PSD_FFV: print(f"--PSD_FFV 'False', Connolly SA not measured.\n")
+        else: print(f"Connolly SA (A^2):     {SA_c:8.2f}")
         print(f"Lee-Richards SA (A^2): {SA_lr:8.2f}")
         print(f"Time SA:               {time_SA:8.2f} s")
 
@@ -686,7 +687,7 @@ def calculate_surface_area(args: argparse.Namespace, voxel_data: Dict[str, Any],
 
 
 
-def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], last_frame: bool, radii_arr: np.ndarray) -> Tuple[np.ndarray, float]:
+def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], last_frame: bool, radii_arr: np.ndarray, FFV_save: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Calculates Tortuosity using PoreSpy along X, Y, and Z axes.
 
@@ -695,6 +696,7 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], l
         voxel_data (Dict[str, Any]): Dictionary containing grid coordinates and specific numpy datatypes.
         last_frame (bool): True if the current frame is the last frame in frame_ids.
         radii_arr (np.ndarray): Radius of the largest free volume sphere centered on each voxel.
+        FFV_save (np.ndarray): Index of free volume voxels.
         
     Returns:
         Tuple[np.ndarray, float]: Tau data and time to perform calculation.
@@ -710,7 +712,35 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], l
         print('######################################################################\n')
     else: time_tau = 0.0
 
-    # Diffusive volume is defined by *probe-center* occupiable volume, i.e., the Lee-Richards volume
+    ######################################################
+    ################ Connolly Tortuosity #################
+    ######################################################
+    if args.PSD_FFV:
+        tortuosity_arr = np.zeros((l_x, l_y, l_z), dtype=bool); tortuosity_arr[FFV_save[:,0], FFV_save[:,1], FFV_save[:,2]] = True                  # Create voxel lattice where free volume voxel-centers = True
+
+        try:                                                                                                                                        # Attempt tortuosity analysis across x, y, and z directions
+            sim_x = ps.simulations.tortuosity_fd(tortuosity_arr, axis=0); tortuosity_x = sim_x.tortuosity                                           # Analysis fails if no percolating clusters found across that axis
+            sim_y = ps.simulations.tortuosity_fd(tortuosity_arr, axis=1); tortuosity_y = sim_y.tortuosity
+            sim_z = ps.simulations.tortuosity_fd(tortuosity_arr, axis=2); tortuosity_z = sim_z.tortuosity
+        except Exception as e:
+            print(f"Error from PoreSpy: {e}")
+            if "No pores remain" in str(e):                                                                                                         # If no percolating cluster found across any axis, return -1 for failed analysis
+                if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
+                    print("    Void space does not percolate along at least one axis. Setting tortuosity to -1.")
+                tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
+            elif "Solver failed to converge" in str(e):                                                                                             # If solver failed to converge across any axis, return -1 for failed analysis
+                if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
+                    print("    Solver failed to converge along at least one axis. Setting tortuosity to -1.")
+                tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
+            else: raise
+
+        tortuosity_c = np.array([tortuosity_x, tortuosity_y, tortuosity_z], dtype=float)
+    else:
+        tortuosity_c = np.array([-1, -1, -1], dtype=float)
+
+    ######################################################
+    #### Lee-Richards "Surface Accessible" Tortuosity ####
+    ######################################################
     idx_x, idx_y, idx_z = np.where(radii_arr > args.probe_radius) if args.probe_radius == 0 else np.where(radii_arr >= args.probe_radius)
     tortuosity_arr = np.zeros((l_x, l_y, l_z), dtype=bool); tortuosity_arr[idx_x, idx_y, idx_z] = True                                          # Create voxel lattice where free volume sphere-centers = True
 
@@ -730,17 +760,22 @@ def calculate_tortuosity(args: argparse.Namespace, voxel_data: Dict[str, Any], l
             tortuosity_x = -1; tortuosity_y = -1; tortuosity_z = -1
         else: raise
 
-    tortuosity = np.mean([tortuosity_x, tortuosity_y, tortuosity_z])                                                                            # Average tortuosity across all 3 dimensions
+    tortuosity_lr = np.array([tortuosity_x, tortuosity_y, tortuosity_z], dtype=float)
 
     if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
         time_tau = time.perf_counter() - time_tau
-        if tortuosity == -1: print(f"No 1D percolated clusters found, tortuosity not measured.")
+        if not args.PSD_FFV: print(f"--PSD_FFV 'False', Connolly tortuosity not measured.\n")
+        elif np.any(tortuosity_c == -1): print(f"No 1D percolated clusters found in Connolly volume, tortuosity not measured.")
         else:
-            print(f"Directional Tortuosity:  X-{tortuosity_x:.2f} Y-{tortuosity_y:.2f} Z-{tortuosity_z:.2f}")
-            print(f"Average Tortuosity: {tortuosity:6.2f}")
+            print(f"Average Connolly Tortuosity:     {np.mean(tortuosity_c):6.2f}")
+            print(f"Directional Connolly Tortuosity:      X-{tortuosity_c[0]:.2f} Y-{tortuosity_c[1]:.2f} Z-{tortuosity_c[2]:.2f}")
+        if np.any(tortuosity_lr == -1): print(f"No 1D percolated clusters found in Lee-Richards volume, tortuosity not measured.")
+        else:
+            print(f"Average Lee-Richards Tortuosity: {np.mean(tortuosity_lr):6.2f}")
+            print(f"Directional Lee-Richards Tortuosity:  X-{tortuosity_lr[0]:.2f} Y-{tortuosity_lr[1]:.2f} Z-{tortuosity_lr[2]:.2f}")
         print(f"Time Tortuosity:    {time_tau:6.2f} s")
 
-    return np.array([tortuosity_x, tortuosity_y, tortuosity_z], dtype=float), time_tau
+    return np.array([tortuosity_c, tortuosity_lr]), time_tau
 
 
 
@@ -823,6 +858,12 @@ def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
 
         FFV_save, time_PSD = None, 0
         if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
+            if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
+                time_PSD = time.perf_counter()
+                print('\n######################################################################')
+                print('##################### Performing PSD/FFV Analysis ####################')
+                print('######################################################################\n')
+            print(f"--PSD_FFV 'False', PSD and Connolly FFV not measured.\n")
             print(f"Lee-Richards FFV: {FFV_lr/FFV_total:0.3f}, {FFV_lr}, {FFV_total}")
 
     # SA Analysis
@@ -837,12 +878,12 @@ def volume_analysis(args: argparse.Namespace, frame_idx: int) -> Dict[str, Any]:
     else: SA_data, time_SA = np.array([0,0], dtype=float), 0
 
     # Tau Analysis
-    #   Calculate the tortuosity of the Lee-Richards volume using PoreSpy
+    #   Calculate the tortuosity of the Connolly and Lee-Richards volume using PoreSpy
     if args.Tortuosity:
         tortuosity_data, time_tau = calculate_tortuosity(
-            args, voxel_data, last_frame, radii_arr
+            args, voxel_data, last_frame, radii_arr, FFV_save
         )
-    else: tortuosity_data, time_tau = np.array([0, 0, 0], dtype=float), 0
+    else: tortuosity_data, time_tau = np.array([[0, 0, 0],[0, 0, 0]], dtype=float), 0
 
     # Print time statistics
     if (args.print_eff >= 1) and (last_frame or args.N_threads == 1):
@@ -1487,9 +1528,11 @@ def main():
     if args.N_repeats > 1: FFV = np.sum(FFV.reshape(args.N_frames, args.N_repeats, FFV.shape[1]), axis=1)
     FFV_c = FFV[:,0] / FFV[:,3]; FFV_lr = FFV[:,1] / FFV[:,3]; FFV_g = FFV[:,2] / FFV[:,3]
     # Return the average and standard deviation (over the frames processed) of the probe-occupiable fractional free volume
-    FFV = np.array([np.mean(FFV_c), np.std(FFV_c), np.mean(FFV_lr), np.std(FFV_lr), np.mean(FFV_g), np.std(FFV_g)])
+    FFV = np.array([np.mean(FFV_c), np.std(FFV_c),
+                    np.mean(FFV_lr), np.std(FFV_lr),
+                    np.mean(FFV_g), np.std(FFV_g)])
     with open('FFV.dat', 'w') as anaout:
-        print("# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards, 2.0 = Geometric", file=anaout)
+        print("# FFV Std - 0.0 = Connolly, 1.0 = Lee-Richards, 2.0 = Geometric - value of -1 denotes a --PSD_FFV 'False'", file=anaout)
         print(f"0.0 {FFV[0]:10.5f} {FFV[1]:10.5f}", file=anaout)
         print(f"1.0 {FFV[2]:10.5f} {FFV[3]:10.5f}", file=anaout)
         print(f"2.0 {FFV[4]:10.5f} {FFV[5]:10.5f}", file=anaout)
@@ -1499,23 +1542,30 @@ def main():
         # Return the average and standard deviation (over the frames processed) of the surface area
         SA = np.array([np.mean(SA_c), np.std(SA_c), np.mean(SA_lr), np.std(SA_lr)])
         with open('SA.dat', 'w') as anaout:
-            print("# SA (A^2) Std - 0.0 = Connolly, 1.0 = Lee-Richards", file=anaout)
+            print("# SA (A^2) Std - 0.0 = Connolly, 1.0 = Lee-Richards - value of -1 denotes a --PSD_FFV 'False'", file=anaout)
             print(f"0.0 {SA[0]:15.5f} {SA[1]:10.5f}", file=anaout)
             print(f"1.0 {SA[2]:15.5f} {SA[3]:10.5f}", file=anaout)
 
     if args.Tortuosity:
-        tortuosity = np.array([out['tortuosity'] for out in out_arr]); tortuosity_x = tortuosity[:,0]; tortuosity_y = tortuosity[:,1]; tortuosity_z = tortuosity[:,2]
+        tortuosity = np.array([out['tortuosity'] for out in out_arr]); tortuosity_c = tortuosity[:,0]; tortuosity_lr = tortuosity[:,1]
         # Return the average and standard deviation (over the frames processed) of the tortuosity
-        if np.any(tortuosity_x == -1) or np.any(tortuosity_y == -1) or np.any(tortuosity_z == -1):
-            tortuosity = np.array([-1, -1, -1, -1, -1, -1])
-        else:
-            tortuosity = np.array([np.mean(tortuosity_x), np.std(tortuosity_x), np.mean(tortuosity_y), np.std(tortuosity_y), np.mean(tortuosity_z), np.std(tortuosity_z)])
+        if np.any(tortuosity_c == -1): tortuosity_c = np.array([-1, -1, -1, -1, -1, -1])
+        else: tortuosity_c = np.array([np.mean(tortuosity_c[:,0]), np.std(tortuosity_c[:,0]),
+                                       np.mean(tortuosity_c[:,1]), np.std(tortuosity_c[:,1]),
+                                       np.mean(tortuosity_c[:,2]), np.std(tortuosity_c[:,2])])
+        if np.any(tortuosity_lr == -1): tortuosity_lr = np.array([-1, -1, -1, -1, -1, -1])
+        else: tortuosity_lr = np.array([np.mean(tortuosity_lr[:,0]), np.std(tortuosity_lr[:,0]),
+                                        np.mean(tortuosity_lr[:,1]), np.std(tortuosity_lr[:,1]),
+                                        np.mean(tortuosity_lr[:,2]), np.std(tortuosity_lr[:,2])])
 
         with open('Tau.dat', 'w') as anaout:
-            print("# Tortuosity Std - 0.0, 1.0, 2.0 = X, Y, and Z direction - value of -1 denotes a failed tortuosity analysis on at least 1 frame", file=anaout)
-            print(f"0.0 {tortuosity[0]:10.5f} {tortuosity[1]:10.5f}", file=anaout)
-            print(f"1.0 {tortuosity[2]:10.5f} {tortuosity[3]:10.5f}", file=anaout)
-            print(f"2.0 {tortuosity[4]:10.5f} {tortuosity[5]:10.5f}", file=anaout)
+            print("# Tortuosity Std - 0.0, 1.0, 2.0 = X, Y, and Z direction Connolly tortuosity, 3.0, 4.0, 5.0 = X, Y, and Z direction Lee-Richards tortuosity - value of -1 denotes a failed tortuosity analysis on at least 1 frame, or --PSD_FFV 'False'", file=anaout)
+            print(f"0.0 { tortuosity_c[0]:10.5f} { tortuosity_c[1]:10.5f}", file=anaout)
+            print(f"1.0 { tortuosity_c[2]:10.5f} { tortuosity_c[3]:10.5f}", file=anaout)
+            print(f"2.0 { tortuosity_c[4]:10.5f} { tortuosity_c[5]:10.5f}", file=anaout)
+            print(f"3.0 {tortuosity_lr[0]:10.5f} {tortuosity_lr[1]:10.5f}", file=anaout)
+            print(f"4.0 {tortuosity_lr[2]:10.5f} {tortuosity_lr[3]:10.5f}", file=anaout)
+            print(f"5.0 {tortuosity_lr[4]:10.5f} {tortuosity_lr[5]:10.5f}", file=anaout)
 
     # Deletes the temporary .hdf5 file
     print(f'\nAnalysis complete, deleting tempoary file, {args.Temp_file}.hdf5\n')

@@ -43,7 +43,7 @@ All tests performed on a Windows laptop with an 8-core 8-thread Intel(R) Core(TM
    - SA.dat: a simple marching-cubes mesh surface area calculation ([scikit-image](https://scikit-image.org/)) of the Connolly and Lee-Richards pore surface
      - **NOTE:** The SA calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Surface_area" in config.yaml)
    - Tau.dat: 1D diffusional tortuosity of the percolated domain in the X, Y, and Z direction using a simple Fickian diffusion algorithm ([PoreSpy](https://porespy.org/))
-     - Tortuosity does not account for PBCs and applies to the Lee-Richards volume
+     - Tortuosity does not account for PBCs and applies to the Connolly and Lee-Richards volume
      - **NOTE:** Tortuosity calculation is memory intensive. Larger --L_voxel may be needed for large systems, i.e., /tests/xyz/Example_GRF/
      - **NOTE:** The tortuosity calculation requires --Voxel_dist 'Uniform' and --tol -1 (see "Tortuosity" in config.yaml)
    - \*.xyz: xyz files to visualize the free volume probed by PARSE using OVITO

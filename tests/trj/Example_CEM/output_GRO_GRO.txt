@@ -86,7 +86,7 @@ Distance, calculations, writes:  14.0 9.5e+06 1.3e+04
 Maximum pore diameter:    20.41
 Number of free volume spheres (r >= probe_radius):    167694
 Number of free volume voxels (r > 0):                 471175
-Time free volume spheres: 20.36 s
+Time free volume spheres: 20.42 s
 
 ######################################################################
 ##### Performing Clustering Analysis - Percolated/Solvent-Domain #####
@@ -94,7 +94,7 @@ Time free volume spheres: 20.36 s
 
 Maximum pore diameter: 20.41
 Number of spheres (r >= probe_radius) within percolated domain:    166521
-Time cluster:          0.22 s
+Time cluster:          0.21 s
 
 Free volume sphere xyz file printed
 
@@ -107,7 +107,7 @@ PSD Cycle:     1/1
 Number of voxels in PSD analysis:                              290358
 Connolly FFV, Connolly voxels, total voxels:         0.373,    290358,    778688
 Lee-Richards FFV, Lee_Richards voxels, total voxels: 0.214,    166521,    778688
-Time PSD/FFV: 6.30 s
+Time PSD/FFV: 6.21 s
 
 Free volume voxel xyz file printed
 
@@ -125,19 +125,21 @@ Free volume surface xyz file printed
 ################### Performing Tortuosity Analysis ###################
 ######################################################################
 
-Directional Tortuosity:  X-6.40 Y-4.37 Z-4.45
-Average Tortuosity:   5.07
-Time Tortuosity:      4.18 s
+Average Connolly Tortuosity:       2.96
+Directional Connolly Tortuosity:      X-3.43 Y-2.60 Z-2.83
+Average Lee-Richards Tortuosity:   5.07
+Directional Lee-Richards Tortuosity:  X-6.40 Y-4.37 Z-4.45
+Time Tortuosity:      8.65 s
 
 ######################################################################
 #################### Summary of Calculation Times ####################
 ######################################################################
 
-Time free volume spheres: 20.36 s
-Time cluster:              0.22 s
-Time PSD/FFV:              6.30 s
+Time free volume spheres: 20.42 s
+Time cluster:              0.21 s
+Time PSD/FFV:              6.21 s
 Time SA:                   0.12 s
-Time Tortuosity:           4.18 s
+Time Tortuosity:           8.65 s
 
 Analysis complete, deleting tempoary file, PARSE.hdf5
 
